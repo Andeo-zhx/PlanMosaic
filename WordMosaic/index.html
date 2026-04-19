@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>背词器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar-left">
+            <div class="sidebar-logo">Word<span>Mosaic</span></div>
+            <button class="nav-btn active" data-view="learn">
+                <i data-lucide="book-open" class="nav-icon"></i>
+                <span class="nav-text">学习</span>
+            </button>
+            <button class="nav-btn" data-view="mistakes">
+                <i data-lucide="book-x" class="nav-icon"></i>
+                <span class="nav-text">错题本</span>
+            </button>
+            <button class="nav-btn" data-view="stats">
+                <i data-lucide="bar-chart-2" class="nav-icon"></i>
+                <span class="nav-text">统计</span>
+            </button>
+            <button class="nav-btn" data-view="agent">
+                <i data-lucide="bot" class="nav-icon"></i>
+                <span class="nav-text">AI助手</span>
+            </button>
+            <div class="theme-toggle">
+                <button class="theme-toggle-btn" id="theme-toggle">
+                    <i data-lucide="moon" class="theme-icon-moon"></i>
+                    <i data-lucide="sun" class="theme-icon-sun"></i>
+                    <span class="nav-text">深色模式</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="logo-mobile">Word<span>Mosaic</span></div>
+
+            <div id="learn-view" class="view active">
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="en-to-cn">英译中</button>
+                    <button class="mode-btn" data-mode="cn-to-en">中译英</button>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="current-index">0</span> / <span id="total-count">0</span>
+                </div>
+
+                <div class="card" id="question-card">
+                    <div class="card-content" id="card-content">
+                    </div>
+                </div>
+
+                <div class="result-area" id="result-area" style="display: none;">
+                    <div class="answer-status" id="answer-status"></div>
+                    <div class="correct-answer" id="correct-answer"></div>
+                    <button class="continue-btn" id="continue-btn">按 Enter 继续</button>
+                </div>
+            </div>
+
+            <div id="mistakes-view" class="view">
+                <div class="mistakes-header">
+                    <h2>错题本</h2>
+                    <div class="mistakes-actions-top">
+                        <button class="export-btn" id="export-mistakes">
+                            <i data-lucide="download" class="btn-icon"></i>
+                            导出错题
+                        </button>
+                        <button class="clear-btn" id="clear-mistakes">清空错题</button>
+                    </div>
+                </div>
+                <div class="mistakes-list" id="mistakes-list">
+                    <div class="empty-state">暂无错题，继续努力！</div>
+                </div>
+                <div class="mistake-actions" id="mistakes-actions" style="display: none;">
+                    <button class="review-btn" id="review-mistakes">复习错题</button>
+                </div>
+            </div>
+
+            <div id="stats-view" class="view">
+                <h2>学习统计</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-total">0</div>
+                        <div class="stat-label">总词汇</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-learned">0</div>
+                        <div class="stat-label">已学习</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-mistakes">0</div>
+                        <div class="stat-label">错题数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-accuracy">0%</div>
+                        <div class="stat-label">正确率</div>
+                    </div>
+                </div>
+                <div class="stats-actions">
+                    <button class="reset-stats-btn" id="reset-stats">重置进度</button>
+                </div>
+            </div>
+
+            <div id="agent-view" class="view">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <div class="chat-header-left">
+                            <div class="chat-avatar mosa-avatar">
+                                <span class="mosa-avatar-text">M</span>
+                            </div>
+                            <div class="chat-header-info">
+                                <h2>Mosa</h2>
+                                <div class="chat-status" id="chat-status">
+                                    <span class="status-dot disconnected"></span>
+                                    <span>未连接</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-header-actions">
+                            <button class="chat-action-btn" id="clear-history-btn" title="清空对话">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                            <button class="chat-action-btn" id="show-my-books-btn" title="我的词典">
+                                <i data-lucide="library"></i>
+                            </button>
+                            <button class="chat-action-btn" id="show-settings-btn" title="设置">
+                                <i data-lucide="settings"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-welcome" id="chat-welcome">
+                            <div class="welcome-icon">
+                                <span class="welcome-icon-text">M</span>
+                            </div>
+                            <div class="welcome-title">你好，我是 Mosa</div>
+                            <div class="welcome-subtitle">你的 AI 词典助手，帮你创建个性化词汇书</div>
+                            <div class="welcome-cards">
+                                <button class="welcome-card" data-prompt="帮我生成一份人工智能领域的词汇表">
+                                    <div class="welcome-card-icon"><i data-lucide="sparkles"></i></div>
+                                    <div class="welcome-card-text">生成主题词汇表</div>
+                                </button>
+                                <button class="welcome-card" data-prompt="帮我从上传的文件中提取专业词汇">
+                                    <div class="welcome-card-icon"><i data-lucide="file-up"></i></div>
+                                    <div class="welcome-card-text">上传文件提取词汇</div>
+                                </button>
+                                <button class="welcome-card" data-prompt="有什么好的词汇记忆方法？">
+                                    <div class="welcome-card-icon"><i data-lucide="lightbulb"></i></div>
+                                    <div class="welcome-card-text">词汇学习建议</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-area">
+                        <div class="chat-file-preview" id="chat-file-preview" style="display: none;">
+                            <div class="file-preview-item">
+                                <i data-lucide="file-text" class="file-preview-icon"></i>
+                                <span class="file-preview-name" id="chat-file-name"></span>
+                                <button class="file-preview-remove" id="chat-file-remove">
+                                    <i data-lucide="x"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chat-input-wrapper">
+                            <button class="chat-attach-btn" id="chat-attach-btn" title="上传文件（支持 txt、md、json）">
+                                <i data-lucide="paperclip"></i>
+                            </button>
+                            <input type="file" id="chat-file-input" accept=".txt,.md,.json" hidden>
+                            <input type="text" id="chat-input" placeholder="描述主题或上传文件，Mosa 帮你生成词书..." class="chat-input">
+                            <button class="chat-send-btn" id="chat-send-btn">
+                                <i data-lucide="arrow-up"></i>
+                            </button>
+                        </div>
+                        <div class="chat-input-hint">Mosa 由 Deepseek 驱动 · 按 Enter 发送 · 支持上传 txt、md、json 文件</div>
+                    </div>
+                </div>
+
+                <div class="chat-panel" id="chat-panel" style="display: none;">
+                    <div class="chat-panel-header">
+                        <span class="panel-title" id="panel-title">设置</span>
+                        <button class="panel-close-btn" id="panel-close-btn">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                    <div class="chat-panel-content" id="chat-panel-content">
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar-right">
+            <div class="book-selector">
+                <div class="book-selector-header">
+                    <span class="book-label"><i data-lucide="library" class="header-icon"></i> 选择词书</span>
+                </div>
+                <div class="book-list" id="book-list">
+                </div>
+            </div>
+
+            <div class="group-selector">
+                <div class="group-selector-header">
+                    <span class="group-label" id="group-label"><i data-lucide="layers" class="header-icon"></i> 选择词组</span>
+                    <div class="group-actions">
+                        <button class="select-all-btn" id="select-all-groups">全选</button>
+                        <button class="select-none-btn" id="select-none-groups">清空</button>
+                    </div>
+                </div>
+                <div class="group-checkboxes" id="group-buttons">
+                </div>
+                <div class="lock-container">
+                    <button class="lock-btn" id="lock-btn">
+                        <i data-lucide="lock" class="lock-icon"></i>
+                        <i data-lucide="unlock" class="unlock-icon" style="display: none;"></i>
+                        <span class="lock-text">锁定</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="agent.js"></script>
+    <script src="bookManager.js"></script>
+    <script src="app.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+    </script>
+
+    <div class="modal-overlay" id="delete-modal" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i data-lucide="alert-triangle"></i>
+                </div>
+                <h3>确认删除</h3>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message" id="delete-modal-message">确定要删除这个词典吗？</p>
+                <p class="modal-hint">请输入 <span class="modal-confirm-text" id="delete-confirm-text">DELETE</span> 确认删除</p>
+                <input type="text" class="modal-input" id="delete-confirm-input" placeholder="输入确认文字">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="delete-modal-cancel">取消</button>
+                <button class="modal-btn confirm" id="delete-modal-confirm" disabled>确认删除</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

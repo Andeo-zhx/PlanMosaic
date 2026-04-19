@@ -1,0 +1,76 @@
+{
+  "name": "planmosaic",
+  "version": "1.1.0",
+  "description": "学业规划系统桌面应用",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "server": "node server.js",
+    "cli": "node cli.js",
+    "build": "electron-builder --win --x64"
+  },
+  "keywords": [
+    "planner",
+    "calendar",
+    "schedule"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^13.6.9",
+    "electron-builder": "^24.13.3",
+    "electron-packager": "^17.1.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.100.1"
+  },
+  "build": {
+    "appId": "com.planmosaic.desktop",
+    "productName": "PlanMosaic",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "preload.js",
+      "paths.js",
+      "ai-agent.js",
+      "ai-tools.js",
+      "package.json",
+      "favicon.ico",
+      "Image/**/*"
+    ],
+    "win": {
+      "icon": "favicon.ico",
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "sign": null
+    },
+    "portable": {
+      "artifactName": "PlanMosaic${version}-Portable.exe"
+    },
+    "extraResources": [
+      {
+        "from": "favicon.ico",
+        "to": "favicon.ico"
+      },
+      {
+        "from": "WordMosaic/**/*",
+        "to": "WordMosaic",
+        "filter": [
+          "**/*.html",
+          "**/*.js",
+          "**/*.css",
+          "**/*.json"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "Mosa",
+  "usingComponents": {
+    "custom-tabbar": "../../components/custom-tabbar/custom-tabbar"
+  }
+}

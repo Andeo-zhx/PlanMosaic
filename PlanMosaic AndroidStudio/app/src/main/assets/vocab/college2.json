@@ -1,0 +1,4123 @@
+{
+  "id": "college2",
+  "name": "大学英语 Book2",
+  "groupType": "unit",
+  "vocabulary": [
+    {
+      "word": "announcement",
+      "phonetic": "/ə'naʊnsmənt/",
+      "definition": "[C] 1) a piece of information given to people by using a loudspeaker or microphone, esp. at an airport or railway station; 2) an important or official statement （",
+      "cn": "广播通知 （重要或正式的）通告，公告，布告",
+      "group": "1"
+    },
+    {
+      "word": "Mandarin",
+      "phonetic": "/'mændərɪn/",
+      "definition": "[U] 普通话",
+      "cn": "普通话",
+      "group": "1"
+    },
+    {
+      "word": "prosperity",
+      "phonetic": "/prɒ'sperəti/",
+      "definition": "[U] the state of being successful, esp. financially",
+      "cn": "兴隆； 发达；繁荣；昌盛",
+      "group": "1"
+    },
+    {
+      "word": "urbanize",
+      "phonetic": "/'ɜːbəˌnaɪz/",
+      "definition": "(BrE also urbanise) cause to take on urban characteristics",
+      "cn": "使城市化",
+      "group": "1"
+    },
+    {
+      "word": "large-scale",
+      "phonetic": "/'lɑːdʒ ˌskeɪl/",
+      "definition": "(only before noun) using or involving a lot of effort, people, supplies, etc.",
+      "cn": "大规模的",
+      "group": "1"
+    },
+    {
+      "word": "mechanized",
+      "phonetic": "/'mekəˌnaɪzd/",
+      "definition": "(BrE also mechanised) using a machine to do sth. that used to be done by hand",
+      "cn": "机械化的",
+      "group": "1"
+    },
+    {
+      "word": "numerous",
+      "phonetic": "/'njuːmərəs/",
+      "definition": "many 许多的；很多的",
+      "cn": "许多的；很多的",
+      "group": "1"
+    },
+    {
+      "word": "exhausting",
+      "phonetic": "/ɪgˈzɔːstɪŋ/",
+      "definition": "making you feel extremely tired",
+      "cn": "使人精疲力竭的",
+      "group": "1"
+    },
+    {
+      "word": "soundproof",
+      "phonetic": "/ˈsaʊndˌpruːf/",
+      "definition": "(also soundproofed) not allowing sound to go through",
+      "cn": "隔音的",
+      "group": "1"
+    },
+    {
+      "word": "booth",
+      "phonetic": "/buːð/",
+      "definition": "[C] a small enclosed box-like space that a person can go into",
+      "cn": "小隔间",
+      "group": "1"
+    },
+    {
+      "word": "marvelous",
+      "phonetic": "/ˈmɑːvələs/",
+      "definition": "(BrE marvellous) extremely good, enjoyable, impressive, etc.",
+      "cn": "极好的；绝妙的；了不起的",
+      "group": "1"
+    },
+    {
+      "word": "gorgeous",
+      "phonetic": "/ˈgɔːdʒəs/",
+      "definition": "extremely beautiful or attractive",
+      "cn": "非常漂亮的；极其吸引人的",
+      "group": "1"
+    },
+    {
+      "word": "decoration",
+      "phonetic": "/ˌdekəˈreɪʃn/",
+      "definition": "[C, usu. pl.];sth. pretty that you put onto sth. else in order to make it more attractive",
+      "cn": "装饰物",
+      "group": "1"
+    },
+    {
+      "word": "incredible",
+      "phonetic": "/ɪnˈkredəbl/",
+      "definition": "1) extremely good, large, or great; 2) impossible or very difficult to believe",
+      "cn": "极好的；极大的 难以置信的",
+      "group": "1"
+    },
+    {
+      "word": "exclusively",
+      "phonetic": "/ɪkˈskluːsɪvli/",
+      "definition": "only 专门地；独家地；仅仅",
+      "cn": "专门地；独家地；仅仅",
+      "group": "1"
+    },
+    {
+      "word": "growth",
+      "phonetic": "/grəʊθ/",
+      "definition": "1) an increase in the value of goods or services produced and sold by a business or a country; 2) an increase in amount, number, or size",
+      "cn": "增长；发展 增多；增长；增大；增强",
+      "group": "1"
+    },
+    {
+      "word": "entrepreneur",
+      "phonetic": "/ˌɒntrəprəˈnɜː/",
+      "definition": "[C] sb. who starts their own business, esp. when this involves risks",
+      "cn": "企业家",
+      "group": "1"
+    },
+    {
+      "word": "skyline",
+      "phonetic": "/ˈskaɪˌlaɪn/",
+      "definition": "[C] the shape made by hills or buildings against the sky",
+      "cn": "天际线",
+      "group": "1"
+    },
+    {
+      "word": "highway",
+      "phonetic": "/ˈhaɪˌweɪ/",
+      "definition": "[C] (esp. AmE) a wide main road that joins one town to another",
+      "cn": "公路",
+      "group": "1"
+    },
+    {
+      "word": "joint venture",
+      "phonetic": "/ˌdʒɔɪnt ˈventʃə/",
+      "definition": "[C] a business or project in which two or more companies or individuals have invested, with the intention of working together",
+      "cn": "合营企业；合资企业",
+      "group": "1"
+    },
+    {
+      "word": "high-end",
+      "phonetic": "/ˈhaɪ ˌend/",
+      "definition": "(AmE) (usu. before noun) expensive and of high quality",
+      "cn": "高档的；高端的",
+      "group": "1"
+    },
+    {
+      "word": "drone",
+      "phonetic": "/drəʊn/",
+      "definition": "[C] (technical) an aircraft without a pilot but is controlled by sb. on the ground",
+      "cn": "无人机",
+      "group": "1"
+    },
+    {
+      "word": "VR",
+      "phonetic": "",
+      "definition": "[U] (virtual reality) an environment produced by a computer that looks and seems real to the person experiencing it （",
+      "cn": "（计算机构筑的）虚拟现实",
+      "group": "1"
+    },
+    {
+      "word": "headset",
+      "phonetic": "/ˈhedˌset/",
+      "definition": "1) a piece of head-worn equipment designed to see computer images or images from a camera in front of your eyes; 2) a set of headphones, often with a microphone attached （",
+      "cn": "头戴式视图器 （常指带麦克风的）耳机",
+      "group": "1"
+    },
+    {
+      "word": "perception",
+      "phonetic": "/pəˈsepʃn/",
+      "definition": "[C, U] the way you think about sth. and your idea of what it is like",
+      "cn": "认识；观念；看法",
+      "group": "1"
+    },
+    {
+      "word": "implementation",
+      "phonetic": "/ˌɪmplɪmənˈteɪʃn/",
+      "definition": "[U] the process of taking action or making changes that you have officially decided should happen",
+      "cn": "实施；贯彻；执行",
+      "group": "1"
+    },
+    {
+      "word": "innovative",
+      "phonetic": "/ˈɪnəʊˌveɪtɪv/",
+      "definition": "(also innovatory) using new methods or ideas",
+      "cn": "新颖的；创新的；革新的；采用新方法或新观念的",
+      "group": "1"
+    },
+    {
+      "word": "reliance",
+      "phonetic": "/rɪˈlaɪəns/",
+      "definition": "[U, sing.] the state of depending on a particular person or thing",
+      "cn": "依靠；依赖",
+      "group": "1"
+    },
+    {
+      "word": "massive",
+      "phonetic": "/ˈmæsɪv/",
+      "definition": "very large in size, amount, or number",
+      "cn": "巨大的；可观的；大量的",
+      "group": "1"
+    },
+    {
+      "word": "per capita",
+      "phonetic": "/pə ˈkæpɪtə/",
+      "definition": "(fml.) used to describe the average amount of sth. in a particular place, calculated according to the number;of people who live there",
+      "cn": "人均的；平均每人的",
+      "group": "1"
+    },
+    {
+      "word": "lag",
+      "phonetic": "/læg/",
+      "definition": "move or develop more slowly than others",
+      "cn": "落后；拖后",
+      "group": "1"
+    },
+    {
+      "word": "undoubtedly",
+      "phonetic": "/ʌnˈdaʊtɪdli/",
+      "definition": "certainly or definitely; unquestionably",
+      "cn": "确定无疑地； 毫无疑问地",
+      "group": "1"
+    },
+    {
+      "word": "impoverished",
+      "phonetic": "/ɪmˈpɒvərɪʃt/",
+      "definition": "very poor",
+      "cn": "贫困的",
+      "group": "1"
+    },
+    {
+      "word": "vow",
+      "phonetic": "/vaʊ/",
+      "definition": "make a serious promise to yourself or sb. else",
+      "cn": "立誓；起誓",
+      "group": "1"
+    },
+    {
+      "word": "eradicate",
+      "phonetic": "",
+      "definition": "get rid of sth. completely or destory sth. bad",
+      "cn": "根除；消灭",
+      "group": "1"
+    },
+    {
+      "word": "poverty",
+      "phonetic": "/ˈpɒvəti/",
+      "definition": "[U] the situation or experience of being poor",
+      "cn": "贫穷；贫困",
+      "group": "1"
+    },
+    {
+      "word": "charming",
+      "phonetic": "/ˈtʃɑːmɪŋ/",
+      "definition": "very pleasing or attractive",
+      "cn": "迷人的；有魅力的；有吸引力的",
+      "group": "1"
+    },
+    {
+      "word": "quiz",
+      "phonetic": "/kwɪz/",
+      "definition": "ask sb. a lot of questions",
+      "cn": "询问；查问；盘问",
+      "group": "1"
+    },
+    {
+      "word": "trace",
+      "phonetic": "/treɪs/",
+      "definition": "1) study or describe the history, development, or progress of sth.; 2) find sb. / sth. that has disappeared by searching for them carefully",
+      "cn": "研究 的历史；探索 的发展；追寻 的轨迹 仔细找寻",
+      "group": "1"
+    },
+    {
+      "word": "yawn",
+      "phonetic": "/jɔːn/",
+      "definition": "1) (yawning gap / gulf / chasm) a very large difference between two groups, things, or people （; 2) open your mouth wide and breathe in deeply because you are tired or bored",
+      "cn": "（两者之间的）巨大差距 打呵欠",
+      "group": "1"
+    },
+    {
+      "word": "millennial",
+      "phonetic": "/mɪˈleniəl/",
+      "definition": "a person who was born in the 1980s, 1990s, or early 2000s",
+      "cn": "千禧一代",
+      "group": "1"
+    },
+    {
+      "word": "reminisce",
+      "phonetic": "/ˌremɪˈnɪs/",
+      "definition": "talk or think about pleasant events in your past",
+      "cn": "谈论， 追忆（快乐的往事）",
+      "group": "1"
+    },
+    {
+      "word": "regretfully",
+      "phonetic": "/rɪˈgretf(ə)li/",
+      "definition": "feeling sad because you do not want to do what you are doing",
+      "cn": "遗憾地；惋惜地",
+      "group": "1"
+    },
+    {
+      "word": "remark",
+      "phonetic": "/rɪˈmɑːk/",
+      "definition": "say sth., esp. about sth. you have just noticed",
+      "cn": "评论，谈到，说起（尤指刚察觉的事）",
+      "group": "1"
+    },
+    {
+      "word": "phenomenon",
+      "phonetic": "/fəˈnɒmɪnən/",
+      "definition": "1) a fact or an event in nature or society, esp. one that is not fully understood; 2) sb. / sth. that is very unusual because of a rare quality or ability that they have",
+      "cn": "现象 非凡的人（事物）；奇才；奇事",
+      "group": "1"
+    },
+    {
+      "word": "outpouring",
+      "phonetic": "/ˈaʊtˌpɔːrɪŋ/",
+      "definition": "1) a very large number of things produced at the same time; 2) an uncontrolled expression of strong feelings （",
+      "cn": "大量涌现；迸发 （强烈感情的）流露，倾吐",
+      "group": "1"
+    },
+    {
+      "word": "spontaneous",
+      "phonetic": "/spɒnˈteɪniəs/",
+      "definition": "happening or done in a natural, often sudden way, without any planning or without being forced",
+      "cn": "自发的；自然而生的；一时冲动的",
+      "group": "1"
+    },
+    {
+      "word": "amazement",
+      "phonetic": "/əˈmeɪzmənt/",
+      "definition": "[U] a feeling of great surprise",
+      "cn": "吃惊；惊奇",
+      "group": "1"
+    },
+    {
+      "word": "evolve",
+      "phonetic": "/ɪˈvɒlv/",
+      "definition": "1) develop and change gradually over a long period of time; 2) (of plants, animals, etc.) change gradually over a long period of time （",
+      "cn": "逐步形成；逐渐演变 （植物、动物等）进化，进化形成",
+      "group": "1"
+    },
+    {
+      "word": "hardship",
+      "phonetic": "/ˈhɑːdʃɪp/",
+      "definition": "[C, U] a condition of life that causes difficulty or suffering",
+      "cn": "艰苦；贫困",
+      "group": "1"
+    },
+    {
+      "word": "downturn",
+      "phonetic": "/ˈdaʊnˌtɜːn/",
+      "definition": "[C, usu. sing.] a reduction in economic, business, or other activity （",
+      "cn": "（经济、商业等活动的）下降，衰退",
+      "group": "1"
+    },
+    {
+      "word": "per annum",
+      "phonetic": "/pər ˈænəm/",
+      "definition": "(abbr. p.a.) (fml.) for each year",
+      "cn": "每年",
+      "group": "1"
+    },
+    {
+      "word": "sole",
+      "phonetic": "/səʊl/",
+      "definition": "(only before noun) only",
+      "cn": "唯一的",
+      "group": "1"
+    },
+    {
+      "word": "capacity",
+      "phonetic": "/kəˈpæsəti/",
+      "definition": "1) sb.’s ability to do sth.; 2) the amount of space a container, room, etc. has to hold things or people",
+      "cn": "’ 能力；才能 容量；容积；容纳人数",
+      "group": "1"
+    },
+    {
+      "word": "youngster",
+      "phonetic": "/ˈjʌŋstə/",
+      "definition": "[C] a child or young person",
+      "cn": "孩童；年轻人",
+      "group": "1"
+    },
+    {
+      "word": "sophisticated",
+      "phonetic": "/səˈfɪstɪˌkeɪtɪd/",
+      "definition": "having a lot of experience of life, and good judgment about socially important things such as art, fashion, etc.",
+      "cn": "见多识广的；老练的；练达的",
+      "group": "1"
+    },
+    {
+      "word": "lifestyle",
+      "phonetic": "/ˈlaɪfˌstail/",
+      "definition": "[C] the way in which a person or a group of people lives and works",
+      "cn": "生活方式",
+      "group": "1"
+    },
+    {
+      "word": "individualistic",
+      "phonetic": "/ˌɪndɪˌvɪdʒuəˈlɪstɪk/",
+      "definition": "1) different from other people or things; doing things in your own way; 2) believing that what individual people want is more important than what society or the government wants",
+      "cn": "特立独行的；独特的 个人主义的",
+      "group": "1"
+    },
+    {
+      "word": "entrepreneurial",
+      "phonetic": "/ˌɒntrəprəˈnɜːriəl/",
+      "definition": "having the qualities that are needed to succeed as an entrepreneur",
+      "cn": "具有创业素质的",
+      "group": "1"
+    },
+    {
+      "word": "confident",
+      "phonetic": "/ˈkɒnfɪd(ə)nt/",
+      "definition": "1) sure that you have the ability to do things well or deal with situations successfully; 2) (not before noun) sure that sth. will happen in the way that you want or expect",
+      "cn": "有信心的；自信的 确信的；有把握的",
+      "group": "1"
+    },
+    {
+      "word": "considerable",
+      "phonetic": "/kənˈsɪd(ə)rəbl/",
+      "definition": "fairly large, esp. large enough to have an effect or be important",
+      "cn": "相当大的（尤指能产生影响或很重要）",
+      "group": "1"
+    },
+    {
+      "word": "daunting",
+      "phonetic": "/ˈdɔːntɪŋ/",
+      "definition": "frightening in a way that makes you feel less confident",
+      "cn": "使人气馁的；吓人的",
+      "group": "1"
+    },
+    {
+      "word": "navigate",
+      "phonetic": "/ˈnævɪˌgeɪt/",
+      "definition": "1) understand or deal with sth. difficult; 2) find which way you need to go while traveling from one place to another （",
+      "cn": "理解，应付（困难复杂的情况） （为 ）导航，指引方向",
+      "group": "1"
+    },
+    {
+      "word": "attribute",
+      "phonetic": "/əˈtrɪbju:t/",
+      "definition": "1) believe or say that sb. / sth. has a particular quality; 2) believe or say that a situation or event is caused by sth.",
+      "cn": "认为 具有 的特征 把 归因于",
+      "group": "1"
+    },
+    {
+      "word": "savvy",
+      "phonetic": "/ˈsævi/",
+      "definition": "(infml.) knowing a lot about sth. and able to make good judgments about it",
+      "cn": "有见识的；在行的",
+      "group": "1"
+    },
+    {
+      "word": "progressive",
+      "phonetic": "/prəʊˈgresɪv/",
+      "definition": "supporting new or modern ideas and methods, esp. in politics and education （",
+      "cn": "（尤指在政治和教育方面） 进步的，先进的",
+      "group": "1"
+    },
+    {
+      "word": "deem",
+      "phonetic": "/di:m/",
+      "definition": "(fml.) think of sth. in a particular way or as having;a particular quality",
+      "cn": "认为；视为",
+      "group": "1"
+    },
+    {
+      "word": "self-centered",
+      "phonetic": "/ˌself ˈsentəd/",
+      "definition": "(BrE self-centred) tending to think only about yourself and not thinking about the needs or feelings of other people",
+      "cn": "自我中心的；自私的",
+      "group": "1"
+    },
+    {
+      "word": "entitled",
+      "phonetic": "/ɪnˈtaɪtld/",
+      "definition": "feeling that you have the right to do or have what you want without having to work for it or deserve it, just because of who you are （",
+      "cn": "（由于自身身份）认为应得的，有权利的，有资格的",
+      "group": "1"
+    },
+    {
+      "word": "consumption",
+      "phonetic": "/kənˈsʌmpʃn/",
+      "definition": "1) the act of buying and using products; 2) the amount of energy, oil, electricity, etc. that is used （",
+      "cn": "购买；消费 （能源、油、电等的）消耗量",
+      "group": "1"
+    },
+    {
+      "word": "forecast",
+      "phonetic": "/ˈfɔːkɑːst/",
+      "definition": "(forecast, forecast; forecasted, forecasted) say what you expect to happen in the future",
+      "cn": "预测；预报",
+      "group": "1"
+    },
+    {
+      "word": "aspiration",
+      "phonetic": "/ˌæspɪˈreɪʃn/",
+      "definition": "[C, usu. pl., U] a strong desire to have or achieve sth.",
+      "cn": "强烈愿望；志向；抱负",
+      "group": "1"
+    },
+    {
+      "word": "furthermore",
+      "phonetic": "/ˈfɜːðəmɔː/",
+      "definition": "(fml.) in addition to what has already been said",
+      "cn": "此外；而且；不仅如此；更有甚者",
+      "group": "1"
+    },
+    {
+      "word": "e-commerce",
+      "phonetic": "/ˌi: ˈkɒmɜːs/",
+      "definition": "[U] (electronic commerce) the business of buying and selling of goods and services on the Internet",
+      "cn": "电子商务",
+      "group": "1"
+    },
+    {
+      "word": "trendy",
+      "phonetic": "/ˈtrendi/",
+      "definition": "influenced by the most fashionable styles and ideas",
+      "cn": "时髦的；受新潮思想影响的",
+      "group": "1"
+    },
+    {
+      "word": "craze",
+      "phonetic": "/kreɪz/",
+      "definition": "[C] a fashion, game, type of music, etc. that becomes very popular for a short time",
+      "cn": "时尚；一时的狂热",
+      "group": "1"
+    },
+    {
+      "word": "roam",
+      "phonetic": "/rəʊm/",
+      "definition": "walk or travel, usu. for a long time, with no clear purpose or direction",
+      "cn": "闲逛；漫步；漫步于",
+      "group": "2"
+    },
+    {
+      "word": "wander",
+      "phonetic": "/'wɒndə/",
+      "definition": "walk slowly across or around an area, usu. without a clear direction or purpose",
+      "cn": "徘徊；闲逛；漫步于",
+      "group": "2"
+    },
+    {
+      "word": "passionate",
+      "phonetic": "/ˈpæʃ(ə)nət/",
+      "definition": "having or showing strong feelings of love or of anger, etc.",
+      "cn": "感情强烈的；热情的",
+      "group": "2"
+    },
+    {
+      "word": "dockside",
+      "phonetic": "/ˈdɒkˌsaɪd/",
+      "definition": "[sing.] the edge of the land that is next to the water in a port",
+      "cn": "码头边；坞边",
+      "group": "2"
+    },
+    {
+      "word": "reunion",
+      "phonetic": "/ri:ˈju:niən/",
+      "definition": "1) [C, U] the act of people coming together after they have been apart for some time; 2) [C] a social occasion or party attended by a group of people who have not seen each other for a long time",
+      "cn": "团圆；重逢 聚会",
+      "group": "2"
+    },
+    {
+      "word": "stern",
+      "phonetic": "/stɜːn/",
+      "definition": "serious and strict, and showing strong disapproval of sb.'s behavior",
+      "cn": "严厉的；严格的；苛刻的",
+      "group": "2"
+    },
+    {
+      "word": "fretful",
+      "phonetic": "/'fretfl/",
+      "definition": "1) marked by worry and distress; troublesome; 2) anxious and complaining, and unable to relax",
+      "cn": "令人烦恼的 烦恼的；发牢骚的",
+      "group": "2"
+    },
+    {
+      "word": "refugee",
+      "phonetic": "/ˌrefjʊˈdʒi:/",
+      "definition": "[C] sb. who has been forced to leave their country, esp. during a war, or for political or religious reasons",
+      "cn": "难民；避难者",
+      "group": "2"
+    },
+    {
+      "word": "overloaded",
+      "phonetic": "/ˌəʊvəˈləʊdɪd/",
+      "definition": "having or supplied with too much of sth.",
+      "cn": "超载的； 超负荷的",
+      "group": "2"
+    },
+    {
+      "word": "lifeboat",
+      "phonetic": "/ˈlaɪfˌbəʊt/",
+      "definition": "1) a small boat carried by ships in order to save people if the ship sinks （; 2) a boat that is sent out to help people who are in danger at sea （",
+      "cn": "（船上备用的）救生艇 （海上）救生艇（船）",
+      "group": "2"
+    },
+    {
+      "word": "singular",
+      "phonetic": "/ˈsɪŋgjʊlə/",
+      "definition": "1) single; unique; 2) of or relating to the form of a word used when referring to one person or thing （",
+      "cn": "单个的；独一无二的 （词形）单数的",
+      "group": "2"
+    },
+    {
+      "word": "double-decker",
+      "phonetic": "/ˌdʌbl ˈdekə/",
+      "definition": "[C] 双层公共汽车",
+      "cn": "双层公共汽车",
+      "group": "2"
+    },
+    {
+      "word": "windmill",
+      "phonetic": "/ˈwIndˌmɪl/",
+      "definition": "[C] 风车；风车磨坊",
+      "cn": "风车；风车磨坊",
+      "group": "2"
+    },
+    {
+      "word": "sidewalk",
+      "phonetic": "/ˈsaɪdˌwɔːk/",
+      "definition": "[C] (BrE pavement)",
+      "cn": "人行道",
+      "group": "2"
+    },
+    {
+      "word": "grasp",
+      "phonetic": "/grɑːsp/",
+      "definition": "[sing.] your ability to understand a complicated idea, situation, or subject （",
+      "cn": "（对复杂想法、状况或问题的）理解力，领悟力",
+      "group": "2"
+    },
+    {
+      "word": "queue",
+      "phonetic": "/kjuː/",
+      "definition": "(also ~ up) (AmE line, line up) form or join a line of people or vehicles waiting to do sth. or go somewhere",
+      "cn": "排队（等候）",
+      "group": "2"
+    },
+    {
+      "word": "wherever",
+      "phonetic": "/werˈevə/",
+      "definition": "to or at any place, position, or situation",
+      "cn": "无论去哪里； 无论在哪里；无论什么情况下",
+      "group": "2"
+    },
+    {
+      "word": "orderly",
+      "phonetic": "/ˈɔːdəli/",
+      "definition": "arranged or organized in a sensible or neat way",
+      "cn": "有条理的；整齐的",
+      "group": "2"
+    },
+    {
+      "word": "scramble",
+      "phonetic": "/ˈskræmbl/",
+      "definition": "1) struggle or compete with other people to get or reach sth.; 2) (always + ad. / prep.) climb up, down, or over sth. quickly and with difficulty, esp. using your hands to help you （",
+      "cn": "争夺；抢夺 （迅速而吃力地）爬，攀登",
+      "group": "2"
+    },
+    {
+      "word": "aboard",
+      "phonetic": "/əˈbɔːd/",
+      "definition": "on or onto a ship, plane, or train",
+      "cn": "在船（飞机、 火车）上；上船（飞机、火车）",
+      "group": "2"
+    },
+    {
+      "word": "upside down",
+      "phonetic": "/ˌʌpsaɪd ˈdaʊn/",
+      "definition": "with the top at the bottom and the bottom at the top",
+      "cn": "倒置地；颠倒地",
+      "group": "2"
+    },
+    {
+      "word": "impulse",
+      "phonetic": "/ˈɪmpʌls/",
+      "definition": "[C, U] a sudden strong desire to do sth. without thinking about whether it is wise to do",
+      "cn": "冲动；突然的欲望",
+      "group": "2"
+    },
+    {
+      "word": "bounce",
+      "phonetic": "/baʊns/",
+      "definition": "(cause to) move up or away after hitting a surface （",
+      "cn": "（使）弹起；（使）反弹；（使）弹跳",
+      "group": "2"
+    },
+    {
+      "word": "humour",
+      "phonetic": "/ˈhju:mə/",
+      "definition": "[U] (AmE humor) the ability to find things funny, the way in which people see that some things are funny, or the quality of being funny",
+      "cn": "幽默感；幽默",
+      "group": "2"
+    },
+    {
+      "word": "Swiss",
+      "phonetic": "/swɪs/",
+      "definition": "[C] (pl. Swiss)",
+      "cn": "瑞士人",
+      "group": "2"
+    },
+    {
+      "word": "Spanish",
+      "phonetic": "/ˈspænɪʃ/",
+      "definition": "(the ~) [pl.]",
+      "cn": "西班牙人",
+      "group": "2"
+    },
+    {
+      "word": "excite",
+      "phonetic": "/ɪkˈsaɪt/",
+      "definition": "1) (fml.) cause a particular feeling or reaction; 2) (not in progressive) make sb. feel happy, interested, or eager",
+      "cn": "引起； 激起 使兴奋；使激动",
+      "group": "2"
+    },
+    {
+      "word": "childlike",
+      "phonetic": "/ˈtʃaɪldˌlaɪk/",
+      "definition": "having qualities that are typical of a child",
+      "cn": "孩子般的；像孩子似的；天真无邪的",
+      "group": "2"
+    },
+    {
+      "word": "ignorant",
+      "phonetic": "/ˈɪgnərənt/",
+      "definition": "not knowing information or facts that you ought to know",
+      "cn": "无知的；愚昧的",
+      "group": "2"
+    },
+    {
+      "word": "reliably",
+      "phonetic": "/rɪˈlaɪəbli/",
+      "definition": "in a way that can be trusted or believed",
+      "cn": "可靠地；可信赖地",
+      "group": "2"
+    },
+    {
+      "word": "endanger",
+      "phonetic": "/ɪnˈdeɪndʒə/",
+      "definition": "put sb. / sth. in danger of being hurt, damaged, or destroyed",
+      "cn": "使处于险境；危及",
+      "group": "2"
+    },
+    {
+      "word": "existence",
+      "phonetic": "/ɪgˈzɪst(ə)ns/",
+      "definition": "1) [C, usu. sing.] a particular way of life; 2) [U] the state of existing",
+      "cn": "生活；生活方式 存在；实有",
+      "group": "2"
+    },
+    {
+      "word": "chambermaid",
+      "phonetic": "/ˈtʃeɪmbəˌmeɪd/",
+      "definition": "[C] 打扫房间的女工；（尤指宾馆里的）客房女服务员",
+      "cn": "打扫房间的女工；（尤指宾馆里的）客房女服务员",
+      "group": "2"
+    },
+    {
+      "word": "packet",
+      "phonetic": "/ˈpækɪt/",
+      "definition": "[C] (BrE) a small paper or cardboard container in which goods are packed for selling （",
+      "cn": "（装商品的）小包，小袋，小盒",
+      "group": "2"
+    },
+    {
+      "word": "sniff",
+      "phonetic": "/snɪf/",
+      "definition": "smell sth. by taking air in through your nose",
+      "cn": "嗅；闻",
+      "group": "2"
+    },
+    {
+      "word": "puzzle",
+      "phonetic": "/ˈpʌzl/",
+      "definition": "confuse sb. or make them feel slightly anxious because they do not understand sth.",
+      "cn": "使困惑；使迷惑",
+      "group": "2"
+    },
+    {
+      "word": "charm",
+      "phonetic": "/tʃɑːm/",
+      "definition": "attract sb. and make them like you, sometimes in order to make them do sth. for you",
+      "cn": "迷住；吸引",
+      "group": "2"
+    },
+    {
+      "word": "selfie",
+      "phonetic": "/ˈselfi/",
+      "definition": "[C] (infml.) a photo you take of yourself, esp. using a mobile phone",
+      "cn": "自拍照",
+      "group": "2"
+    },
+    {
+      "word": "flit",
+      "phonetic": "/flɪt/",
+      "definition": "move lightly or quickly and not stay in one place for very long",
+      "cn": "轻快地行进；掠过",
+      "group": "2"
+    },
+    {
+      "word": "attraction",
+      "phonetic": "/əˈtrækʃn/",
+      "definition": "1) [C] sth. interesting or enjoyable to see or do; 2) [C, U] a feeling of liking sb., esp. in a sexual way",
+      "cn": "吸引人之物；有魅力之物；诱惑物 喜爱；喜欢；（尤指两性间的）爱慕",
+      "group": "2"
+    },
+    {
+      "word": "script",
+      "phonetic": "/skrɪpt/",
+      "definition": "[C] the written form of a speech, play, film, etc. （",
+      "cn": "（演讲的）原稿，讲稿；（戏剧、电影等的）剧本",
+      "group": "2"
+    },
+    {
+      "word": "countless",
+      "phonetic": "/ˈkaʊntləs/",
+      "definition": "(usu. before noun) too many to be counted",
+      "cn": "无数的； 数不清的",
+      "group": "2"
+    },
+    {
+      "word": "photography",
+      "phonetic": "/fəˈtɒgrəfi/",
+      "definition": "[U] the skill, job, or process of producing photographs",
+      "cn": "摄影术；摄影业；摄影",
+      "group": "2"
+    },
+    {
+      "word": "frame",
+      "phonetic": "/freɪm/",
+      "definition": "[C] a structure made of wood, metal, plastic, etc. that surrounds sth. such as a picture or window, and holds it in place",
+      "cn": "框架；边框",
+      "group": "2"
+    },
+    {
+      "word": "standardization",
+      "phonetic": "/ˌstædədaɪˈzeɪʃn/",
+      "definition": "[U] (BrE also standardisation) the process of making things of the same type all have the same basic features",
+      "cn": "标准化",
+      "group": "2"
+    },
+    {
+      "word": "guidebook",
+      "phonetic": "/ˈgaɪdˌbʊk/",
+      "definition": "[C] a book that gives information for visitors about a place, such as a city or country",
+      "cn": "旅行指南；旅游手册",
+      "group": "2"
+    },
+    {
+      "word": "picturesque",
+      "phonetic": "/ˌpɪktʃəˈresk/",
+      "definition": "(esp. of a place) attractive in appearance, esp. in an old-fashioned way （",
+      "cn": "（尤指某地）美丽的，古雅的， 如画的",
+      "group": "2"
+    },
+    {
+      "word": "gadget",
+      "phonetic": "/ˈgædʒɪt/",
+      "definition": "[C] a small device or machine with a particular purpose",
+      "cn": "小器具；小玩意儿",
+      "group": "2"
+    },
+    {
+      "word": "clumsy",
+      "phonetic": "/ˈklʌmzi/",
+      "definition": "1) not easy to use and is often large and heavy; 2) moving or doing things in a careless way, esp. so that you drop things, knock into things, etc.",
+      "cn": "难用的；笨重的 笨拙的； 不灵活的",
+      "group": "2"
+    },
+    {
+      "word": "time-consuming",
+      "phonetic": "/ˈtaɪm kənˌsju:mɪŋ/",
+      "definition": "taking a long time to do",
+      "cn": "耗费时间的",
+      "group": "2"
+    },
+    {
+      "word": "lightweight",
+      "phonetic": "/ˈlaɪtˌweɪt/",
+      "definition": "weighing only a little or less than average",
+      "cn": "比通常重量轻的",
+      "group": "2"
+    },
+    {
+      "word": "foolproof",
+      "phonetic": "/ˈfu:lˌpru:f/",
+      "definition": "(of a plan or machine) so simple and easy to understand that it is unable to go wrong or be used wrongly （",
+      "cn": "（计划或机器）不出问题的，不会误用的， 操作简便的",
+      "group": "2"
+    },
+    {
+      "word": "identical",
+      "phonetic": "/aɪˈdentɪkl/",
+      "definition": "exactly the same, or very similar",
+      "cn": "完全相同的；极为相似的",
+      "group": "2"
+    },
+    {
+      "word": "unknown",
+      "phonetic": "/ʌnˈnəʊn/",
+      "definition": "not known or familiar",
+      "cn": "不知道的；不熟悉的",
+      "group": "2"
+    },
+    {
+      "word": "obscurity",
+      "phonetic": "/əbˈskjʊərəti/",
+      "definition": "[U] the state of not being known or remembered",
+      "cn": "无名； 默默无闻",
+      "group": "2"
+    },
+    {
+      "word": "circular",
+      "phonetic": "/ˈsɜːkjʊlə/",
+      "definition": "1) traveling or occurring in a cycle; 2) shaped like a circle",
+      "cn": "兜圈子的；循环的；循环发生的 圆形的；环形的",
+      "group": "2"
+    },
+    {
+      "word": "popularization",
+      "phonetic": "/ˈpɒpjʊləraɪˈzeɪʃn/",
+      "definition": "[U] (BrE also popularisation) the act or process of becoming popular or making sth. become well known and liked",
+      "cn": "普及；推广",
+      "group": "2"
+    },
+    {
+      "word": "lookalike",
+      "phonetic": "/ˈlʊkəˌlaɪk/",
+      "definition": "(also look-alike) very similar in appearance to sb. / sth. else",
+      "cn": "酷似的",
+      "group": "2"
+    },
+    {
+      "word": "possess",
+      "phonetic": "/pəˈzes/",
+      "definition": "1) (fml.) have or own sth.; 2) (fml.) have a particular quality or ability",
+      "cn": "拥有，持有（某物） 拥有， 具有（某品质或能力）",
+      "group": "2"
+    },
+    {
+      "word": "photogenic",
+      "phonetic": "/ˌfəʊtəʊˈdʒenɪk/",
+      "definition": "always looking attractive in photographs",
+      "cn": "上镜的； 上相的",
+      "group": "2"
+    },
+    {
+      "word": "souvenir",
+      "phonetic": "/ˌsu:vəˈnɪə/",
+      "definition": "[C] an object that you buy or keep to remind yourself of a special occasion or a place you have visited",
+      "cn": "纪念品；纪念物",
+      "group": "2"
+    },
+    {
+      "word": "partial",
+      "phonetic": "/ˈpɑːʃl/",
+      "definition": "1) unfairly supporting one person or one group against another; 2) not complete",
+      "cn": "偏向一方的；偏袒的；不公平的 部分的；不完全的",
+      "group": "2"
+    },
+    {
+      "word": "impartial",
+      "phonetic": "/Imˈpɑːʃl/",
+      "definition": "not involved in a particular situation, and therefore able to give a fair opinion or piece of advice",
+      "cn": "不偏不倚的；公正的",
+      "group": "2"
+    },
+    {
+      "word": "superficial",
+      "phonetic": "/ˌsu:pəˈfɪʃl/",
+      "definition": "not studying or looking at sth. carefully and only seeing the most noticeable things",
+      "cn": "肤浅的；浅薄的； 不深入的",
+      "group": "2"
+    },
+    {
+      "word": "sustain",
+      "phonetic": "/səˈsteIn/",
+      "definition": "make sth. continue to exist or happen for a period of time",
+      "cn": "保持；维持；使持续",
+      "group": "2"
+    },
+    {
+      "word": "sustained",
+      "phonetic": "/səˈsteɪnd/",
+      "definition": "(only before noun) continuing for a long time",
+      "cn": "持久的；持续的",
+      "group": "2"
+    },
+    {
+      "word": "delight",
+      "phonetic": "/dɪˈlaɪt/",
+      "definition": "[U] a feeling of great pleasure and satisfaction",
+      "cn": "欣喜； 愉悦",
+      "group": "2"
+    },
+    {
+      "word": "ivy",
+      "phonetic": "/ˈaɪvi/",
+      "definition": "[C, U]",
+      "cn": "常春藤",
+      "group": "2"
+    },
+    {
+      "word": "soak",
+      "phonetic": "/səʊk/",
+      "definition": "if you soak sth., or if you var it soak, you keep it covered with a liquid for a period of time, esp. in order to make it softer or easier to clean",
+      "cn": "浸；泡",
+      "group": "2"
+    },
+    {
+      "word": "drip",
+      "phonetic": "/drɪp/",
+      "definition": "[vi.]fall in drops （; [v.]var liquid fall in drops",
+      "cn": "（液体）滴下，沥下 滴（水）；滴下（液体）",
+      "group": "3"
+    },
+    {
+      "word": "breathtaking",
+      "phonetic": "/ˈbreθˌteɪkɪŋ/",
+      "definition": "1) breathless; 2) very impressive, exciting, or surprising",
+      "cn": "使人喘不过气来的 激动人心的；惊人的；令人惊叹的",
+      "group": "3"
+    },
+    {
+      "word": "fulfillment",
+      "phonetic": "/fʊɪˈfɪlmənt/",
+      "definition": "[U] (BrEfulfilment) the feeling of being happy and satisfied with your life because you are doing interesting, useful, or important things",
+      "cn": "成就感；充实感",
+      "group": "3"
+    },
+    {
+      "word": "joyful",
+      "phonetic": "/ˈdʒɔːɪfl/",
+      "definition": "very happy, or likely to make people very happy",
+      "cn": "欢乐的；令人高兴的",
+      "group": "3"
+    },
+    {
+      "word": "parallel",
+      "phonetic": "/ˈpærəlel/",
+      "definition": "1) (fml.) similar and happening at the same time; 2) two lines, paths, etc. that are parallel to each other are the same distance apart along their whole length",
+      "cn": "相似的；同时发生的 平行的",
+      "group": "3"
+    },
+    {
+      "word": "unparalleled",
+      "phonetic": "/ʌnˈpærəleld/",
+      "definition": "(fml.) bigger, better, or worse than anything else",
+      "cn": "无比的；无双的；空前的",
+      "group": "3"
+    },
+    {
+      "word": "brutal",
+      "phonetic": "/ˈbru:tl/",
+      "definition": "1) not pleasant and not sensitive to people's feelings; 2) very cruel and violent",
+      "cn": "伤人的；不顾他人感受的 野蛮的；凶残的",
+      "group": "3"
+    },
+    {
+      "word": "honesty",
+      "phonetic": "/ˈɒnɪsti/",
+      "definition": "[U] the quality of being honest",
+      "cn": "诚实；正直；坦诚",
+      "group": "3"
+    },
+    {
+      "word": "unbearable",
+      "phonetic": "/unˈbeərəbl/",
+      "definition": "too unpleasant, painful, or annoying to deal with",
+      "cn": "难以忍受的；承受不住的；无法容忍的",
+      "group": "3"
+    },
+    {
+      "word": "tease",
+      "phonetic": "/ti:z/",
+      "definition": "laugh at sb. and make jokes in order to have fun by embarrassing them, either in a friendly way or in an unkind way",
+      "cn": "戏弄；逗弄；拿 取笑（开玩笑）",
+      "group": "3"
+    },
+    {
+      "word": "taunt",
+      "phonetic": "/tɔːnt/",
+      "definition": "try to make sb. angry or upset by saying unkind things to them （",
+      "cn": "（用语言）挑衅，侮辱，嘲弄，奚落",
+      "group": "3"
+    },
+    {
+      "word": "tempt",
+      "phonetic": "/tempt/",
+      "definition": "1) make sb. want to have or do sth., even though they know they really should not; 2) try to persuade sb. to do sth. by making it seem attractive",
+      "cn": "诱惑；引诱；诱使 劝说；鼓励",
+      "group": "3"
+    },
+    {
+      "word": "loyal",
+      "phonetic": "/ˈlɔːɪəl/",
+      "definition": "always supporting your friends, principles, country, etc.",
+      "cn": "忠贞的；忠实的；忠诚的",
+      "group": "3"
+    },
+    {
+      "word": "resist",
+      "phonetic": "/rɪˈzɪst/",
+      "definition": "(usu. in negatives) stop yourself from having sth. that you like very much or doing sth. that you want to do",
+      "cn": "忍住；按捺",
+      "group": "3"
+    },
+    {
+      "word": "celebration",
+      "phonetic": "/ˌseləˈbreɪʃn/",
+      "definition": "1) [C, U] the act of celebrating; 2) [C] an occasion or party when you celebrate sth.",
+      "cn": "庆祝；祝贺；颂扬 庆祝会；庆祝活动",
+      "group": "3"
+    },
+    {
+      "word": "alongside",
+      "phonetic": "/əˈlɒŋˌsaɪd/",
+      "definition": "used to say that people or things do sth. or exist together at the same time",
+      "cn": "与 一起；与 同时",
+      "group": "3"
+    },
+    {
+      "word": "addiction",
+      "phonetic": "/əˈdɪkʃn/",
+      "definition": "[C, U] the need to take a harmful drug regularly, without being able to stop",
+      "cn": "瘾；毒瘾",
+      "group": "3"
+    },
+    {
+      "word": "distraction",
+      "phonetic": "/dɪˈstrækʃn/",
+      "definition": "1) [C] a pleasant activity; 2) [C, U] sth. that stops you paying attention to what you are doing",
+      "cn": "娱乐；消遣 使人分心的事物",
+      "group": "3"
+    },
+    {
+      "word": "sunrise",
+      "phonetic": "/ˈsʌnˌraɪz/",
+      "definition": "1) [C, U] the colored part of the sky where the sun is appearing in the morning; 2) [U] the time when the sun first appears in the morning",
+      "cn": "日出；晨曦；朝霞 日出（时分）；黎明；拂晓",
+      "group": "3"
+    },
+    {
+      "word": "graciously",
+      "phonetic": "/ˈgreɪʃəsli/",
+      "definition": "in a polite, kind, and generous way, esp. to people of a lower rank",
+      "cn": "有礼貌地，仁慈地，和蔼地，亲切地（尤指对较低阶层的人们）",
+      "group": "3"
+    },
+    {
+      "word": "weaken",
+      "phonetic": "/ˈwi:kən/",
+      "definition": "1) make sb. lose their physical strength, or becomephysically weak （; 2) make sb. / sth. less powerful or less important, or become less powerful （",
+      "cn": "（使）（某人）虚弱（衰弱） （使）变弱，削弱，减弱",
+      "group": "3"
+    },
+    {
+      "word": "bump",
+      "phonetic": "/bʌmp/",
+      "definition": "[C] a small raised area on a surface",
+      "cn": "凸起；隆起； 鼓包",
+      "group": "3"
+    },
+    {
+      "word": "foreshadow",
+      "phonetic": "/fɔːˈʃædəʊ/",
+      "definition": "show or say that sth. will happen in the future",
+      "cn": "预示；是 预兆",
+      "group": "3"
+    },
+    {
+      "word": "sideline",
+      "phonetic": "/ˈsaɪdˌlaɪn/",
+      "definition": "1) (on / from the sidelines) not taking part in an activity even though you want to or should do; [C] an activity that you do as well as your main job or business, in order to earn more money",
+      "cn": "置身事外；袖手旁观；当旁观者 副业； 兼职",
+      "group": "3"
+    },
+    {
+      "word": "permanently",
+      "phonetic": "/ˈpɜːmənəntli/",
+      "definition": "always, or for a very long time",
+      "cn": "永久地；长久地",
+      "group": "3"
+    },
+    {
+      "word": "shrink",
+      "phonetic": "/ʃrɪŋk/",
+      "definition": "(always + ad. / prep.) move back and away from sth., esp. because you are frightened （",
+      "cn": "（尤因恐惧而） 退缩，畏缩",
+      "group": "3"
+    },
+    {
+      "word": "tackle",
+      "phonetic": "/ˈtækl/",
+      "definition": "try to deal with a difficult problem",
+      "cn": "处理，对付（难题）",
+      "group": "3"
+    },
+    {
+      "word": "prospect",
+      "phonetic": "/ˈprɒspekt/",
+      "definition": "[C, U] the possibility that sth. will happen",
+      "cn": "可能性；希望",
+      "group": "3"
+    },
+    {
+      "word": "curve",
+      "phonetic": "/kɜːv/",
+      "definition": "1) a bend in a road, river, etc. （; 2) a line that gradually bends like part of a circle",
+      "cn": "（道路、河流等的）弯曲处 曲线；弧线",
+      "group": "3"
+    },
+    {
+      "word": "hurdle",
+      "phonetic": "/ˈhɜːdl/",
+      "definition": "1) one of a series of small fences that a person or horse has to jump over during a race （; 2) a problem or difficulty that you must deal with before you can achieve sth.",
+      "cn": "（跨栏赛跑或马术比赛中用的）栏架 障碍；困难",
+      "group": "3"
+    },
+    {
+      "word": "split",
+      "phonetic": "/splɪt/",
+      "definition": "[C] (infml.) the end of a marriage or relationship — used esp. in newspapers and magazines",
+      "cn": "— 离婚，分手（尤作报刊用语）",
+      "group": "3"
+    },
+    {
+      "word": "crack",
+      "phonetic": "/kræk/",
+      "definition": "break or make sth. break, either so that it gets lines on its surface, or so that it breaks into pieces （",
+      "cn": "（使）破裂；（使）裂开",
+      "group": "3"
+    },
+    {
+      "word": "cracked",
+      "phonetic": "/krækt/",
+      "definition": "having one or more lines on the surface because it is damaged but not completely broken",
+      "cn": "有裂缝的； 有裂痕的",
+      "group": "3"
+    },
+    {
+      "word": "hike",
+      "phonetic": "/haɪk/",
+      "definition": "take a long walk in the mountains or countryside （",
+      "cn": "（在 ）徒步旅行，远足",
+      "group": "3"
+    },
+    {
+      "word": "botany",
+      "phonetic": "/ˈbɒt(ə)ni/",
+      "definition": "[U] 植物学",
+      "cn": "植物学",
+      "group": "3"
+    },
+    {
+      "word": "safekeeping",
+      "phonetic": "/ˌseɪfˈki:pɪŋ/",
+      "definition": "[U] the state of being kept safe, or the action of keeping sth. safe",
+      "cn": "安全保管 妥善保管",
+      "group": "3"
+    },
+    {
+      "word": "hobbyist",
+      "phonetic": "/ˈhɒbiɪst/",
+      "definition": "[C] a person who is very interested in a particular hobby",
+      "cn": "爱好者",
+      "group": "3"
+    },
+    {
+      "word": "pine needle",
+      "phonetic": "/ˈpaɪn ˌni:dl/",
+      "definition": "[C] 松针；松叶",
+      "cn": "松针；松叶",
+      "group": "3"
+    },
+    {
+      "word": "weave",
+      "phonetic": "/wi:v/",
+      "definition": "make cloth, a carpet, a basket, etc. by crossing threads or thin pieces under and over each other by hand or on a loom",
+      "cn": "编；织",
+      "group": "3"
+    },
+    {
+      "word": "merge",
+      "phonetic": "/mɜːdʒ/",
+      "definition": "if two things merge, or if one thing merges into another, you cannot clearly see them, hear them, etc. as separate things",
+      "cn": "相融；融入；渐渐消失在另一物中",
+      "group": "3"
+    },
+    {
+      "word": "indistinguishable",
+      "phonetic": "/ˌɪndɪˈstɪŋgwɪʃəbl/",
+      "definition": "not able to be identified as different or distinct",
+      "cn": "难以分辨的；难以区分的",
+      "group": "3"
+    },
+    {
+      "word": "productivity",
+      "phonetic": "/ˌprɒdʌkˈtɪvəti/",
+      "definition": "[U] the rate at which goods are produced, and theamount produced, esp. in relation to the work, time, and money needed to produce them",
+      "cn": "生产率；生产效率；生产量；生产力",
+      "group": "3"
+    },
+    {
+      "word": "fragility",
+      "phonetic": "/frəˈdʒɪləti/",
+      "definition": "1) the state of being weak or uncertain, and likely to become worse under pressure （; 2) the state of being easily broken or damaged",
+      "cn": "（形式）脆弱，不稳定 脆弱；易碎；易损坏",
+      "group": "3"
+    },
+    {
+      "word": "accessible",
+      "phonetic": "/əkˈsesəbl/",
+      "definition": "1) easy to obtain or use; 2) easy to reach or get into",
+      "cn": "易得到的；易使用的 易到达的；易进入的",
+      "group": "3"
+    },
+    {
+      "word": "corporation",
+      "phonetic": "/ˌkɔːpəˈreɪʃn/",
+      "definition": "[C] a big company, or a group of companies acting together as a single organization",
+      "cn": "大型公司；企业集团",
+      "group": "3"
+    },
+    {
+      "word": "disposable",
+      "phonetic": "/dɪˈspəʊzəbl/",
+      "definition": "1) available to be used; 2) intended to be used once or for a short time and then thrown away",
+      "cn": "可以使用的 一次性的 用完即弃的",
+      "group": "3"
+    },
+    {
+      "word": "amusement park",
+      "phonetic": "/əˈmju:zmənt ˌpɑːk/",
+      "definition": "[C] 游乐场",
+      "cn": "游乐场",
+      "group": "3"
+    },
+    {
+      "word": "emerge",
+      "phonetic": "/ɪˈmɜːdʒ/",
+      "definition": "1) start to exist; appear or become known; 2) appear or come out from somewhere",
+      "cn": "兴起；开始被人所知 出现；浮现",
+      "group": "3"
+    },
+    {
+      "word": "privilege",
+      "phonetic": "/ˈprɪvəlɪdʒ/",
+      "definition": "[C] a special advantage that is given only to one person or group of people",
+      "cn": "特权；特殊待遇",
+      "group": "3"
+    },
+    {
+      "word": "wealthy",
+      "phonetic": "/ˈwelθi/",
+      "definition": "1) (the ~) [pl.] people who have a lot of money, possessions, etc.; 2) having a lot of money, possessions, etc.",
+      "cn": "有钱人；富人 富有的；有钱的",
+      "group": "3"
+    },
+    {
+      "word": "automatic",
+      "phonetic": "/ˌɔːtəˈmætɪk/",
+      "definition": "(of a device or process) working by itself with little or no direct human control （",
+      "cn": "（装置或流程）自动的",
+      "group": "3"
+    },
+    {
+      "word": "unrest",
+      "phonetic": "/ʌnˈrest/",
+      "definition": "[U] a political situation in which people protest or behave violently",
+      "cn": "动荡；动乱；骚动",
+      "group": "3"
+    },
+    {
+      "word": "shortage",
+      "phonetic": "/ˈʃɔːtɪdʒ/",
+      "definition": "[C, U] a situation in which there is not enough of sth. that people need",
+      "cn": "短缺；不足；缺乏",
+      "group": "3"
+    },
+    {
+      "word": "recession",
+      "phonetic": "/rɪˈseʃn/",
+      "definition": "[C, U] a difficult time when there is less trade, business activity, etc. in a country than usual （",
+      "cn": "（经济）衰退， 萧条",
+      "group": "3"
+    },
+    {
+      "word": "discontented",
+      "phonetic": "/ˌdɪskənˈtentɪd/",
+      "definition": "unhappy or not satisfied with the situation you are in",
+      "cn": "不满的；不满足的；不愉快的",
+      "group": "3"
+    },
+    {
+      "word": "enjoyable",
+      "phonetic": "/ɪnˈdʒɔːɪəbl/",
+      "definition": "giving pleasure",
+      "cn": "令人愉快的；令人快乐的",
+      "group": "3"
+    },
+    {
+      "word": "inevitable",
+      "phonetic": "/ɪnˈevɪtəbl/",
+      "definition": "certain to happen and impossible to avoid",
+      "cn": "必然发生的；不可避免的",
+      "group": "3"
+    },
+    {
+      "word": "equate",
+      "phonetic": "/ɪˈkweɪt/",
+      "definition": "consider that two things are similar or connected",
+      "cn": "使等同；同等看待",
+      "group": "3"
+    },
+    {
+      "word": "dual",
+      "phonetic": "/ˈdju:əl/",
+      "definition": "(only before noun) having two of sth. or two parts",
+      "cn": "双的；双重的；两部分的",
+      "group": "3"
+    },
+    {
+      "word": "duality",
+      "phonetic": "/dju:ˈæləti/",
+      "definition": "[U] (fml.) the state of having two of sth. or two parts",
+      "cn": "双重性",
+      "group": "3"
+    },
+    {
+      "word": "utopian",
+      "phonetic": "/ju:ˈtəʊpiən/",
+      "definition": "having a strong belief that everything can be perfect, often in a way that does not seem to be realistic or practical",
+      "cn": "乌托邦的；空想完美主义的",
+      "group": "3"
+    },
+    {
+      "word": "side hustle",
+      "phonetic": "/ˈsaɪd ˌhʌsl/",
+      "definition": "[C] (mainly AmE, infml.) a piece of work or a job that you get paid for doing in addition to doing your main job",
+      "cn": "副业",
+      "group": "3"
+    },
+    {
+      "word": "regarding",
+      "phonetic": "/rɪˈgɑːdɪŋ/",
+      "definition": "(fml.) concerning sb. / sth.; about sb. / sth.",
+      "cn": "关于",
+      "group": "3"
+    },
+    {
+      "word": "boundary",
+      "phonetic": "/ˈbaʊnd(ə)ri/",
+      "definition": "1) the point at which one feeling, idea, quality, etc. stops and another starts （; 2) the real or imaginary line that marks the edge of a state, country, etc., or the edge of an area of land that belongs to sb.",
+      "cn": "（不同情感、思想、品质等之间的）分野，分界线 分界线；边界",
+      "group": "3"
+    },
+    {
+      "word": "sake",
+      "phonetic": "/seɪk/",
+      "definition": "[U] (for the ~ of sb. / sth., for sb.'s / sth.'s ~) in order to help, improve, or please sb. / sth.",
+      "cn": "为了某人 某事的缘故",
+      "group": "3"
+    },
+    {
+      "word": "meditative",
+      "phonetic": "/ˈmedɪtətɪv/",
+      "definition": "1) relating to the practice of emptying your mind of thoughts and feelings, in order to relax completely or for religious reasons; 2) thinking deeply and seriously about sth.; involving deep thought",
+      "cn": "冥想的；默想的 深思的；沉思的；思考的",
+      "group": "3"
+    },
+    {
+      "word": "paycheck",
+      "phonetic": "/ˈpeɪtʃek/",
+      "definition": "[C] (BrE paycheque) (esp. AmE) the amount of wages sb. earns",
+      "cn": "薪金；工资",
+      "group": "3"
+    },
+    {
+      "word": "ruin",
+      "phonetic": "/ˈru:ɪn/",
+      "definition": "spoil or destroy sth. completely",
+      "cn": "毁坏；毁掉；糟蹋",
+      "group": "3"
+    },
+    {
+      "word": "purity",
+      "phonetic": "/ˈpjʊərəti/",
+      "definition": "[U] the quality or state of being pure",
+      "cn": "纯；纯洁；洁净；纯正；纯粹",
+      "group": "3"
+    },
+    {
+      "word": "enhance",
+      "phonetic": "/ɪnˈhɑːns/",
+      "definition": "improve sth.",
+      "cn": "改善；改进",
+      "group": "3"
+    },
+    {
+      "word": "generalization",
+      "phonetic": "/ˌdʒen(ə)rəlaɪˈzeɪʃn/",
+      "definition": "[C] (BrE also generalisation) a statement about all the members of a group that may be true in some or many situations but is not true in every case （",
+      "cn": "（片面的）概括，泛论",
+      "group": "4"
+    },
+    {
+      "word": "myth",
+      "phonetic": "/mɪθ/",
+      "definition": "[C, U] an idea or story that many people believe, but which is not true （",
+      "cn": "（许多人相信的）错误观念 荒诞说法",
+      "group": "4"
+    },
+    {
+      "word": "spouse",
+      "phonetic": "/spaʊs/",
+      "definition": "[C] (fml.) a husband or wife",
+      "cn": "配偶",
+      "group": "4"
+    },
+    {
+      "word": "spousal",
+      "phonetic": "/ˈspaʊzl/",
+      "definition": "(fml.) (only before noun) connected with a husband or wife; of or from a husband or wife",
+      "cn": "配偶的",
+      "group": "4"
+    },
+    {
+      "word": "frustrated",
+      "phonetic": "/frʌˈstreɪtɪd/",
+      "definition": "feeling annoyed and impatient because you cannot do or achieve what you want",
+      "cn": "懊丧的；懊恼的；沮丧的",
+      "group": "4"
+    },
+    {
+      "word": "validity",
+      "phonetic": "/vəˈlɪdəti/",
+      "definition": "[U] the state of being logical and true",
+      "cn": "符合逻辑；正当；正确",
+      "group": "4"
+    },
+    {
+      "word": "stem",
+      "phonetic": "/stem/",
+      "definition": "(~ from) develop as a result of sth. else",
+      "cn": "源于；来自；由 引起",
+      "group": "4"
+    },
+    {
+      "word": "forage",
+      "phonetic": "/ˈfɒrɪdʒ/",
+      "definition": "go around searching for food or other supplies （",
+      "cn": "（为找到食物、补给等）四处搜寻",
+      "group": "4"
+    },
+    {
+      "word": "millennium",
+      "phonetic": "/mɪˈleniə/",
+      "definition": "[C] (pl. millennia) a period of 1,000 years",
+      "cn": "一千年；千年期",
+      "group": "4"
+    },
+    {
+      "word": "instinctive",
+      "phonetic": "/ɪnˈstɪŋktɪv/",
+      "definition": "based on instinct, not thought or training",
+      "cn": "本能的；直觉的；天性的",
+      "group": "4"
+    },
+    {
+      "word": "mode",
+      "phonetic": "/məʊd/",
+      "definition": "[C] (fml.) a particular way or style of behaving, living, or doing sth.",
+      "cn": "方式；方法；做法",
+      "group": "4"
+    },
+    {
+      "word": "nutrition",
+      "phonetic": "/nju:ˈtrɪʃn/",
+      "definition": "[U] the process of giving or getting the right type of food for good health and growth",
+      "cn": "营养（作用）；滋养",
+      "group": "4"
+    },
+    {
+      "word": "nutritious",
+      "phonetic": "/nju:ˈtrɪəs/",
+      "definition": "(of food) containing many of the substances which help the body to grow （",
+      "cn": "（食物）有营养的，营养丰富的",
+      "group": "4"
+    },
+    {
+      "word": "edible",
+      "phonetic": "/ˈedɪbl/",
+      "definition": "fit or suitable to be eaten; not poisonous",
+      "cn": "适宜食用 的；（无毒而）可以吃的",
+      "group": "4"
+    },
+    {
+      "word": "discard",
+      "phonetic": "/dɪsˈkɑːd/",
+      "definition": "get rid of sth.",
+      "cn": "扔掉；弃置",
+      "group": "4"
+    },
+    {
+      "word": "laden",
+      "phonetic": "/ˈleɪdn/",
+      "definition": "heavily loaded with sth.",
+      "cn": "载满的；装满的",
+      "group": "4"
+    },
+    {
+      "word": "heritage",
+      "phonetic": "/ˈherɪtɪdʒ/",
+      "definition": "[U, sing.] the traditional beliefs, values, customs, etc. of a family, country, or society （",
+      "cn": "（文化）遗产；传统",
+      "group": "4"
+    },
+    {
+      "word": "prehistoric",
+      "phonetic": "/ˌpri: ˈhɪˈstɒrɪk/",
+      "definition": "relating to the time in history before anything was written down",
+      "cn": "史前的；有历史记载以前的",
+      "group": "4"
+    },
+    {
+      "word": "acquisition",
+      "phonetic": "/ˌækwɪˈzɪʃn/",
+      "definition": "1) [C] sth. that you buy or obtain, often to add to things that you already have; 2) [U] the process by which you gain knowledge or learn a skill （",
+      "cn": "购置物；获得物 （知识、技能的）获得，习得",
+      "group": "4"
+    },
+    {
+      "word": "humid",
+      "phonetic": "/ˈhju:mɪd/",
+      "definition": "(of the air or climate) warm and damp （",
+      "cn": "（空气或气候）温暖潮湿的，湿热的",
+      "group": "4"
+    },
+    {
+      "word": "trait",
+      "phonetic": "/treɪt/",
+      "definition": "[C] (fml.) a particular quality in sb.'s character （",
+      "cn": "（某人性格中的）特性，品质",
+      "group": "4"
+    },
+    {
+      "word": "tendency",
+      "phonetic": "/ˈtendənsi/",
+      "definition": "[C] an inclination toward a particular characteristic or type of behavior",
+      "cn": "趋势；趋向；倾向",
+      "group": "4"
+    },
+    {
+      "word": "anthropologist",
+      "phonetic": "/ˌænθrəˈpɒlədʒɪst/",
+      "definition": "[C] a person who studies anthropology",
+      "cn": "人类学家",
+      "group": "4"
+    },
+    {
+      "word": "similarity",
+      "phonetic": "/ˌsɪməˈlærəti/",
+      "definition": "[C, U] the state of being almost the same, or a particular way in which sth. is almost the same",
+      "cn": "相似性；类似性；相似处；相似点",
+      "group": "4"
+    },
+    {
+      "word": "ancestor",
+      "phonetic": "/ˈænsestə/",
+      "definition": "[C] a member of your family who lived a long time ago",
+      "cn": "祖先；祖宗",
+      "group": "4"
+    },
+    {
+      "word": "ancestral",
+      "phonetic": "/ænˈsestrəl/",
+      "definition": "of, relating to, or inherited from an ancestor",
+      "cn": "祖先的",
+      "group": "4"
+    },
+    {
+      "word": "inclined",
+      "phonetic": "/ɪnˈklaɪnd/",
+      "definition": "(be ~ to do sth.; be ~ to sth.) be likely to do sth. or behave in a particular way",
+      "cn": "有做某事的意向；倾向于做某事",
+      "group": "4"
+    },
+    {
+      "word": "extended",
+      "phonetic": "/ɪkˈstendɪd/",
+      "definition": "(only before noun) long or longer than usual or expected",
+      "cn": "较长时间的；延期的",
+      "group": "4"
+    },
+    {
+      "word": "empirical",
+      "phonetic": "/ɪmˈpɪrɪkl/",
+      "definition": "(only before noun) based on experiments or experience rather than ideas or theories",
+      "cn": "以实验（经验）为依据的；经验主义的",
+      "group": "4"
+    },
+    {
+      "word": "justification",
+      "phonetic": "/ˌdʒʌstɪfɪˈkeɪʃn/",
+      "definition": "[C, U] a good reason why sth. exists or is done",
+      "cn": "正当理由",
+      "group": "4"
+    },
+    {
+      "word": "inherit",
+      "phonetic": "/ɪnˈherɪt/",
+      "definition": "have qualities, physical features, etc. that are similar to those of your parents, grandparents, etc.",
+      "cn": "经遗传获得（品质、身体特征等）",
+      "group": "4"
+    },
+    {
+      "word": "sensible",
+      "phonetic": "/ˈsensəbl/",
+      "definition": "reasonable, practical, and showing good judgment",
+      "cn": "明智的；合理的；实际的；有判断力的",
+      "group": "4"
+    },
+    {
+      "word": "stereotype",
+      "phonetic": "/ˈsteriəˌtaɪp/",
+      "definition": "[C] a belief or idea of what a particular type of person or thing is like",
+      "cn": "模式化的思想；老一套；旧框框",
+      "group": "4"
+    },
+    {
+      "word": "prominence",
+      "phonetic": "/ˈprɒmɪnəns/",
+      "definition": "[U] the fact of being important and well-known",
+      "cn": "重要；杰出；著名",
+      "group": "4"
+    },
+    {
+      "word": "sentiment",
+      "phonetic": "/ˈsentɪmənt/",
+      "definition": "1) [U] feelings of pity, love, sadness, etc. that are often considered to be too strong or not suitable for a particular situation; 2) [C, U] (fml.) an opinion or feeling you have about sth.",
+      "cn": "多愁善感；感情因素 意见；观点；感想",
+      "group": "4"
+    },
+    {
+      "word": "feminine",
+      "phonetic": "/ˈfemənɪn/",
+      "definition": "having the qualities or appearance considered to be typical of women; connected with women （",
+      "cn": "（指气质或外貌）女性特有的；女性的",
+      "group": "4"
+    },
+    {
+      "word": "literary",
+      "phonetic": "/ˈlɪt(ə)rəri/",
+      "definition": "connected with literature",
+      "cn": "文学的；文学上的",
+      "group": "4"
+    },
+    {
+      "word": "maternal",
+      "phonetic": "/məˈtɜːnl/",
+      "definition": "having feelings that are typical of a caring mother toward a child",
+      "cn": "母性的；母亲般慈爱的",
+      "group": "4"
+    },
+    {
+      "word": "excessively",
+      "phonetic": "/ɪkˈsesɪvli/",
+      "definition": "to a much greater level or degree than seems reasonable or appropriate",
+      "cn": "过度地；过多地",
+      "group": "4"
+    },
+    {
+      "word": "gender",
+      "phonetic": "/ˈdʒendə/",
+      "definition": "[C, U] the fact of being male or female",
+      "cn": "性别",
+      "group": "4"
+    },
+    {
+      "word": "inequality",
+      "phonetic": "/ˌɪnɪˈkwɒləti/",
+      "definition": "[C, U] the unfair difference between groups of people in society, when some have more wealth, status, or opportunities than others",
+      "cn": "不平等；不平衡；不平均",
+      "group": "4"
+    },
+    {
+      "word": "bias",
+      "phonetic": "/ˈbaɪəs/",
+      "definition": "[U, sing.] an unfair personal opinion that influences your judgment",
+      "cn": "偏见；成见；偏心",
+      "group": "4"
+    },
+    {
+      "word": "publication",
+      "phonetic": "/ˌpʌblɪˈkeɪʃn/",
+      "definition": "[C, U] the act of printing a book, a magazine, etc. and making it available to the public; a book, a magazine, etc. that has been published （",
+      "cn": "（书刊等的）出版，发行；出版物",
+      "group": "4"
+    },
+    {
+      "word": "analyze",
+      "phonetic": "/ˈænəˌlaɪz/",
+      "definition": "(BrE analyse) examine or think about sth. carefully, in order to understand it",
+      "cn": "分析；剖析",
+      "group": "4"
+    },
+    {
+      "word": "identify",
+      "phonetic": "/aɪˈdentɪˌfaɪ/",
+      "definition": "recognize and correctly name sb. / sth.",
+      "cn": "认出，识别（某人或某物）",
+      "group": "4"
+    },
+    {
+      "word": "confirmation",
+      "phonetic": "/ˌkɒnfəˈmeɪʃn/",
+      "definition": "[C, U] a statement, letter, etc. that shows that sth. is true, correct, or definite",
+      "cn": "证实；证明",
+      "group": "4"
+    },
+    {
+      "word": "predictable",
+      "phonetic": "/prɪˈdɪktəbl/",
+      "definition": "acting or happening in a way that is expected",
+      "cn": "可预料的；可预见的",
+      "group": "4"
+    },
+    {
+      "word": "startling",
+      "phonetic": "/ˈstɑːtlɪŋ/",
+      "definition": "very unusual or surprising",
+      "cn": "异乎寻常的；令人惊奇的",
+      "group": "4"
+    },
+    {
+      "word": "distinctive",
+      "phonetic": "/dɪˈstɪŋktɪv/",
+      "definition": "having a quality or characteristic that makes sth. different and easily noticed",
+      "cn": "特有的；特别的；有特色的",
+      "group": "4"
+    },
+    {
+      "word": "periodical",
+      "phonetic": "/ˌpɪəriˈɒdɪkl/",
+      "definition": "[C] a magazine, esp. one about a serious or technical subject",
+      "cn": "期刊",
+      "group": "4"
+    },
+    {
+      "word": "concerted",
+      "phonetic": "/kənˈsɔːtɪd/",
+      "definition": "(only before noun) done in a planned and determined way, esp. by more than one person, government, country, etc.",
+      "cn": "齐心协力的；一致的",
+      "group": "4"
+    },
+    {
+      "word": "discourse",
+      "phonetic": "/ˈdɪskɔːs/",
+      "definition": "[C] a serious speech or piece of writing on a particular subject （",
+      "cn": "（关于某主题的）演讲，论述，著述",
+      "group": "4"
+    },
+    {
+      "word": "quantitative",
+      "phonetic": "/ˈkwɒntɪtətɪv/",
+      "definition": "(fml.) relating to amounts rather than to the quality or standard of sth. （",
+      "cn": "（数）量的；与数量有关的；定量的",
+      "group": "4"
+    },
+    {
+      "word": "representation",
+      "phonetic": "/ˌreprɪzenˈteɪʃn/",
+      "definition": "[U] the fact of having sb. to speak, vote, or make decisions for you",
+      "cn": "代理；代表",
+      "group": "4"
+    },
+    {
+      "word": "trivial",
+      "phonetic": "/ˈtrɪviəl/",
+      "definition": "not serious, important, or valuable",
+      "cn": "微不足道的；没有什么价值的",
+      "group": "4"
+    },
+    {
+      "word": "noticeable",
+      "phonetic": "/ˈnəʊtɪsəbl/",
+      "definition": "easy to see or notice; clear or definite",
+      "cn": "显著的；显而易见的",
+      "group": "4"
+    },
+    {
+      "word": "disguise",
+      "phonetic": "/dɪsˈgaɪz/",
+      "definition": "1) hide sth. or change it, so that it cannot be recognized; 2) change sb.'s appearance so that people cannot recognize them",
+      "cn": "掩蔽；掩饰 装扮；假扮",
+      "group": "4"
+    },
+    {
+      "word": "unconscious",
+      "phonetic": "/ʌnˈkɒnʃəs/",
+      "definition": "1) (of feelings, thoughts, etc.) existing or happening without you realizing or being aware; not deliberate or controlled （; 2) unable to see, move, feel, etc. in the normal way because you are not conscious",
+      "cn": "（感情、思想等）无意识的，未意识到的 不省人事的；失去知觉的",
+      "group": "4"
+    },
+    {
+      "word": "publisher",
+      "phonetic": "/ˈpʌblɪʃə/",
+      "definition": "[C] a person or company whose business is to arrange the writing, production, and sale of books, newspapers, etc. （",
+      "cn": "（书、报纸等的）出版者，出版商；出版社",
+      "group": "4"
+    },
+    {
+      "word": "pursue",
+      "phonetic": "/pəˈsju:/",
+      "definition": "continue doing an activity or trying to achieve sth. over a long period of time",
+      "cn": "追求；继续进行",
+      "group": "4"
+    },
+    {
+      "word": "discrimination",
+      "phonetic": "/dɪˌskrɪmɪˈneɪʃn/",
+      "definition": "[U] the practice of treating one person or group differently from another in an unfair way",
+      "cn": "歧视",
+      "group": "4"
+    },
+    {
+      "word": "enduring",
+      "phonetic": "/ɪnˈdjʊərɪŋ/",
+      "definition": "lasting for a long time",
+      "cn": "持久的；耐久的",
+      "group": "4"
+    },
+    {
+      "word": "console",
+      "phonetic": "/kənˈsəʊl/",
+      "definition": "make sb. feel better when they are feeling sad or disappointed",
+      "cn": "安慰；慰藉",
+      "group": "5"
+    },
+    {
+      "word": "heal",
+      "phonetic": "/hiːl/",
+      "definition": "1) become mentally or emotionally strong again after a bad experience, or help sb. to do this （; 2) (also heal up) become healthy again; make sth. healthy again （",
+      "cn": "（在精神或感情上）（使）复原，（使）坚强起来 （使）康复，复原",
+      "group": "5"
+    },
+    {
+      "word": "coincidence",
+      "phonetic": "/kəʊˈɪnsɪd(ə)ns/",
+      "definition": "[C, U] when two things happen at the same time, in the same place, or to the same people in a way that seems surprising or unusual",
+      "cn": "巧合；巧事",
+      "group": "5"
+    },
+    {
+      "word": "therapy",
+      "phonetic": "/ˈθerəpi/",
+      "definition": "[C, U] a treatment that helps sb. feel better, grow stronger, etc., esp. after an illness",
+      "cn": "治疗；疗法",
+      "group": "5"
+    },
+    {
+      "word": "propose",
+      "phonetic": "/prəˈpəʊz/",
+      "definition": "(fml.) suggest sth. as a plan or course of action",
+      "cn": "提议； 建议",
+      "group": "5"
+    },
+    {
+      "word": "fleeting",
+      "phonetic": "/ˈfli:tɪŋ/",
+      "definition": "(usu. before noun) lasting for only a short time",
+      "cn": "短暂的；飞逝的",
+      "group": "5"
+    },
+    {
+      "word": "betrayal",
+      "phonetic": "/bɪˈtreɪəl/",
+      "definition": "[C, U] the act of betraying sb. / sth. or the fact of being betrayed",
+      "cn": "背叛；出卖",
+      "group": "5"
+    },
+    {
+      "word": "endure",
+      "phonetic": "/Inˈdjʊə/",
+      "definition": "continue to exist for a long time",
+      "cn": "持续",
+      "group": "5"
+    },
+    {
+      "word": "companionship",
+      "phonetic": "/kəmˈpænjənʃɪp/",
+      "definition": "[U] when you are with sb. you enjoy being with, and are not alone",
+      "cn": "友谊；友好交往",
+      "group": "5"
+    },
+    {
+      "word": "insight",
+      "phonetic": "/ˈɪnsaɪt/",
+      "definition": "[C] a sudden clear understanding of sth. or part of sth., esp. a complicated situation or idea （",
+      "cn": "（尤指对复杂情况、看法的）顿悟，猛醒",
+      "group": "5"
+    },
+    {
+      "word": "narrator",
+      "phonetic": "/nəˈreɪtə/",
+      "definition": "[C] 叙述者；讲述者",
+      "cn": "叙述者；讲述者",
+      "group": "5"
+    },
+    {
+      "word": "monologue",
+      "phonetic": "/ˈmɒnəˌlɒg/",
+      "definition": "[C] (AmE also monolog) a long speech by one person",
+      "cn": "长篇独白",
+      "group": "5"
+    },
+    {
+      "word": "paradoxically",
+      "phonetic": "/ˌpærəˈdɒksɪkli/",
+      "definition": "in a way that is surprising because it is the opposite of what you would expect",
+      "cn": "自相矛盾地；反常地",
+      "group": "5"
+    },
+    {
+      "word": "interior",
+      "phonetic": "/ɪnˈtɪəriə/",
+      "definition": "(only before noun) belonging to mental or spiritual life",
+      "cn": "内心的；精神的",
+      "group": "5"
+    },
+    {
+      "word": "universal",
+      "phonetic": "/ˌju:nɪˈvɜːsl/",
+      "definition": "true or suitable in very situation",
+      "cn": "普遍正确的；广泛适用的",
+      "group": "5"
+    },
+    {
+      "word": "universality",
+      "phonetic": "/ˌju:nɪvɜːˈsæləti/",
+      "definition": "[U] the quality or state of being true or suitable in every situation",
+      "cn": "普遍性；通用性",
+      "group": "5"
+    },
+    {
+      "word": "timelessness",
+      "phonetic": "/ˈtaɪmləsnəs/",
+      "definition": "[U] the quality of not changing as the years go past, or as fashion changes",
+      "cn": "永恒；不朽",
+      "group": "5"
+    },
+    {
+      "word": "subconscious",
+      "phonetic": "/ˌsʌbˈkɒnʃəs/",
+      "definition": "existing in the mind but not immediately available to consciousness",
+      "cn": "下意识的；潜意识的",
+      "group": "5"
+    },
+    {
+      "word": "ease",
+      "phonetic": "/iːz/",
+      "definition": "make or become less severe, difficult, unpleasant, painful, etc.",
+      "cn": "缓解；减轻",
+      "group": "5"
+    },
+    {
+      "word": "empathetic",
+      "phonetic": "/ˈempəˌθetɪk/",
+      "definition": "(also empathic) having the ability to understand sb. else's feelings or emotions",
+      "cn": "同情的；共鸣的",
+      "group": "5"
+    },
+    {
+      "word": "mild",
+      "phonetic": "/maɪld/",
+      "definition": "1) a mild illness or health problem is not serious; 2) not very strong or hot-tasting",
+      "cn": "不严重的；轻微的 不浓烈的；淡的；不辣的",
+      "group": "5"
+    },
+    {
+      "word": "symptom",
+      "phonetic": "/ˈsɪmptəm/",
+      "definition": "[C] sth. wrong with your body or mind which shows that you have a particular illness",
+      "cn": "症状",
+      "group": "5"
+    },
+    {
+      "word": "bibliotherapist",
+      "phonetic": "/ˌbɪblɪəˈθerəpɪst/",
+      "definition": "[C] 阅读治疗专家",
+      "cn": "阅读治疗专家",
+      "group": "5"
+    },
+    {
+      "word": "continually",
+      "phonetic": "/kənˈtɪnjʊəli/",
+      "definition": "1) in a way that happens repeatedly; 2) in a way that continues for a long time without stopping",
+      "cn": "多次重复地；频繁地 持续地；不间断地",
+      "group": "5"
+    },
+    {
+      "word": "grieve",
+      "phonetic": "/griːv/",
+      "definition": "feel extremely sad, esp. because sb. you love has died （",
+      "cn": "（尤指因所爱之人去世而）感到悲痛",
+      "group": "5"
+    },
+    {
+      "word": "plot",
+      "phonetic": "/plɒt/",
+      "definition": "[C] the events that form the main story of a book, film, or play （",
+      "cn": "（书、电影、戏剧的）情节",
+      "group": "5"
+    },
+    {
+      "word": "fictional",
+      "phonetic": "/ˈfɪkʃnəl/",
+      "definition": "fictional people, events, etc. are imaginary and from a book or story",
+      "cn": "虚构的；编造的；小说（中）的",
+      "group": "5"
+    },
+    {
+      "word": "retirement",
+      "phonetic": "/rɪˈtaɪəmənt/",
+      "definition": "[C, U] when you stop working, usu. because of your age",
+      "cn": "退休；退职",
+      "group": "5"
+    },
+    {
+      "word": "transient",
+      "phonetic": "/ˈtrænziənt/",
+      "definition": "(fml.) continuing only for a short time",
+      "cn": "短暂的；转瞬即逝的；一时的",
+      "group": "5"
+    },
+    {
+      "word": "transience",
+      "phonetic": "/ˈtrænziəns/",
+      "definition": "[U] the state of continuing only for a short time",
+      "cn": "短暂；转瞬即逝",
+      "group": "5"
+    },
+    {
+      "word": "messy",
+      "phonetic": "/ˈmesi/",
+      "definition": "1) (of a situation) complicated and unpleasant to deal with （; 2) dirty or untidy",
+      "cn": "（状况）棘手的 脏的；乱的",
+      "group": "5"
+    },
+    {
+      "word": "grief",
+      "phonetic": "/gri:f/",
+      "definition": "[U] extreme sadness, esp. because sb. you love has died",
+      "cn": "悲痛，极度悲伤（尤指因所爱之人去世）",
+      "group": "5"
+    },
+    {
+      "word": "despair",
+      "phonetic": "/dɪˈspeə/",
+      "definition": "[U] a feeling that you have no hope at all",
+      "cn": "绝望",
+      "group": "5"
+    },
+    {
+      "word": "memoir",
+      "phonetic": "/ˈmemˌwɑː/",
+      "definition": "1) (fml.) a short piece of writing about a person or place that you knew well, or an event that you experienced; 2) (~s) [pl.] a book by sb. important and famous in which they write about their life and experiences （",
+      "cn": "传略；实录 （名人）回忆录",
+      "group": "5"
+    },
+    {
+      "word": "narrative",
+      "phonetic": "/ˈnærətɪv/",
+      "definition": "1) [U] (fml.) the act, process, or skill of telling a story; 2) [C] (fml.) a description of events in a story, esp. in a novel （",
+      "cn": "叙述；叙述技巧 （尤指小说中的）叙述，记叙",
+      "group": "5"
+    },
+    {
+      "word": "optimistic",
+      "phonetic": "/ˌɒptɪˈmɪstɪk/",
+      "definition": "believing that good things will happen in the future",
+      "cn": "乐观的；乐观主义的",
+      "group": "5"
+    },
+    {
+      "word": "transform",
+      "phonetic": "/trænsˈfɔːm/",
+      "definition": "undergo a change in appearance, form, or character",
+      "cn": "改观；变形；转化",
+      "group": "5"
+    },
+    {
+      "word": "precious",
+      "phonetic": "/ˈpreʃəs/",
+      "definition": "1) greatly loved or treasured by sb.; 2) valuable and important and not to be wasted or used without care",
+      "cn": "珍爱的；心爱的 宝贵的",
+      "group": "5"
+    },
+    {
+      "word": "voyage",
+      "phonetic": "/ˈvɔːɪɪdʒ/",
+      "definition": "1) (~ of discovery) a situation in which you learn a lot of new things about sb. / sth. （; 2) a long journey in a ship or spacecraft （",
+      "cn": "（对某人或某事有大量新发现的）发现之旅 （乘船或宇宙飞船的长途）航行",
+      "group": "5"
+    },
+    {
+      "word": "edition",
+      "phonetic": "/ɪˈdɪʃn/",
+      "definition": "1) the copies of a book, newspaper, etc. that are produced and printed at the same time; 2) the form that a book, newspaper, magazine, etc. is produced in",
+      "cn": "版次 版本",
+      "group": "5"
+    },
+    {
+      "word": "hyphen",
+      "phonetic": "/ˈhaɪfn/",
+      "definition": "[C] 连字符；连（字）号",
+      "cn": "连字符；连（字）号",
+      "group": "5"
+    },
+    {
+      "word": "pigeonhole",
+      "phonetic": "/ˈpɪdʒ(ə)nˌhəʊl/",
+      "definition": "[C] （墙上的）鸽笼式分类架，信件格，文件格",
+      "cn": "（墙上的）鸽笼式分类架，信件格，文件格",
+      "group": "5"
+    },
+    {
+      "word": "henceforth",
+      "phonetic": "/ˌhensˈfɔːθ/",
+      "definition": "(also henceforward) (fml.) from this time on",
+      "cn": "从今以后；今后；从现在起",
+      "group": "5"
+    },
+    {
+      "word": "pot belly",
+      "phonetic": "/ˈpɒtˌbeli/",
+      "definition": "[C] 大肚子",
+      "cn": "大肚子",
+      "group": "5"
+    },
+    {
+      "word": "betray",
+      "phonetic": "/bɪˈtreɪ/",
+      "definition": "be disloyal to sb. who trusts you, so that they are harmed or upset",
+      "cn": "背叛（信任你的人）；对 不忠；出卖",
+      "group": "5"
+    },
+    {
+      "word": "unacceptable",
+      "phonetic": "/ˌʌnəkˈseptəbl/",
+      "definition": "so wrong or bad that cannot be allowed",
+      "cn": "不能接受的",
+      "group": "5"
+    },
+    {
+      "word": "millisecond",
+      "phonetic": "/ˈmɪlɪˌsekənd/",
+      "definition": "[C] 毫秒；千分之一秒",
+      "cn": "毫秒；千分之一秒",
+      "group": "5"
+    },
+    {
+      "word": "tap",
+      "phonetic": "/tæp/",
+      "definition": "hit sb. / sth. quickly and lightly",
+      "cn": "轻敲；轻拍；轻叩",
+      "group": "5"
+    },
+    {
+      "word": "texter",
+      "phonetic": "/ˈtekstə/",
+      "definition": "[C] (esp. BrE)",
+      "cn": "发送（手机） 短信息的 人",
+      "group": "5"
+    },
+    {
+      "word": "punctuation",
+      "phonetic": "/ˌpʌŋktʃuˌeɪʃn/",
+      "definition": "[U] the marks used to divide a piece of writing into sentences, phrases, etc.",
+      "cn": "标点符号（总称）",
+      "group": "5"
+    },
+    {
+      "word": "savage",
+      "phonetic": "/ˈsævɪdʒ/",
+      "definition": "attack or treat brutally",
+      "cn": "攻击；残害",
+      "group": "5"
+    },
+    {
+      "word": "rape",
+      "phonetic": "/reɪp/",
+      "definition": "damage or destroy sth. by using it in an unsuitable way",
+      "cn": "蹂躏；破坏",
+      "group": "5"
+    },
+    {
+      "word": "quiver",
+      "phonetic": "/ˈkwɪvə/",
+      "definition": "[C] 箭筒；箭囊；箭袋",
+      "cn": "箭筒；箭囊；箭袋",
+      "group": "5"
+    },
+    {
+      "word": "ridicule",
+      "phonetic": "/ˈrɪdɪˌkju:l/",
+      "definition": "[U] unkind laughter or remarks that are intended to make sb. / sth. seem stupid",
+      "cn": "嘲笑；奚落",
+      "group": "5"
+    },
+    {
+      "word": "irritating",
+      "phonetic": "/ˈɪrɪˌteɪtɪŋ/",
+      "definition": "annoying",
+      "cn": "使人恼火的",
+      "group": "5"
+    },
+    {
+      "word": "chatter",
+      "phonetic": "/ˈtʃætə/",
+      "definition": "(also chatter away / on) talk quickly in a friendly way without stopping, esp. about things that are not serious or important",
+      "cn": "唠叨；喋喋不休",
+      "group": "5"
+    },
+    {
+      "word": "smiley",
+      "phonetic": "/ˈsmaɪli/",
+      "definition": "[C] 微笑符（电子邮件中使用的表示愉快的符号，如 :-)）",
+      "cn": "微笑符（电子邮件中使用的表示愉快的符号，如 ）",
+      "group": "5"
+    },
+    {
+      "word": "emoticon",
+      "phonetic": "/ɪˈməʊtɪˌkɒn/",
+      "definition": "[C] （在电子邮件和因特网上使用的）表情符号",
+      "cn": "（在电子邮件和因特网上使用的）表情符号",
+      "group": "5"
+    },
+    {
+      "word": "colon",
+      "phonetic": "/ˈkəʊlɒn/",
+      "definition": "[C] 冒号",
+      "cn": "冒号",
+      "group": "5"
+    },
+    {
+      "word": "dash",
+      "phonetic": "/dæʃ/",
+      "definition": "[C] 破折号",
+      "cn": "破折号",
+      "group": "5"
+    },
+    {
+      "word": "bracket",
+      "phonetic": "/ˈbrækIt/",
+      "definition": "[C, usu. pl.] (AmE parenthesis)",
+      "cn": "圆括弧；圆括号",
+      "group": "5"
+    },
+    {
+      "word": "abbreviation",
+      "phonetic": "/əˌbri:viˈeɪʃn/",
+      "definition": "a short form of a word or expression",
+      "cn": "缩略语；缩写",
+      "group": "5"
+    },
+    {
+      "word": "offensive",
+      "phonetic": "/əˈfensɪv/",
+      "definition": "very rude or insulting and likely to upset people",
+      "cn": "无理的；冒犯的；令人恼火的",
+      "group": "5"
+    },
+    {
+      "word": "inoffensive",
+      "phonetic": "/ˌɪnəˈfensɪv/",
+      "definition": "unlikely to offend or upset anyone",
+      "cn": "不冒犯人的；不会得罪人的",
+      "group": "5"
+    },
+    {
+      "word": "increasingly",
+      "phonetic": "/ɪnˈkri:sɪŋli/",
+      "definition": "more and more all the time",
+      "cn": "不断增加地；越来越多地",
+      "group": "5"
+    },
+    {
+      "word": "obscure",
+      "phonetic": "/əbˈskjʊə/",
+      "definition": "1) difficult to understand; 2) not well known and usu. not very important",
+      "cn": "费解的；晦涩的 无名的；默默无闻的；鲜为人知的",
+      "group": "5"
+    },
+    {
+      "word": "recipient",
+      "phonetic": "/rɪˈsɪpiənt/",
+      "definition": "[C] (fml.) sb. who receives sth.",
+      "cn": "接受者；领受者",
+      "group": "5"
+    },
+    {
+      "word": "ambiguity",
+      "phonetic": "/ˌæmbɪˈgju:əti/",
+      "definition": "the state of being unclear, confusing, or not certain, or things that produce this effect",
+      "cn": "模棱两可；不明确（的事物）",
+      "group": "5"
+    },
+    {
+      "word": "barrier",
+      "phonetic": "/ˈbæriə/",
+      "definition": "[C] a rule, problem, etc. that prevents people from doing sth., or limits what they can do",
+      "cn": "障碍；壁垒",
+      "group": "5"
+    },
+    {
+      "word": "humble",
+      "phonetic": "/ˈhʌmbl/",
+      "definition": "1) (in my ~ opinion) used humorously to give your opinion about sth.; 2) not considering yourself or your ideas to be as important as other people's",
+      "cn": "愚以为，依拙见（幽默用法） 谦虚的；谦卑的",
+      "group": "5"
+    },
+    {
+      "word": "complaint",
+      "phonetic": "/kəmˈpleɪnt/",
+      "definition": "1) [C] sth. that you complain about; 2) [C, U] a statement in which sb. complains about sth.",
+      "cn": "投诉的事；不满的事 投诉",
+      "group": "5"
+    },
+    {
+      "word": "revolution",
+      "phonetic": "/ˌrevəˈlu:ʃn/",
+      "definition": "a complete change in ways of thinking, methods of working, etc. （",
+      "cn": "（思想、工作方式等的）彻底变革，革命",
+      "group": "5"
+    },
+    {
+      "word": "globe",
+      "phonetic": "/gləʊb/",
+      "definition": "(the ~) [sing.] the world",
+      "cn": "地球；世界",
+      "group": "5"
+    },
+    {
+      "word": "adaptable",
+      "phonetic": "/əˈdæptəbl/",
+      "definition": "able to change in order to be successful in new and different situations",
+      "cn": "能适应的；适应性强的",
+      "group": "5"
+    },
+    {
+      "word": "netspeak",
+      "phonetic": "/ˈnetˌspi:k/",
+      "definition": "[U] 网络语言",
+      "cn": "网络语言",
+      "group": "5"
+    },
+    {
+      "word": "ridiculous",
+      "phonetic": "/rɪˈdɪkjʊləs/",
+      "definition": "very silly or unreasonable",
+      "cn": "愚蠢的；荒唐的；可笑的",
+      "group": "5"
+    },
+    {
+      "word": "ever-changing",
+      "phonetic": "/ˌevəˈtʃeɪndʒɪŋ/",
+      "definition": "changing all the time",
+      "cn": "不断变化的",
+      "group": "5"
+    },
+    {
+      "word": "spoil",
+      "phonetic": "/spɔɪl/",
+      "definition": "have a bad effect on sth. so that it is no longer attractive, enjoyable, useful, etc.",
+      "cn": "毁掉；糟蹋；破坏",
+      "group": "5"
+    },
+    {
+      "word": "whole wheat",
+      "phonetic": "/ˈhəʊl ˌwi:t/",
+      "definition": "(BrE wholemeal)",
+      "cn": "用全麦做的；用全麦面粉做的",
+      "group": "6"
+    },
+    {
+      "word": "ham",
+      "phonetic": "/hæm/",
+      "definition": "[C, U]",
+      "cn": "火腿（肉）",
+      "group": "6"
+    },
+    {
+      "word": "grill",
+      "phonetic": "/grɪl/",
+      "definition": "cook under or over direct heat",
+      "cn": "烤；烧；焙",
+      "group": "6"
+    },
+    {
+      "word": "toast",
+      "phonetic": "/təʊst/",
+      "definition": "make (bread, cheese, etc.) brown by placing it close to heat",
+      "cn": "烤，烘（面包、奶酪等）",
+      "group": "6"
+    },
+    {
+      "word": "historian",
+      "phonetic": "/hɪˈstɔːriən/",
+      "definition": "[C]a person who studies history and / or writes about it",
+      "cn": "历史学家；史学工作者",
+      "group": "6"
+    },
+    {
+      "word": "resourcefulness",
+      "phonetic": "/rɪˈzɔːsflnəs/",
+      "definition": "[U] the quality of being good at finding ways to deal with difficult situations",
+      "cn": "机智；有办法",
+      "group": "6"
+    },
+    {
+      "word": "immigration",
+      "phonetic": "/ˌɪmɪˈgreɪʃn/",
+      "definition": "[U] the process of entering another country to make one's life there",
+      "cn": "移居；移民入境",
+      "group": "6"
+    },
+    {
+      "word": "globalization",
+      "phonetic": "/ˌgləʊbəlaɪˈzeɪʃn/",
+      "definition": "[U] (BrE also globalisation) the process of making sth. such as a business operate in a lot of different countries all around the world, or the result of this",
+      "cn": "全球化",
+      "group": "6"
+    },
+    {
+      "word": "tuna",
+      "phonetic": "/ˈtju:nə/",
+      "definition": "[C, U] (pl. tuna or tunas)",
+      "cn": "金枪鱼（肉）",
+      "group": "6"
+    },
+    {
+      "word": "originate",
+      "phonetic": "/əˈrɪdʒəˌneɪt/",
+      "definition": "(fml.) (~ from / in) come from a particular place or start in a particular situation",
+      "cn": "开始；发源",
+      "group": "6"
+    },
+    {
+      "word": "conserve",
+      "phonetic": "/kənˈsɜːv/",
+      "definition": "reduce the amount of money, time, goods, etc. that you use",
+      "cn": "削减；节省",
+      "group": "6"
+    },
+    {
+      "word": "excess",
+      "phonetic": "/ɪkˈses/",
+      "definition": "[U, sing.] a larger amount of sth. than is allowed or needed",
+      "cn": "过分；过量",
+      "group": "6"
+    },
+    {
+      "word": "leftover",
+      "phonetic": "/ˈleftˌəʊvə/",
+      "definition": "(~s) [pl.] food remaining uneaten after a meal",
+      "cn": "剩饭菜",
+      "group": "6"
+    },
+    {
+      "word": "mayonnaise",
+      "phonetic": "/ˌmeɪəˈneɪz/",
+      "definition": "[U] 蛋黄酱",
+      "cn": "蛋黄酱",
+      "group": "6"
+    },
+    {
+      "word": "lettuce",
+      "phonetic": "/ˈvarɪs/",
+      "definition": "[C, U]",
+      "cn": "莴苣；生菜",
+      "group": "6"
+    },
+    {
+      "word": "convention",
+      "phonetic": "/kənˈvenʃn/",
+      "definition": "1) [C, U] behavior and attitudes that most people in a society consider to be normal and right; 2) [C] a large formal meeting for people who belong to the same profession or organization or who have the same interests",
+      "cn": "惯例；常规；习俗 大会；会议；集会",
+      "group": "6"
+    },
+    {
+      "word": "turnover",
+      "phonetic": "/ˈtɜːnˌəʊvə/",
+      "definition": "1) the rate at which goods are sold in a shop or store and replaced by others （; 2) [U, sing.] (BrE) the amount of business done during a particular period",
+      "cn": "（商店的）货物周转率 营业额",
+      "group": "6"
+    },
+    {
+      "word": "canned",
+      "phonetic": "/kænd/",
+      "definition": "(of food) preserved in a tin （",
+      "cn": "（食物）罐装的",
+      "group": "6"
+    },
+    {
+      "word": "downside",
+      "phonetic": "/ˈdaʊnˌsaɪd/",
+      "definition": "[sing.] the disadvantage or negative aspect of sth.",
+      "cn": "不利方面",
+      "group": "6"
+    },
+    {
+      "word": "popularity",
+      "phonetic": "/ˈpɒpjʊˈlærəti/",
+      "definition": "the state of being liked, enjoyed, or supported by a large number of people",
+      "cn": "流行；受欢迎",
+      "group": "6"
+    },
+    {
+      "word": "unintended",
+      "phonetic": "/ˌʌnɪnˈtendɪd/",
+      "definition": "not deliberate",
+      "cn": "无意的；无心的",
+      "group": "6"
+    },
+    {
+      "word": "scrap",
+      "phonetic": "/skræp/",
+      "definition": "1) (~s) [pl.] food left after a meal; 2) [C] a small piece of paper, cloth, etc.",
+      "cn": "残羹剩饭 小片；小块；碎屑",
+      "group": "6"
+    },
+    {
+      "word": "conscience",
+      "phonetic": "/ˈkɒnʃ(ə)ns/",
+      "definition": "[C, U] the part of your mind that tells you whether what you are doing is morally right or wrong",
+      "cn": "良心；良知",
+      "group": "6"
+    },
+    {
+      "word": "environmentalism",
+      "phonetic": "/ɪnˌvaɪrənˈmentlɪz(ə)m/",
+      "definition": "[U] the study of the environment and the belief that it must be protected from damage by human activities",
+      "cn": "环境保护主义",
+      "group": "6"
+    },
+    {
+      "word": "elite",
+      "phonetic": "/ɪˈli:t/",
+      "definition": "[C] a group of people who have a lot of power and influence because they have money, knowledge, orspecial skills （",
+      "cn": "（社会）精英；上层人士",
+      "group": "6"
+    },
+    {
+      "word": "chafing dish",
+      "phonetic": "/ˈtʃeɪfɪŋ ˌdɪʃ/",
+      "definition": "[C] a metal pan over a heater, used to cook or to keep things warm at the table （",
+      "cn": "（有加热装置的）火锅，暖锅",
+      "group": "6"
+    },
+    {
+      "word": "layer",
+      "phonetic": "/ˈleɪə/",
+      "definition": "an amount or piece of a material or substance that covers a surface or that is between two other things",
+      "cn": "表层；层",
+      "group": "6"
+    },
+    {
+      "word": "triangle",
+      "phonetic": "/ˈtraɪæŋgl/",
+      "definition": "[C] 三角形；三角形物体",
+      "cn": "三角形；三角形物体",
+      "group": "6"
+    },
+    {
+      "word": "toothpick",
+      "phonetic": "/ˈtu:θˌpɪk/",
+      "definition": "[C] 牙签",
+      "cn": "牙签",
+      "group": "6"
+    },
+    {
+      "word": "combination",
+      "phonetic": "/ˌkɒmbɪˌneɪʃn/",
+      "definition": "1) [U] the act of combining or state of being combined; 2) [C] two or more things joined or mixed together to form a single unit",
+      "cn": "联合；组合 结合体；联合体；混合体",
+      "group": "6"
+    },
+    {
+      "word": "elegance",
+      "phonetic": "/ˈelɪgəns/",
+      "definition": "[U] the quality of being attractive and showing a good sense of style",
+      "cn": "高雅",
+      "group": "6"
+    },
+    {
+      "word": "permanent",
+      "phonetic": "/ˈpɜːmənənt/",
+      "definition": "lasting or intended to last for a long time or forever",
+      "cn": "长久的；永久的",
+      "group": "6"
+    },
+    {
+      "word": "cuisine",
+      "phonetic": "/kwɪˈzi:n/",
+      "definition": "1) food cooked in a certain way; 2) a particular style of cooking",
+      "cn": "菜肴；饭菜 烹饪（法）",
+      "group": "6"
+    },
+    {
+      "word": "conservative",
+      "phonetic": "/kənˈsɜːvətɪv/",
+      "definition": "not liking changes or new ideas",
+      "cn": "保守的；守旧的",
+      "group": "6"
+    },
+    {
+      "word": "conservatism",
+      "phonetic": "/kənˈsɜːvəˌtɪz(ə)m/",
+      "definition": "[U] dislike of changes or new ideas",
+      "cn": "保守；守旧主义",
+      "group": "6"
+    },
+    {
+      "word": "loyalty",
+      "phonetic": "/ˈlɔːɪəlti/",
+      "definition": "the quality of remaining faithful to your friends, principles, country, etc.",
+      "cn": "忠诚；忠贞；忠实",
+      "group": "6"
+    },
+    {
+      "word": "dainty",
+      "phonetic": "/ˈdeɪnti/",
+      "definition": "small, pretty, and delicate",
+      "cn": "小巧的；精致的",
+      "group": "6"
+    },
+    {
+      "word": "resign",
+      "phonetic": "/rɪˈzaɪn/",
+      "definition": "officially announce that you have decided to leave your job or an organization",
+      "cn": "辞职；放弃（工作、职位）",
+      "group": "6"
+    },
+    {
+      "word": "chow mein",
+      "phonetic": "/ˌtʃaʊ ˈmeɪn/",
+      "definition": "[U] 炒面",
+      "cn": "炒面",
+      "group": "6"
+    },
+    {
+      "word": "doctorate",
+      "phonetic": "/ˈdɒkt(ə)rət/",
+      "definition": "[C] a university degree of the highest level",
+      "cn": "博士学位",
+      "group": "6"
+    },
+    {
+      "word": "mystery",
+      "phonetic": "/ˈmɪst(ə)ri/",
+      "definition": "[C] sth. which cannot be explained or understood",
+      "cn": "神秘的事；不可思议的事",
+      "group": "6"
+    },
+    {
+      "word": "specifically",
+      "phonetic": "/spəˈsɪfɪkli/",
+      "definition": "for the stated kind and no other; particularly",
+      "cn": "专门地；特定地；具体地",
+      "group": "6"
+    },
+    {
+      "word": "bun",
+      "phonetic": "/bʌn/",
+      "definition": "1) (BrE also bap); 2) (BrE)",
+      "cn": "小圆面包 小圆糕点",
+      "group": "6"
+    },
+    {
+      "word": "gravy",
+      "phonetic": "/ˈgreɪvi/",
+      "definition": "[U] （调味用的）肉汁",
+      "cn": "（调味用的）肉汁",
+      "group": "6"
+    },
+    {
+      "word": "classic",
+      "phonetic": "/ˈklæsɪk/",
+      "definition": "1) of a very typical and well-known kind; 2) of the highest quality or class and esp. serving as a model",
+      "cn": "典型的 一流的；经典的",
+      "group": "6"
+    },
+    {
+      "word": "filling",
+      "phonetic": "/ˈfɪlɪŋ/",
+      "definition": "(of food) making one's stomach feel full （",
+      "cn": "（食物）耐饥的，果腹的",
+      "group": "6"
+    },
+    {
+      "word": "munch",
+      "phonetic": "/mʌntʃ/",
+      "definition": "eat sth. steadily and often noisily, esp. sth. hard and / or dry",
+      "cn": "大声嚼，用力嚼（尤其硬或干的食物）",
+      "group": "6"
+    },
+    {
+      "word": "canteen",
+      "phonetic": "/kænˈti:n/",
+      "definition": "[C] (esp. BrE) （",
+      "cn": "（工厂、学校等的） 食堂，餐厅",
+      "group": "6"
+    },
+    {
+      "word": "dime",
+      "phonetic": "/daɪm/",
+      "definition": "[C] （美国和加拿大的）十分硬币",
+      "cn": "（美国和加拿大的）十分硬币",
+      "group": "6"
+    },
+    {
+      "word": "expat",
+      "phonetic": "/eksˈpæt/",
+      "definition": "[C] (infml.) a person living in a foreign country",
+      "cn": "居住在国外的人；侨民",
+      "group": "6"
+    },
+    {
+      "word": "confession",
+      "phonetic": "/kənˈfeʃn/",
+      "definition": "[C, U] the act of admitting one's crimes, faults, etc.",
+      "cn": "承认；坦白",
+      "group": "6"
+    },
+    {
+      "word": "devote",
+      "phonetic": "/dɪˈvəut/",
+      "definition": "use all or most of your time, effort, etc. in order to do sth. or help sb.",
+      "cn": "致力；献身；倾注",
+      "group": "6"
+    },
+    {
+      "word": "devoted",
+      "phonetic": "/dɪˈvəʊtɪd/",
+      "definition": "showing great fondness or loyalty; caring a great deal",
+      "cn": "忠实的；热爱 的",
+      "group": "6"
+    },
+    {
+      "word": "insatiable",
+      "phonetic": "/ɪnˈseɪʃəbl/",
+      "definition": "impossible to satisfy",
+      "cn": "无法满足的",
+      "group": "6"
+    },
+    {
+      "word": "craving",
+      "phonetic": "/ˈkreɪvɪŋ/",
+      "definition": "[C] a very strong desire for sth.",
+      "cn": "渴望；热望",
+      "group": "6"
+    },
+    {
+      "word": "tropical",
+      "phonetic": "/ˈtrɒpɪkl/",
+      "definition": "coming from, found in, or typical of the tropics",
+      "cn": "来自热带的；产于热带的；热带的",
+      "group": "6"
+    },
+    {
+      "word": "challenging",
+      "phonetic": "/ˈtʃælɪndʒɪŋ/",
+      "definition": "difficult in an interesting or enjoyable way",
+      "cn": "富有挑战性的",
+      "group": "6"
+    },
+    {
+      "word": "calculus",
+      "phonetic": "/ˈkælkjʊləs/",
+      "definition": "[U] 微积分",
+      "cn": "微积分",
+      "group": "6"
+    },
+    {
+      "word": "adjust",
+      "phonetic": "/əˈdʒʌst/",
+      "definition": "gradually become familiar with a new situation （",
+      "cn": "（使）适应；（使）习惯",
+      "group": "6"
+    },
+    {
+      "word": "dorm",
+      "phonetic": "/dɔːm/",
+      "definition": "1) (BrE hall of residence, infml.) （; 2) (esp. BrE, infml.)",
+      "cn": "（大学里的）学生宿舍楼 大寝室；宿舍",
+      "group": "6"
+    },
+    {
+      "word": "zucchini",
+      "phonetic": "/zʊˈki:ni/",
+      "definition": "[C] (pl. zucchini or zucchinis) (BrE courgette) （",
+      "cn": "（绿皮）密生西葫芦",
+      "group": "6"
+    },
+    {
+      "word": "cucumber",
+      "phonetic": "/ˈkju:ˌkʌmbə/",
+      "definition": "[C, U]",
+      "cn": "黄瓜",
+      "group": "6"
+    },
+    {
+      "word": "disposal",
+      "phonetic": "/dɪˈspəʊzl/",
+      "definition": "1) the power or opportunity to use sb. / sth.; 2) the act or means of getting rid of sth.",
+      "cn": "处置权 清理；处理",
+      "group": "6"
+    },
+    {
+      "word": "peruse",
+      "phonetic": "/pəˈru:z/",
+      "definition": "1) examine or consider with attention and in detail; 2) (fml.) read sth, esp. in a careful way",
+      "cn": "仔细研究；仔细考虑 读；（尤指）细读，精读",
+      "group": "6"
+    },
+    {
+      "word": "grimly",
+      "phonetic": "/grɪmli/",
+      "definition": "1) in a worried or unhappy way; 2) seriously",
+      "cn": "担忧地；不快地 严肃地",
+      "group": "6"
+    },
+    {
+      "word": "mealy",
+      "phonetic": "/ˈmi:li/",
+      "definition": "(fruits or vegetables) dry and not tasting good （",
+      "cn": "（水果或蔬菜）干巴难吃的",
+      "group": "6"
+    },
+    {
+      "word": "pinkish",
+      "phonetic": "/ˈpɪŋkɪʃ/",
+      "definition": "of a light shade of red",
+      "cn": "浅粉红色的",
+      "group": "6"
+    },
+    {
+      "word": "iceberg lettuce",
+      "phonetic": "/ˌaɪsbɜːg ˈvarɪs/",
+      "definition": "[C, U]",
+      "cn": "卷心莴苣",
+      "group": "6"
+    },
+    {
+      "word": "wrap",
+      "phonetic": "/ræp/",
+      "definition": "(also ~ up) put paper or cloth over sth. to cover it （",
+      "cn": "（用纸或布）包，裹（某物）",
+      "group": "6"
+    },
+    {
+      "word": "wrapper",
+      "phonetic": "/ˈræpə/",
+      "definition": "[C] the piece of paper or plastic that covers sth. when it is sold （",
+      "cn": "（商品的）包装纸（塑料）",
+      "group": "6"
+    },
+    {
+      "word": "peel",
+      "phonetic": "/piːl/",
+      "definition": "[C, U] the skin of some fruits and vegetables, esp. the thick skin of fruits such as oranges, which you do not eat （",
+      "cn": "（水果和蔬菜的）外皮（尤指橙子等不能食用的厚皮）",
+      "group": "6"
+    },
+    {
+      "word": "unworldly",
+      "phonetic": "/ʌnˈwɜːldli/",
+      "definition": "1) not having a lot of experience of life; 2) not interested in money or possessions",
+      "cn": "不谙世故的；天真的 对钱财不感兴趣；脱俗的",
+      "group": "6"
+    },
+    {
+      "word": "cultured",
+      "phonetic": "/ˈkʌltʃəd/",
+      "definition": "having or showing good education, manners, and an interest in art, music, literature, etc.",
+      "cn": "有文化的；有教养的；有修养的",
+      "group": "6"
+    },
+    {
+      "word": "realization",
+      "phonetic": "/ˌrɪəlaɪˈzeɪʃn/",
+      "definition": "[U, sing.] (BrE also realisation) the process of becoming aware of sth.",
+      "cn": "认识；意识；领悟",
+      "group": "6"
+    },
+    {
+      "word": "grant",
+      "phonetic": "/gra:nt/",
+      "definition": "1) (take sb. / sth. for granted) be so used to sb. / sth. that you do not recognize their true value any more and do not show that you are grateful （; 2) (fml.) give sb. sth. or allow them to have sth. that they have asked for",
+      "cn": "（因习以为常）视 为理所当然（而对其不重视） 给予；准予",
+      "group": "6"
+    },
+    {
+      "word": "motivation",
+      "phonetic": "/ˌməʊtɪˈveɪʃn/",
+      "definition": "1) [C] the reason why you want to do sth.; 2) [U] eagerness and willingness to do sth. without needing to be told or forced to do it",
+      "cn": "动机；原因 动力；积极性",
+      "group": "6"
+    },
+    {
+      "word": "priority",
+      "phonetic": "/praɪˈɒrəti/",
+      "definition": "[C] sth. that needs attention, consideration, service, etc. before others",
+      "cn": "优先处理的事；当务之急",
+      "group": "6"
+    },
+    {
+      "word": "golden",
+      "phonetic": "/ˈgəʊld(ə)n/",
+      "definition": "of the color of gold",
+      "cn": "金色的",
+      "group": "6"
+    },
+    {
+      "word": "yolk",
+      "phonetic": "/jəʊk/",
+      "definition": "[C, U]",
+      "cn": "蛋黄",
+      "group": "6"
+    },
+    {
+      "word": "crunch",
+      "phonetic": "/krʌntʃ/",
+      "definition": "the sound of sth. being crushed or like sth. being crushed or broken",
+      "cn": "嘎吱的响声",
+      "group": "6"
+    },
+    {
+      "word": "organic",
+      "phonetic": "/ɔːˈgænɪk/",
+      "definition": "relating to farming or gardening methods of growing food without using artificial chemicals, or produced or grown by these methods",
+      "cn": "不使用化肥的；有机的； 绿色的",
+      "group": "6"
+    },
+    {
+      "word": "free-range",
+      "phonetic": "/ˌfri: ˈreɪndʒ/",
+      "definition": "relating to a type of farming which allows animals such as chickens and pigs to move around and eat naturally, rather than being kept in a restricted space",
+      "cn": "放养的；散养的",
+      "group": "6"
+    },
+    {
+      "word": "participate",
+      "phonetic": "/pɑːˈtɪsɪˌpeɪt/",
+      "definition": "(fml.) take part in an activity or event",
+      "cn": "参加；参与",
+      "group": "6"
+    },
+    {
+      "word": "melt",
+      "phonetic": "/melt/",
+      "definition": "become or make sth. become liquid as a result of heating （",
+      "cn": "（使）熔化，融化",
+      "group": "6"
+    },
+    {
+      "word": "sustenance",
+      "phonetic": "/ˈsʌstənəns/",
+      "definition": "[U] (fml.) food which keeps people or animals strong and healthy",
+      "cn": "营养；食物",
+      "group": "6"
+    },
+    {
+      "word": "profound",
+      "phonetic": "/prəˈfaʊnd/",
+      "definition": "very great",
+      "cn": "巨大的；重大的",
+      "group": "6"
+    },
+    {
+      "word": "far-reaching",
+      "phonetic": "/ˌfɑːˈri:tʃɪŋ/",
+      "definition": "having a great influence or effect",
+      "cn": "影响深远的",
+      "group": "6"
+    },
+    {
+      "word": "grave",
+      "phonetic": "/greɪv/",
+      "definition": "grave problems, situations, or worries are very great or bad",
+      "cn": "严重的；重大的；严峻的",
+      "group": "6"
+    },
+    {
+      "word": "prediction",
+      "phonetic": "/prɪˈdɪkʃn/",
+      "definition": "[C, U] a statement about what you think is going to happen, or the act of making this statement",
+      "cn": "预言；预测",
+      "group": "6"
+    },
+    {
+      "word": "cabin",
+      "phonetic": "/ˈkæbɪn/",
+      "definition": "[C] （尤指建于林中或山上的）小木屋",
+      "cn": "（尤指建于林中或山上的）小木屋",
+      "group": "7"
+    },
+    {
+      "word": "meteor",
+      "phonetic": "/miːtiə/",
+      "definition": "[C] 流星",
+      "cn": "流星",
+      "group": "7"
+    },
+    {
+      "word": "smoky",
+      "phonetic": "/ˈsmaʊki/",
+      "definition": "having the appearance, smell, or taste of smoke",
+      "cn": "似烟的；有烟熏味的",
+      "group": "7"
+    },
+    {
+      "word": "trail",
+      "phonetic": "/treɪl/",
+      "definition": "[C] a long line or a series of marks that have been left by sb. / sth.",
+      "cn": "痕迹",
+      "group": "7"
+    },
+    {
+      "word": "sugary",
+      "phonetic": "/ˈʃʊgəri/",
+      "definition": "like sugar",
+      "cn": "糖状的；粒状表面的",
+      "group": "7"
+    },
+    {
+      "word": "winter solstice",
+      "phonetic": "/ˌwɪntə ˈsɒlstɪs/",
+      "definition": "[C] 冬至",
+      "cn": "冬至",
+      "group": "7"
+    },
+    {
+      "word": "irreplaceable",
+      "phonetic": "/ˌɪrɪˈpleɪsəbl/",
+      "definition": "too special, valuable, or unusual to be replaced by anything else （",
+      "cn": "（因太特别、贵重或少见而）不可替代的，独一无二的",
+      "group": "7"
+    },
+    {
+      "word": "rhythm",
+      "phonetic": "/ˈrɪðəm/",
+      "definition": "1) a regular pattern of changes; 2) a regular repeated pattern of sounds or movements",
+      "cn": "规则变化；节律模式；节奏 节律；节拍；节奏",
+      "group": "7"
+    },
+    {
+      "word": "nightfall",
+      "phonetic": "/naɪtˌfɔːl/",
+      "definition": "[U] the time when it begins to get dark in the evening",
+      "cn": "黄昏；傍晚",
+      "group": "7"
+    },
+    {
+      "word": "artificial",
+      "phonetic": "/ˌɑːtɪˈfɪʃl/",
+      "definition": "not real or not made of natural things but made to be like sth. that is real or natural",
+      "cn": "人造的；人工的",
+      "group": "7"
+    },
+    {
+      "word": "night shift",
+      "phonetic": "/ˈnaɪt ˌʃɪft/",
+      "definition": "[C] a period of time at night when people regularly work, esp. in a factory （",
+      "cn": "（尤指工厂的）夜班",
+      "group": "7"
+    },
+    {
+      "word": "probable",
+      "phonetic": "/ˈprɒbəbl/",
+      "definition": "likely to exist, happen, or be true",
+      "cn": "可能存在的；可能发生的；很可能的",
+      "group": "7"
+    },
+    {
+      "word": "reduction",
+      "phonetic": "/rɪˈdʌkʃn/",
+      "definition": "[C, U] a decrease in the amount, size, or price of sth., or the act of decreasing sth. （",
+      "cn": "（数量、尺寸或价格的）减少，缩小，下降",
+      "group": "7"
+    },
+    {
+      "word": "hormone",
+      "phonetic": "/ˈhɔːməʊn/",
+      "definition": "[C] 激素；荷尔蒙",
+      "cn": "激素；荷尔蒙",
+      "group": "7"
+    },
+    {
+      "word": "melatonin",
+      "phonetic": "/ˌmeləˈtəʊnɪn/",
+      "definition": "[U] 褪黑激素 （有时用作安眠药）",
+      "cn": "褪黑激素 （有时用作安眠药）",
+      "group": "7"
+    },
+    {
+      "word": "disorder",
+      "phonetic": "/dɪsˈɔːdə/",
+      "definition": "[C] (medical) a mental or physical illness which prevents part of your body from working properly",
+      "cn": "失调；紊乱；障碍",
+      "group": "7"
+    },
+    {
+      "word": "diabetes",
+      "phonetic": "/ˌdaɪəˈbi:ti:z/",
+      "definition": "[U] 糖尿病",
+      "cn": "糖尿病",
+      "group": "7"
+    },
+    {
+      "word": "obesity",
+      "phonetic": "/əʊˈbi:səti/",
+      "definition": "[U] a condition in which sb. is too fat in a way that is dangerous for their health",
+      "cn": "过度肥胖",
+      "group": "7"
+    },
+    {
+      "word": "migrate",
+      "phonetic": "/maɪˈgreɪt/",
+      "definition": "(of birds, animals, etc.) travel regularly from one part of the world to another （",
+      "cn": "（鸟、兽等）迁徙",
+      "group": "7"
+    },
+    {
+      "word": "sea turtle",
+      "phonetic": "/ˈsi: ˌtɜːtl/",
+      "definition": "[C] (AmE also turtle)",
+      "cn": "海龟",
+      "group": "7"
+    },
+    {
+      "word": "pest",
+      "phonetic": "/pest/",
+      "definition": "[C] a small animal or insect that destroys crops or food supplies （",
+      "cn": "（毁坏庄稼或食物的）有害小动物，害虫",
+      "group": "7"
+    },
+    {
+      "word": "bulldozer",
+      "phonetic": "/ˈbʊlˌdəʊzə/",
+      "definition": "[C] 推土机",
+      "cn": "推土机",
+      "group": "7"
+    },
+    {
+      "word": "habitat",
+      "phonetic": "/ˈhæbɪˌtæt/",
+      "definition": "[C, U] the natural home of a plant or animal （",
+      "cn": "（动植物的）生活环境；（动物的）栖息地",
+      "group": "7"
+    },
+    {
+      "word": "disrupt",
+      "phonetic": "/dɪsˈrʌpt/",
+      "definition": "prevent sth. from continuing in its usual way by causing problems",
+      "cn": "扰乱；使混乱",
+      "group": "7"
+    },
+    {
+      "word": "ecosystem",
+      "phonetic": "/ˈi:kəʊˌsɪstəm/",
+      "definition": "[C] all the animals and plants in a particular area, and the way in which they are related to each other and to their environment",
+      "cn": "生态系统",
+      "group": "7"
+    },
+    {
+      "word": "collapse",
+      "phonetic": "/kəˈlæps/",
+      "definition": "1) suddenly fail or become too weak to continue; 2) fall down or fall in suddenly, often after breaking apart",
+      "cn": "突然失败；垮掉；崩溃 倒坍；塌下",
+      "group": "7"
+    },
+    {
+      "word": "illuminate",
+      "phonetic": "/ɪˈlu:mɪˌneɪt/",
+      "definition": "make a light shine on sth., or fill a place with light",
+      "cn": "照射；照亮",
+      "group": "7"
+    },
+    {
+      "word": "intimate",
+      "phonetic": "/ˈɪntɪmət/",
+      "definition": "1) private and friendly so that you feel comfortable; 2) having an extremely close friendship",
+      "cn": "幽静舒适的；温馨的 亲密的；密切的",
+      "group": "7"
+    },
+    {
+      "word": "flame",
+      "phonetic": "/fleɪm/",
+      "definition": "[C, U] hot bright burning gas that you see when sth. is on fire",
+      "cn": "火焰",
+      "group": "7"
+    },
+    {
+      "word": "solitude",
+      "phonetic": "/ˈsɒləˌtju:d/",
+      "definition": "[U] the state of being completely alone, esp. when this is pleasant or relaxing",
+      "cn": "独处",
+      "group": "7"
+    },
+    {
+      "word": "invaluable",
+      "phonetic": "/ɪnˈvæljuəbl/",
+      "definition": "extremely useful",
+      "cn": "极有价值的",
+      "group": "7"
+    },
+    {
+      "word": "soulful",
+      "phonetic": "/ˈsəʊlfl/",
+      "definition": "expressing deep, usu. sad, emotions",
+      "cn": "深情的；伤感的",
+      "group": "7"
+    },
+    {
+      "word": "starry",
+      "phonetic": "/ˈstɑːri/",
+      "definition": "having many stars",
+      "cn": "布满星星的",
+      "group": "7"
+    },
+    {
+      "word": "blanket",
+      "phonetic": "/ˈblæŋkɪt/",
+      "definition": "1) [sing.] a thick covering or area of sth.; 2) [C]",
+      "cn": "厚（的覆盖）层 毯子；毛毯",
+      "group": "7"
+    },
+    {
+      "word": "diminish",
+      "phonetic": "/dɪˈmɪnɪʃ/",
+      "definition": "become or make sth. become smaller or less （",
+      "cn": "（使）减小；（使）减少",
+      "group": "7"
+    },
+    {
+      "word": "monument",
+      "phonetic": "/ˈmɒnjʊmənt/",
+      "definition": "a building, statue, or other large structure that is built to remind people of an important event or famous person",
+      "cn": "纪念碑；纪念塔；纪念馆",
+      "group": "7"
+    },
+    {
+      "word": "salmon",
+      "phonetic": "/ˈsæmən/",
+      "definition": "[C, U] (pl. salmon)",
+      "cn": "鲑鱼（肉）；三文鱼（肉）；大麻哈鱼（肉）",
+      "group": "7"
+    },
+    {
+      "word": "pal",
+      "phonetic": "/pæl/",
+      "definition": "[C] (infml.) a close friend",
+      "cn": "密友；好友",
+      "group": "7"
+    },
+    {
+      "word": "skitter",
+      "phonetic": "/ˈskɪtə/",
+      "definition": "(always + ad. / prep.) move very quickly and lightly, like a small animal （",
+      "cn": "（像小动物那样）轻快地跑",
+      "group": "7"
+    },
+    {
+      "word": "windup",
+      "phonetic": "/ˈwaɪndʌp/",
+      "definition": "(BrE wind-up) (only before noun) relating to a machine or toy that you turn part of several times, in order to make it move or start working （",
+      "cn": "（机器或玩具）装有发条的，用手柄操作的",
+      "group": "7"
+    },
+    {
+      "word": "spray",
+      "phonetic": "/spreɪ/",
+      "definition": "(of liquid or small bits) quickly scatter through the air （",
+      "cn": "（液体或碎屑）飞溅，飞散",
+      "group": "7"
+    },
+    {
+      "word": "flop",
+      "phonetic": "/flɒp/",
+      "definition": "(always + ad. / prep.) fall or drop heavily",
+      "cn": "沉重地落下",
+      "group": "7"
+    },
+    {
+      "word": "magnetic",
+      "phonetic": "/mægˈnetɪk/",
+      "definition": "concerning or produced by magnetism",
+      "cn": "磁的；磁性的",
+      "group": "7"
+    },
+    {
+      "word": "alas",
+      "phonetic": "/əˈlæs/",
+      "definition": "(fml.) used when mentioning a fact that you wish was not true",
+      "cn": "不幸地 （表示但愿并非如此）",
+      "group": "7"
+    },
+    {
+      "word": "rainbow trout",
+      "phonetic": "/ˈreɪnˌbəʊ ˌtraʊt/",
+      "definition": "[C, U] (pl. rainbow trout or rainbow trouts)",
+      "cn": "虹鳟",
+      "group": "7"
+    },
+    {
+      "word": "exquisitely",
+      "phonetic": "/ɪkˈskwɪzɪtli/",
+      "definition": "in a very beautiful and delicate way",
+      "cn": "精美地；精致地",
+      "group": "7"
+    },
+    {
+      "word": "rocky",
+      "phonetic": "/ˌrɒki/",
+      "definition": "covered with rocks or made of rock",
+      "cn": "岩石覆盖的；由岩石形成的",
+      "group": "7"
+    },
+    {
+      "word": "Omega-3",
+      "phonetic": "/ˌəʊmɪgə ˈθri:/",
+      "definition": "[U] 奥米伽3（一组多元不饱和脂肪酸）",
+      "cn": "奥米伽 （一组多元不饱和脂肪酸）",
+      "group": "7"
+    },
+    {
+      "word": "staple",
+      "phonetic": "/ˈsteɪpl/",
+      "definition": "[C] a food that is needed and used all the time",
+      "cn": "基本食物；主食",
+      "group": "7"
+    },
+    {
+      "word": "spawn",
+      "phonetic": "/spɔːn/",
+      "definition": "produce eggs in large quantities at the same time （",
+      "cn": "（鱼或蛙）大量产卵",
+      "group": "7"
+    },
+    {
+      "word": "cod",
+      "phonetic": "/kɒd/",
+      "definition": "[C, U] (pl. cod)",
+      "cn": "鳕鱼（肉）",
+      "group": "7"
+    },
+    {
+      "word": "backfire",
+      "phonetic": "/ˌbækˈfaɪə/",
+      "definition": "(of a plan or action) have the opposite effect to the one you intended （",
+      "cn": "（计划或行动）发生意外，产生事与愿违的结果",
+      "group": "7"
+    },
+    {
+      "word": "coastal",
+      "phonetic": "/ˈkəʊstl/",
+      "definition": "(only before noun) in the sea or on the land near the coast",
+      "cn": "近海的；沿海的；海岸的",
+      "group": "7"
+    },
+    {
+      "word": "thrive",
+      "phonetic": "/θraɪv/",
+      "definition": "become very strong and healthy or very successful",
+      "cn": "茁壮成长；兴旺；欣欣向荣",
+      "group": "7"
+    },
+    {
+      "word": "abundance",
+      "phonetic": "/əˈbʌndəns/",
+      "definition": "[U, sing] a large quantity of sth.",
+      "cn": "充裕；丰富",
+      "group": "7"
+    },
+    {
+      "word": "blessing",
+      "phonetic": "/ˈblesɪŋ/",
+      "definition": "[C] sth. that improves your life, helps you in some way, or makes you happy",
+      "cn": "幸事；幸运；福气",
+      "group": "7"
+    },
+    {
+      "word": "diner",
+      "phonetic": "/ˈdaɪnə/",
+      "definition": "[C] （餐厅的）用餐者",
+      "cn": "（餐厅的）用餐者",
+      "group": "7"
+    },
+    {
+      "word": "fattiness",
+      "phonetic": "/ˈfætInəs/",
+      "definition": "[U] the state of containing a lot of fat",
+      "cn": "富含脂肪",
+      "group": "7"
+    },
+    {
+      "word": "moist",
+      "phonetic": "/mɔɪst/",
+      "definition": "slightly wet, esp. in a way that is pleasant or suitable",
+      "cn": "潮湿的；湿润的",
+      "group": "7"
+    },
+    {
+      "word": "overcook",
+      "phonetic": "/ˌəʊvəˈkʊk/",
+      "definition": "cook food for too long",
+      "cn": "将（食物）煮得过熟",
+      "group": "7"
+    },
+    {
+      "word": "Norwegian",
+      "phonetic": "/nɔːˈwi:dʒ(ə)n/",
+      "definition": "[C] 挪威人",
+      "cn": "挪威人",
+      "group": "7"
+    },
+    {
+      "word": "surplus",
+      "phonetic": "/ˈsɜːpləs/",
+      "definition": "[C, U] an amount of sth. that is more than what is needed or used",
+      "cn": "剩余；过剩；剩余额；多余的量",
+      "group": "7"
+    },
+    {
+      "word": "incorporate",
+      "phonetic": "/ɪnˈkɔːpəˌreɪt/",
+      "definition": "include sth. as part of a group, system, plan, etc.",
+      "cn": "把 （某事物）并入，包含",
+      "group": "7"
+    },
+    {
+      "word": "flesh",
+      "phonetic": "/fleʃ/",
+      "definition": "[U] （人或动物的）肉",
+      "cn": "（人或动物的）肉",
+      "group": "7"
+    },
+    {
+      "word": "sushi",
+      "phonetic": "/ˈsu:ʃi/",
+      "definition": "[U] 寿司",
+      "cn": "寿司",
+      "group": "7"
+    },
+    {
+      "word": "avocado",
+      "phonetic": "/ˌævəˈkɑːdəʊ/",
+      "definition": "[C] (BrE also avocado pear) (pl. avocados)",
+      "cn": "鳄梨；牛油果",
+      "group": "7"
+    },
+    {
+      "word": "marketing",
+      "phonetic": "/ˈmɑːkɪtɪŋ/",
+      "definition": "[U] the activity of deciding how to advertise a product, what price to charge for it, etc., or the type of job in which you do this",
+      "cn": "促销；营销；销售",
+      "group": "7"
+    },
+    {
+      "word": "antibiotic",
+      "phonetic": "/ˌæntibaɪˈɒtɪk/",
+      "definition": "[C, usu. pl.]",
+      "cn": "抗生素",
+      "group": "7"
+    },
+    {
+      "word": "toxin",
+      "phonetic": "",
+      "definition": "[C] 毒素 （尤指细菌产生的致病物质）",
+      "cn": "毒素 （尤指细菌产生的致病物质）",
+      "group": "7"
+    },
+    {
+      "word": "overtake",
+      "phonetic": "/ˌəʊvəˈteɪk/",
+      "definition": "(overtook, overtaken) develop or increase more quickly than sb. / sth. else and become more successful, more important, or more advanced than them （",
+      "cn": "（发展或增长）超越，超过",
+      "group": "7"
+    },
+    {
+      "word": "fragile",
+      "phonetic": "/ˈfrædʒaɪl/",
+      "definition": "weak or uncertain, and likely to become worse under pressure",
+      "cn": "脆弱的",
+      "group": "7"
+    },
+    {
+      "word": "domesticated",
+      "phonetic": "/dəˈmestɪˌkeɪtɪd/",
+      "definition": "(of animals or plants) brought or kept under control or cultivation （",
+      "cn": "（动物或植物）驯化的",
+      "group": "7"
+    },
+    {
+      "word": "breed",
+      "phonetic": "/bri:d/",
+      "definition": "[C] a type of animal that is kept as a pet or on a farm （",
+      "cn": "（宠物或牲畜的）品种",
+      "group": "7"
+    },
+    {
+      "word": "threaten",
+      "phonetic": "/ˈθretn/",
+      "definition": "1) be likely to harm or destroy sth.; 2) say that you will cause sb. harm or trouble if they do not do what you want",
+      "cn": "威胁到；危及 威胁；恐吓",
+      "group": "7"
+    },
+    {
+      "word": "joyride",
+      "phonetic": "/ˈdʒɔːɪraɪd/",
+      "definition": "[C] an act of driving around for enjoyment in a car, esp. one that was taken without permission and is driven in a dangerous manner",
+      "cn": "驾车兜风（尤指偷来别人汽车进行危险驾驶）",
+      "group": "7"
+    },
+    {
+      "word": "robotics",
+      "phonetic": "/rəʊˈbɒtɪks/",
+      "definition": "[U] 机器人（制造与应用）学",
+      "cn": "机器人（制造与应用）学",
+      "group": "8"
+    },
+    {
+      "word": "yoga",
+      "phonetic": "/ˈjəʊgə/",
+      "definition": "[U] 瑜伽",
+      "cn": "瑜伽",
+      "group": "8"
+    },
+    {
+      "word": "AI",
+      "phonetic": "",
+      "definition": "[U] (artificial intelligence)",
+      "cn": "人工智能",
+      "group": "8"
+    },
+    {
+      "word": "eliminate",
+      "phonetic": "/ɪˈlɪmɪˌneɪt/",
+      "definition": "completely get rid of sth. that is unnecessary or unwanted",
+      "cn": "消除；根除",
+      "group": "8"
+    },
+    {
+      "word": "specialization",
+      "phonetic": "/ˌspeʃəlaɪˈzeɪʃn/",
+      "definition": "1) the practice of limiting your interests or activities to one particular subject; 2) an activity or subject that you know a lot about",
+      "cn": "专业化；专门化 专业",
+      "group": "8"
+    },
+    {
+      "word": "routinize",
+      "phonetic": "/ru:ˈti:naɪz/",
+      "definition": "(BrE also routinise) if you routinize a way of doing sth., you make it a normal part of a job or process",
+      "cn": "使惯例化；使成常规",
+      "group": "8"
+    },
+    {
+      "word": "automate",
+      "phonetic": "",
+      "definition": "start using computers and machines to do a job, rather than people",
+      "cn": "使自动化",
+      "group": "8"
+    },
+    {
+      "word": "DJ",
+      "phonetic": "",
+      "definition": "[C] (disc jockey) sb. who plays records on a radio show or in a club where you can dance （",
+      "cn": "（电台）音乐唱片节目主持人；（俱乐部）打碟师，舞曲唱片播放员",
+      "group": "8"
+    },
+    {
+      "word": "consequently",
+      "phonetic": "/ˈkɒnsɪkwəntli/",
+      "definition": "as a result",
+      "cn": "结果；因此；所以",
+      "group": "8"
+    },
+    {
+      "word": "evaluate",
+      "phonetic": "/ɪˈvæljuˌeɪt/",
+      "definition": "judge how good, useful, or successful sth. is",
+      "cn": "评估； 评价",
+      "group": "8"
+    },
+    {
+      "word": "algorithm",
+      "phonetic": "/ˈælgəˌrɪð(ə)m/",
+      "definition": "[C] (technical)",
+      "cn": "演算法；计算程序",
+      "group": "8"
+    },
+    {
+      "word": "manipulate",
+      "phonetic": "/məˈnɪpjʊˌleɪt/",
+      "definition": "make sb. think and behave exactly as you want them to, by skillfully deceiving or influencing them",
+      "cn": "操纵，控制（某人的思想和行为）",
+      "group": "8"
+    },
+    {
+      "word": "mystical",
+      "phonetic": "/ˈmɪstɪkl/",
+      "definition": "(also mystic) (usu. before noun) having spiritual powers or qualities that are difficult to understand or to explain",
+      "cn": "神秘的；不可思议的；难以解释的",
+      "group": "8"
+    },
+    {
+      "word": "biochemical",
+      "phonetic": "/ˌbaɪəʊˈkemɪkl/",
+      "definition": "connected with the chemistry of living things",
+      "cn": "生物化学的",
+      "group": "8"
+    },
+    {
+      "word": "biometric",
+      "phonetic": "/ˌbaɪəʊˈmetrɪk/",
+      "definition": "(usu. before noun) using measurements of human features, such as fingers or eyes, in order to identify people",
+      "cn": "生物特征识别的",
+      "group": "8"
+    },
+    {
+      "word": "calculate",
+      "phonetic": "/ˈkælkjʊˌleɪt/",
+      "definition": "1) guess sth. using as many facts as you can find; 2) find out how much sth. will cost, how long sth. will take, etc., by using numbers",
+      "cn": "预测；估计 计算；核算",
+      "group": "8"
+    },
+    {
+      "word": "analysis",
+      "phonetic": "/əˈnæləsɪs/",
+      "definition": "[C, U] a careful examination of sth. in order to understand it better （",
+      "cn": "（对事物的）分析",
+      "group": "8"
+    },
+    {
+      "word": "output",
+      "phonetic": "/ˈaʊtˌpʊt/",
+      "definition": "1) the information produced by a computer （; 2) the amount of goods or work produced by a person, machine, factory, etc.",
+      "cn": "（计算机的）输出信息 产量；产品",
+      "group": "8"
+    },
+    {
+      "word": "tailor",
+      "phonetic": "/ˈteɪlə/",
+      "definition": "make sth. so that it is exactly right for sb.'s particular needs or for a particular purpose",
+      "cn": "根据特定需要制作；定做",
+      "group": "8"
+    },
+    {
+      "word": "echo",
+      "phonetic": "/ˈekəʊ/",
+      "definition": "repeat (another's words, ideas, etc.); if a sound echoes, you hear it again because it was made near sth. such as a wall or hill （",
+      "cn": "附和 （声音）回响；发出回声",
+      "group": "8"
+    },
+    {
+      "word": "distress",
+      "phonetic": "/dɪˈstres/",
+      "definition": "[U] a feeling of extreme unhappiness",
+      "cn": "忧虑；苦恼；悲伤",
+      "group": "8"
+    },
+    {
+      "word": "melody",
+      "phonetic": "/ˈmelədi/",
+      "definition": "[C] a tune, esp. the main tune in a piece of music written for several instruments or voices",
+      "cn": "旋律；曲调；（尤指）主旋律",
+      "group": "8"
+    },
+    {
+      "word": "peculiarity",
+      "phonetic": "/pɪˌkju:liˈærəti/",
+      "definition": "[U] sth. that is a feature of only one particular place, person, situation, etc. （",
+      "cn": "（某地方、某人或某情况等的）特点，独特性",
+      "group": "8"
+    },
+    {
+      "word": "dislike",
+      "phonetic": "/dɪsˈlaɪk/",
+      "definition": "think sb. / sth. is unpleasant and not like them",
+      "cn": "不喜欢；讨厌",
+      "group": "8"
+    },
+    {
+      "word": "oxytocin",
+      "phonetic": "/ˌɒksɪˈtəʊsɪn/",
+      "definition": "[U] 催产素",
+      "cn": "催产素",
+      "group": "8"
+    },
+    {
+      "word": "compose",
+      "phonetic": "/kəmˈpəʊz/",
+      "definition": "1) write a piece of music; 2) (be composed of) be formed from a number of substances, parts, or people",
+      "cn": "作（曲） 由 组成",
+      "group": "8"
+    },
+    {
+      "word": "personalized",
+      "phonetic": "/ˈpɜːsnəlaɪzd/",
+      "definition": "(BrE also personalised) adapted to personal requirements or tastes",
+      "cn": "个性化的",
+      "group": "8"
+    },
+    {
+      "word": "besides",
+      "phonetic": "/bɪˈsaɪdz/",
+      "definition": "apart from sb. / sth.; in addition to sb. / sth.",
+      "cn": "除 之外（还）",
+      "group": "8"
+    },
+    {
+      "word": "surpass",
+      "phonetic": "/səˈpɑːs/",
+      "definition": "be even better or greater than sb. / sth. else",
+      "cn": "超过；胜过",
+      "group": "8"
+    },
+    {
+      "word": "outperform",
+      "phonetic": "/ˌaʊtpəˈfɔːm/",
+      "definition": "be more successful than sb. / sth. else",
+      "cn": "做得比 好；胜过",
+      "group": "8"
+    },
+    {
+      "word": "rational",
+      "phonetic": "/ˈræʃn(ə)l/",
+      "definition": "rational thoughts, decisions, etc. are based on reasons rather than emotions （",
+      "cn": "（想法、决定等）合理的，基于理性的",
+      "group": "8"
+    },
+    {
+      "word": "biological",
+      "phonetic": "/ˌbaɪəˈlɒdʒɪkl/",
+      "definition": "relating to the natural processes performed by living things",
+      "cn": "生物的；与生物有关的",
+      "group": "8"
+    },
+    {
+      "word": "genetic",
+      "phonetic": "/dʒəˈnetɪk/",
+      "definition": "relating to genes or genetics",
+      "cn": "基因的；遗传学的",
+      "group": "8"
+    },
+    {
+      "word": "microbe",
+      "phonetic": "/ˈmaɪkrəʊb/",
+      "definition": "[C] an extremely small living thing which can only be seen if you use a microscope. Some microbes can cause diseases.",
+      "cn": "微生物",
+      "group": "8"
+    },
+    {
+      "word": "intuitively",
+      "phonetic": "/ɪnˈtju:ətɪvli/",
+      "definition": "in a way that is based on feelings rather than facts or proof",
+      "cn": "基于直觉地",
+      "group": "8"
+    },
+    {
+      "word": "willingly",
+      "phonetic": "/ˈwɪlɪŋli/",
+      "definition": "in a way that shows you are happy or pleased to do sth. or that you do not object to doing sth.",
+      "cn": "欣然地；愿意地；乐意地",
+      "group": "8"
+    },
+    {
+      "word": "broccoli",
+      "phonetic": "/ˈbrɒkəli/",
+      "definition": "[U] 西兰花",
+      "cn": "西兰花",
+      "group": "8"
+    },
+    {
+      "word": "recoil",
+      "phonetic": "/rɪˈkɔɪl/",
+      "definition": "move your body quickly away from sb. / sth. because you find them or it frightening or unpleasant",
+      "cn": "退缩；畏缩",
+      "group": "8"
+    },
+    {
+      "word": "horror",
+      "phonetic": "/ˈhɒrə/",
+      "definition": "[U] a feeling of great shock, fear, or disgust",
+      "cn": "震惊；惊恐；厌恶",
+      "group": "8"
+    },
+    {
+      "word": "distaste",
+      "phonetic": "/dɪsˈteɪst/",
+      "definition": "[U] a feeling that sb. / sth. is unpleasant or morally offensive",
+      "cn": "不喜欢；厌恶；反感",
+      "group": "8"
+    },
+    {
+      "word": "variation",
+      "phonetic": "/ˌveərɪˈeɪʃn/",
+      "definition": "[C, U] a difference between similar things, or a change from the usual amount or form of sth. （",
+      "cn": "（相似物体之间的）差异；（数量或形式的）变化，变动",
+      "group": "8"
+    },
+    {
+      "word": "taste bud",
+      "phonetic": "/ˈteɪst ˌbʌd/",
+      "definition": "[C, usu. pl.]",
+      "cn": "味蕾",
+      "group": "8"
+    },
+    {
+      "word": "receptor",
+      "phonetic": "/rɪˈseptə/",
+      "definition": "[C] a nerve ending which receives information about changes in light, heat, etc. and causes the body to react in particular ways",
+      "cn": "感受器；受体",
+      "group": "8"
+    },
+    {
+      "word": "thiourea",
+      "phonetic": "/ˌθaɪəʊˈjʊərɪə/",
+      "definition": "[U] 硫脲",
+      "cn": "硫脲",
+      "group": "8"
+    },
+    {
+      "word": "plentiful",
+      "phonetic": "/ˈplentɪfl/",
+      "definition": "more than enough in quantity",
+      "cn": "丰富的；充足的",
+      "group": "8"
+    },
+    {
+      "word": "DNA",
+      "phonetic": "",
+      "definition": "(deoxyribonucleic acid)",
+      "cn": "脱氧核糖核酸",
+      "group": "8"
+    },
+    {
+      "word": "disgusting",
+      "phonetic": "/dɪsˈgʌstɪŋ/",
+      "definition": "extremely unpleasant and making you feel sick",
+      "cn": "令人恶心的；使人极其反感的；令人厌恶的",
+      "group": "8"
+    },
+    {
+      "word": "reasonable",
+      "phonetic": "/ˈri:znəbl/",
+      "definition": "fair, practical, and sensible",
+      "cn": "有道理的；合情合理的",
+      "group": "8"
+    },
+    {
+      "word": "relieve",
+      "phonetic": "/rɪˈli:v/",
+      "definition": "reduce sb.'s pain or unpleasant feelings",
+      "cn": "减轻；缓解 疼痛或不快的感觉",
+      "group": "8"
+    },
+    {
+      "word": "relieved",
+      "phonetic": "/rɪˈli:vd/",
+      "definition": "feeling happy because you are no longer worried about sth.",
+      "cn": "宽慰的；放心的",
+      "group": "8"
+    },
+    {
+      "word": "innate",
+      "phonetic": "/ˌɪˈneɪt/",
+      "definition": "an innate quality or ability is sth. you are born with （",
+      "cn": "（素质或能力）天生的，与生俱来的",
+      "group": "8"
+    },
+    {
+      "word": "desirable",
+      "phonetic": "/dɪˈzaɪrəbl/",
+      "definition": "1) sexually attractive; 2) (fml.) sth. that is desirable is worth having or doing",
+      "cn": "性感迷人的 理想的；值得拥有的；值得做的",
+      "group": "8"
+    },
+    {
+      "word": "mate",
+      "phonetic": "/meɪt/",
+      "definition": "1) [C] (infml.) a husband, wife, or other sexual partner; 2) [C] sb. you work with, do an activity with, or share sth. with",
+      "cn": "丈夫；妻子；配偶；性伴侣 同事；同伴",
+      "group": "8"
+    },
+    {
+      "word": "shapely",
+      "phonetic": "/ˈʃeɪpli/",
+      "definition": "(esp. of a woman or part of her body) having an attractive or well-proportioned shape （",
+      "cn": "（尤指女子或其部分身体）好看的，匀称的",
+      "group": "8"
+    },
+    {
+      "word": "sparkling",
+      "phonetic": "/ˈspɑːklɪŋ/",
+      "definition": "shining and flashing with light",
+      "cn": "闪亮的；闪光的",
+      "group": "8"
+    },
+    {
+      "word": "attractive",
+      "phonetic": "/əˈtræktɪv/",
+      "definition": "very pleasing in appearance or sound",
+      "cn": "好看的；好听的；有吸引力的",
+      "group": "8"
+    },
+    {
+      "word": "evolutionary",
+      "phonetic": "/ˌi:vəˈlu:ʃn(ə)ri/",
+      "definition": "relating to the way in which plants and animals develop and change gradually over a long period of time",
+      "cn": "进化的",
+      "group": "8"
+    },
+    {
+      "word": "virtually",
+      "phonetic": "/ˈvɜːtʃʊəli/",
+      "definition": "almost",
+      "cn": "几乎",
+      "group": "8"
+    },
+    {
+      "word": "reproduce",
+      "phonetic": "/ˌri:prəˈdju:s/",
+      "definition": "if an animal or plant reproduces, or reproduces itself, it produces young plants or animals",
+      "cn": "生殖；繁殖",
+      "group": "8"
+    },
+    {
+      "word": "parental",
+      "phonetic": "/pəˈrentl/",
+      "definition": "relating to being a parent and esp. to being responsible for a child's safety and development",
+      "cn": "父亲的；母亲的；父母的",
+      "group": "8"
+    },
+    {
+      "word": "offspring",
+      "phonetic": "/ˈɒfˌsprɪŋ/",
+      "definition": "[C] (pl. offspring) sb.'s child or children — often used humorously （",
+      "cn": "— （某人的）子女，子孙，后代（常为幽默用法）",
+      "group": "8"
+    },
+    {
+      "word": "disinterest",
+      "phonetic": "/dɪsˈɪntrəst/",
+      "definition": "[U] a lack of interest",
+      "cn": "无兴趣",
+      "group": "8"
+    },
+    {
+      "word": "organ",
+      "phonetic": "/ˈɔːgən/",
+      "definition": "[C] 器官",
+      "cn": "器官",
+      "group": "8"
+    },
+    {
+      "word": "disheartening",
+      "phonetic": "/dɪsˈhɑːtnɪŋ/",
+      "definition": "making you lose hope and determination",
+      "cn": "令人灰心的；令人气馁的",
+      "group": "8"
+    },
+    {
+      "word": "destined",
+      "phonetic": "/ˈdestɪnd/",
+      "definition": "(not before noun) seeming certain to happen at some time in the future",
+      "cn": "注定的；必然的",
+      "group": "8"
+    },
+    {
+      "word": "slave",
+      "phonetic": "/sleɪv/",
+      "definition": "1) (be a ~ of / to sth.) be so strongly influenced by sth. that you cannot make your own decisions — used to show disapproval; 2) sb. who is owned by another person and works for them for no money",
+      "cn": "— 成为某事物的奴隶，完全受某事物控制（含贬义） 奴隶",
+      "group": "8"
+    },
+    {
+      "word": "magnificent",
+      "phonetic": "/mægˈnɪfɪsnt/",
+      "definition": "extremely attractive and impressive; deserving praise",
+      "cn": "壮丽的；宏伟的；值得赞扬的",
+      "group": "8"
+    },
+    {
+      "word": "remedy",
+      "phonetic": "/ˈremədi/",
+      "definition": "[vt.] 1) deal with a problem or improve a bad situation; [n.][C] 2) a way of dealing with a problem or making a bad situation better （",
+      "cn": "解决；补救；纠正；改善 （问题的）解决方式；（糟糕状况的）补救方法",
+      "group": "8"
+    },
+    {
+      "word": "compassion",
+      "phonetic": "/kəmˈpæʃn/",
+      "definition": "[U] a strong feeling of sympathy for sb. who is suffering, and a desire to help them",
+      "cn": "怜悯；同情",
+      "group": "8"
+    }
+  ]
+}

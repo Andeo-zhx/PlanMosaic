@@ -1,0 +1,17 @@
+- [x] 1. `Constants.kt` 中的 `SUPABASE_URL` 和 `SUPABASE_ANON_KEY` 与 Supabase 项目设置一致（可通过浏览器访问 `${SUPABASE_URL}/rest/v1/` 验证连通性）。
+- [x] 2. `AndroidManifest.xml` 包含 `<uses-permission android:name="android.permission.INTERNET" />` 权限。
+- [x] 3. `build.gradle.kts` 中的 `io.ktor` 和 `kotlinx-serialization` 依赖版本与项目兼容，无冲突。
+- [x] 4. `SupabaseClient.login` 的响应结构已确认，包含 `token` 字段（或调整代码以适配实际字段名）。
+- [x] 5. `AuthManager` 已扩展，能够在登录/注册成功时提取并存储 JWT 令牌（存储于 `DataStoreManager` 或内存中）。
+- [x] 6. `AuthManager` 提供 `token: String?` 属性，返回当前用户的令牌（若无登录用户则返回 `null`）。
+- [x] 7. `SupabaseClient.rpc` 函数已修改，支持可选的 `token` 参数，并根据参数动态设置 `Authorization` 头（`Bearer <token>` 或匿名密钥）。
+- [x] 8. 所有调用 `rpc` 的地方（`login`, `register`, `getUserData`, `upsertUserData`）均已更新，传递正确的令牌。
+- [x] 9. `get_user_data` 和 `upsert_user_data` 的 RPC 函数签名与客户端调用匹配（参数名、类型正确）。
+- [x] 10. `ScheduleRepository`（或类似的数据层）正确调用 `SupabaseClient.getUserData`，并在响应中处理数据。
+- [x] 11. `ScheduleViewModel` 或 `ProfileScreen` 在登录后触发数据加载，且 UI 状态随数据更新。
+- [x] 12. 网络请求日志已添加：`SupabaseClient.rpc` 输出请求 URL、头部（隐藏敏感信息）和响应状态码。
+- [x] 13. 错误处理已增强：网络异常和服务器错误被捕获并转换为用户友好的提示信息。
+- [ ] 14. 测试通过：使用有效账号登录后，令牌被正确获取和存储。
+- [ ] 15. 测试通过：登录后触发数据加载（如进入日程页面），`get_user_data` 请求使用正确的令牌，且数据成功返回。
+- [ ] 16. 测试通过：数据正确显示在 UI 上（或 ViewModel 状态更新）。
+- [ ] 17. 测试通过：异常场景（错误密码、网络断开）得到适当处理，用户收到明确错误提示。

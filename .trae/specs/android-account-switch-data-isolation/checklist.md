@@ -1,0 +1,13 @@
+- [x] 1. `AuthManager.currentUser` 流在登录/注销时能正确、及时地更新，无延迟或丢失事件。
+- [x] 2. `ScheduleViewModel` 在用户切换时能立即清空 `appData` 内存缓存，并重置 UI 状态（`allSchedules`、`daySchedule` 等）。
+- [x] 3. `DataStoreManager.getUserDataFile(userId)` 为不同用户生成不同的文件路径，且路径安全（无非法字符问题）。
+- [x] 4. `DataStoreManager.loadUserDataForUser(userId)` 仅读取对应 userId 的文件，绝不读取其他用户的文件。
+- [x] 5. `ScheduleRepository.fullSync(userId)` 在调用时使用正确的 userId 参数，且同步过程中 userId 不变。
+- [x] 6. 用户未登录时，`ScheduleViewModel.loadScheduleForWeek` 显示空日程，不加载任何用户数据。
+- [x] 7. 用户退出登录后，所有屏幕（日程、词汇、个人资料等）都不再显示前一用户的数据。
+- [x] 8. 用户登录新账户后，日程界面首先显示加载状态，然后展示新用户的数据（本地或云端）。
+- [x] 9. 云端数据成功获取后，通过 `saveLocalData` 保存到正确的用户文件，本地文件内容与云端一致。
+- [x] 10. 快速连续切换账户不会导致应用崩溃、数据错乱或 UI 状态不一致。
+- [x] 11. 网络断开状态下切换账户，本地存储能正确隔离各账户数据。
+- [x] 12. 所有相关 ViewModel（Schedule, Vocab, Mosa）在用户切换时都有适当的数据清理和重新加载逻辑。
+- [x] 13. 日志中能清晰看到用户切换事件、数据加载过程和文件读写操作，便于问题排查。

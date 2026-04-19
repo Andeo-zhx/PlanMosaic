@@ -1,0 +1,43 @@
+{
+	"pages": [
+		{
+			"path": "pages/schedule/schedule",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "Schedule"
+			}
+		},
+		{
+			"path": "pages/timetable/timetable",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "Timetable"
+			}
+		},
+		{
+			"path": "pages/mosa/mosa",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "Mosa"
+			}
+		},
+		{
+			"path": "pages/profile/profile",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "Profile"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "PlanMosaic",
+		"navigationBarBackgroundColor": "#FAFAFA",
+		"backgroundColor": "#FAFAFA",
+		"navigationStyle": "custom",
+		"app-plus": {
+			"background": "#FAFAFA",
+			"titleNView": false
+		}
+	}
+}

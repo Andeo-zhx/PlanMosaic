@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 启动</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 50%, #0d2137 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+        }
+
+        /* 背景光晕效果 */
+        .glow {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(0, 150, 255, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        /* Windows Logo */
+        .logo-container {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 80px;
+        }
+
+        .windows-logo {
+            width: 120px;
+            height: 120px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 4px;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .logo-square {
+            background: linear-gradient(145deg, #ffffff 0%, #e0e0e0 100%);
+            border-radius: 2px;
+            box-shadow: 0 4px 15px rgba(0, 150, 255, 0.3);
+        }
+
+        /* 加载圆圈 */
+        .loader-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+
+        .loader-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: orbit 1.5s linear infinite;
+        }
+
+        .loader-dot:nth-child(1) {
+            animation-delay: 0s;
+            opacity: 1;
+        }
+        .loader-dot:nth-child(2) {
+            animation-delay: 0.15s;
+            opacity: 0.875;
+        }
+        .loader-dot:nth-child(3) {
+            animation-delay: 0.3s;
+            opacity: 0.75;
+        }
+        .loader-dot:nth-child(4) {
+            animation-delay: 0.45s;
+            opacity: 0.625;
+        }
+        .loader-dot:nth-child(5) {
+            animation-delay: 0.6s;
+            opacity: 0.5;
+        }
+
+        @keyframes orbit {
+            0% {
+                transform: rotate(0deg) translateX(20px) rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg) translateX(20px) rotate(-360deg);
+            }
+        }
+
+        /* 提示文字 */
+        .loading-text {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            opacity: 0.9;
+            animation: textPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* 底部圆点指示器 */
+        .dots-indicator {
+            position: absolute;
+            bottom: 80px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: dotPulse 1s ease-in-out infinite;
+        }
+
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        .dot:nth-child(4) { animation-delay: 0.6s; }
+        .dot:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes dotPulse {
+            0%, 100% { 
+                transform: scale(1);
+                background: rgba(255, 255, 255, 0.3);
+            }
+            50% { 
+                transform: scale(1.3);
+                background: rgba(255, 255, 255, 0.8);
+            }
+        }
+
+        /* 鼠标显示提示 */
+        .mouse-hint {
+            position: absolute;
+            bottom: 40px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="glow"></div>
+    
+    <div class="logo-container">
+        <div class="windows-logo">
+            <div class="logo-square"></div>
+            <div class="logo-square"></div>
+            <div class="logo-square"></div>
+            <div class="logo-square"></div>
+        </div>
+    </div>
+
+    <div class="loader-container">
+        <div class="loader">
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+        </div>
+        <div class="loading-text">正在启动...</div>
+    </div>
+
+    <div class="dots-indicator">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+    </div>
+
+    <div class="mouse-hint">请稍候</div>
+</body>
+</html>

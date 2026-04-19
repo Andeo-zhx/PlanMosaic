@@ -1,0 +1,214 @@
+/* 水平间距 */
+/* 水平间距 */
+.page-profile.data-v-dd383ca2 {
+  min-height: 100vh;
+  background-color: #FAFAFA;
+}
+
+/* ============ Not Logged In ============ */
+.auth-area.data-v-dd383ca2 {
+  padding: 32px 20px;
+}
+.brand-area.data-v-dd383ca2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 16px;
+  margin-bottom: 48px;
+}
+.brand-text.data-v-dd383ca2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 36px;
+  font-weight: 300;
+  letter-spacing: 4px;
+  color: #222222;
+}
+.brand-sub.data-v-dd383ca2 {
+  font-size: 10px;
+  color: #888888;
+  letter-spacing: 3px;
+  margin-top: 8px;
+}
+.form-area.data-v-dd383ca2 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.form-field.data-v-dd383ca2 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.field-label.data-v-dd383ca2 {
+  font-size: 10px;
+  color: #888888;
+  letter-spacing: 1.5px;
+}
+.field-input.data-v-dd383ca2 {
+  height: 48px;
+  padding: 0 12px;
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid #EAEAEA;
+  font-size: 15px;
+  color: #222222;
+}
+.form-divider.data-v-dd383ca2 {
+  height: 1px;
+  background-color: #EAEAEA;
+}
+.form-error.data-v-dd383ca2 {
+  padding: 8px 12px;
+  background-color: #F9F3F1;
+  border-radius: 4px;
+}
+.form-error-text.data-v-dd383ca2 {
+  font-size: 12px;
+  color: #B06858;
+}
+.form-submit.data-v-dd383ca2 {
+  height: 44px;
+  background-color: #222222;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+.submit-press.data-v-dd383ca2 {
+  opacity: 0.7;
+}
+.form-submit-text.data-v-dd383ca2 {
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.form-switch.data-v-dd383ca2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px 0;
+  min-height: 44px;
+}
+.switch-text.data-v-dd383ca2 {
+  font-size: 13px;
+  color: #888888;
+}
+.switch-action.data-v-dd383ca2 {
+  font-size: 13px;
+  color: #8A7D72;
+  font-weight: 500;
+}
+
+/* ============ Logged In ============ */
+.user-area.data-v-dd383ca2 {
+  padding: 24px 20px;
+  padding-bottom: 100px;
+}
+.user-card.data-v-dd383ca2 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 16px;
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid #EAEAEA;
+  margin-bottom: 24px;
+}
+.user-avatar.data-v-dd383ca2 {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: #222222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.avatar-letter.data-v-dd383ca2 {
+  font-size: 20px;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+.user-meta.data-v-dd383ca2 {
+  flex: 1;
+}
+.user-name.data-v-dd383ca2 {
+  font-size: 17px;
+  font-weight: 600;
+  color: #222222;
+  display: block;
+}
+.user-status.data-v-dd383ca2 {
+  font-size: 13px;
+  color: #888888;
+  margin-top: 4px;
+  display: block;
+}
+.sync-row.data-v-dd383ca2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0;
+  color: #888888;
+  font-size: 13px;
+}
+.sync-label.data-v-dd383ca2 {
+  color: #888888;
+}
+.settings-group.data-v-dd383ca2 {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid #EAEAEA;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.settings-row.data-v-dd383ca2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px;
+  border-bottom: 1px solid #EAEAEA;
+}
+.settings-row.data-v-dd383ca2:last-child {
+  border-bottom: none;
+}
+.settings-label.data-v-dd383ca2 {
+  font-size: 15px;
+  color: #222222;
+}
+.settings-value.data-v-dd383ca2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.settings-value-text.data-v-dd383ca2 {
+  font-size: 13px;
+  color: #888888;
+}
+.settings-chevron.data-v-dd383ca2 {
+  font-size: 18px;
+  color: #D0CEC7;
+}
+.logout-btn.data-v-dd383ca2 {
+  background-color: #F9F3F1;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 32px;
+}
+.logout-label.data-v-dd383ca2 {
+  font-size: 15px;
+  color: #B06858;
+  font-weight: 500;
+}
+.version-label.data-v-dd383ca2 {
+  text-align: center;
+  font-size: 11px;
+  color: #D0CEC7;
+  padding-bottom: 48px;
+}

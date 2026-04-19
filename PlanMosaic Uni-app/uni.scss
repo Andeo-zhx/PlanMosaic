@@ -1,0 +1,112 @@
+@import '@/uni_modules/uni-scss/variables.scss';
+
+// ============================================
+//  PlanMosaic Design Token System
+//  Adapted for Uni-app Mobile (Android Native)
+// ============================================
+
+// ========== Primitive Colors ==========
+$pm-white: #FFFFFF;
+$pm-black: #1A1918;
+$pm-paper: #F9F8F6;
+$pm-surface-hover: #F3F1EC;
+$pm-active: #EAE8E2;
+$pm-hero: #1A1918;
+$pm-primary: #3E3C38;
+$pm-secondary: #8A8780;
+$pm-disabled: #D0CEC7;
+$pm-accent: #8A7D72;
+$pm-accent-light: #C4BDB5;
+$pm-border: #E8E6E0;
+$pm-border-dark: #D0CEC7;
+
+// ========== Semantic Colors (Mobile Adapted) ==========
+// Backgrounds
+$bg-base: #FAFAFA;
+$bg-surface: #FFFFFF;
+$bg-muted: #F3F3F3;
+$bg-hover: $pm-surface-hover;
+
+// Text
+$text-main: #222222;
+$text-secondary: #888888;
+$text-disabled: #D0CEC7;
+
+// Borders
+$border-subtle: #EAEAEA;
+$border-normal: #D0CEC7;
+
+// Brand
+$brand-action: #222222;
+
+// Status Colors
+$status-success: #7BA06A;
+$status-success-bg: #F4F9F1;
+$status-warning: #B8943D;
+$status-warning-bg: #FBF6E8;
+$status-danger: #B06858;
+$status-danger-bg: #F9F3F1;
+$status-info: #6B82A5;
+$status-info-bg: #F2F4F8;
+
+// ========== Typography ==========
+$font-display: Georgia, 'Times New Roman', serif;
+$font-body: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+
+// ========== Spacing (8dp Grid) ==========
+$space-1: 4px;
+$space-2: 8px;
+$space-3: 12px;
+$space-4: 16px;
+$space-5: 24px;
+$space-6: 32px;
+$space-7: 48px;
+$screen-padding: 20px;
+
+// ========== Touch Target ==========
+$touch-target: 44px;
+
+// ========== Border Radius ==========
+$radius-xs: 4px;
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-xl: 24px;
+$radius-pill: 999px;
+
+// ========== Shadows (Subtle, Mobile) ==========
+$shadow-card: 0 2px 12px rgba(0, 0, 0, 0.03);
+$shadow-float: 0 8px 24px rgba(0, 0, 0, 0.06);
+$shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.08);
+
+// ========== Animation ==========
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+$duration-fast: 150ms;
+$duration-normal: 200ms;
+$duration-slow: 300ms;
+
+// ========== Component Tokens ==========
+// Button
+$btn-height: 44px;
+$btn-height-sm: 36px;
+$btn-radius: $radius-pill;
+
+// Bottom Sheet
+$sheet-radius: $radius-lg;
+$sheet-handle-width: 40px;
+$sheet-handle-height: 4px;
+$sheet-handle-color: #C8C8C8;
+
+// Tab Bar
+$tabbar-height: 56px;
+$tabbar-icon-size: 24px;
+
+// Input
+$input-height: 48px;
+$input-radius: $radius-md;
+$input-bg: $bg-muted;
+
+// Card
+$card-radius: $radius-lg;
+$card-padding: $space-4;
+$card-margin-bottom: $space-4;

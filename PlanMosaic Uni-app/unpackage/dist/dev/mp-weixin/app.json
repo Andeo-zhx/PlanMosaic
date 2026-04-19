@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "pages/schedule/schedule",
+    "pages/timetable/timetable",
+    "pages/mosa/mosa",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "PlanMosaic",
+    "navigationBarBackgroundColor": "#FAFAFA",
+    "backgroundColor": "#FAFAFA",
+    "navigationStyle": "custom"
+  },
+  "usingComponents": {}
+}

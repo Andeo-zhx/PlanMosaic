@@ -1,0 +1,91 @@
+/* 水平间距 */
+/* 水平间距 */
+.page-timetable.data-v-ae10f376 {
+  min-height: 100vh;
+  background-color: #FAFAFA;
+}
+.header.data-v-ae10f376 {
+  background-color: #FFFFFF;
+  padding-bottom: 12px;
+}
+.header-inner.data-v-ae10f376 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.brand.data-v-ae10f376 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 4px;
+  color: #222222;
+}
+.weekday-scroll.data-v-ae10f376 {
+  white-space: nowrap;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #EAEAEA;
+}
+.weekday-strip.data-v-ae10f376 {
+  display: flex;
+  padding: 12px 16px;
+  gap: 8px;
+}
+.weekday-cell.data-v-ae10f376 {
+  padding: 8px 16px;
+  border-radius: 999px;
+  min-width: 44px;
+  text-align: center;
+}
+.weekday-cell.active.data-v-ae10f376 {
+  background-color: #222222;
+}
+.weekday-label.data-v-ae10f376 {
+  font-size: 13px;
+  color: #888888;
+}
+.weekday-cell.active .weekday-label.data-v-ae10f376 {
+  color: #FFFFFF;
+}
+.course-list-scroll.data-v-ae10f376 {
+  flex: 1;
+}
+.course-list-container.data-v-ae10f376 {
+  padding: 16px 20px;
+  padding-bottom: 80px;
+}
+.course-card.data-v-ae10f376 {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+}
+.course-time.data-v-ae10f376 {
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.course-time-text.data-v-ae10f376 {
+  font-size: 12px;
+  color: #888888;
+  font-variant-numeric: tabular-nums;
+}
+.course-info.data-v-ae10f376 {
+  flex: 1;
+}
+.course-name.data-v-ae10f376 {
+  font-size: 15px;
+  font-weight: 500;
+  color: #222222;
+  display: block;
+}
+.course-location.data-v-ae10f376 {
+  font-size: 12px;
+  color: #888888;
+  margin-top: 4px;
+  display: block;
+}
+.course-teacher.data-v-ae10f376 {
+  font-size: 12px;
+  color: #888888;
+  display: block;
+}

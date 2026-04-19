@@ -1,0 +1,223 @@
+/* 水平间距 */
+/* 水平间距 */
+.page-schedule.data-v-e6e5e79f {
+  min-height: 100vh;
+  background-color: #FAFAFA;
+  position: relative;
+}
+
+/* ============ 2.1 顶部周视图条 ============ */
+.week-strip.data-v-e6e5e79f {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #EAEAEA;
+  white-space: nowrap;
+}
+.week-inner.data-v-e6e5e79f {
+  display: inline-flex;
+  padding: 12px 8px;
+  gap: 8px;
+}
+.week-cell.data-v-e6e5e79f {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 64px;
+  border-radius: 12px;
+  gap: 4px;
+  position: relative;
+}
+.week-cell.selected.data-v-e6e5e79f {
+  background-color: #F3F3F3;
+}
+.cell-weekday.data-v-e6e5e79f {
+  font-size: 11px;
+  color: #888888;
+  letter-spacing: 0.5px;
+}
+.week-cell.selected .cell-weekday.data-v-e6e5e79f {
+  color: #222222;
+  font-weight: 600;
+}
+.cell-date.data-v-e6e5e79f {
+  font-size: 16px;
+  font-weight: 400;
+  color: #222222;
+}
+.cell-date.today.data-v-e6e5e79f {
+  color: #8A7D72;
+}
+.week-cell.selected .cell-date.data-v-e6e5e79f {
+  font-weight: 600;
+}
+.cell-dot.data-v-e6e5e79f {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #888888;
+  position: absolute;
+  bottom: 4px;
+}
+.week-cell.selected .cell-dot.data-v-e6e5e79f {
+  background-color: #222222;
+}
+
+/* ============ 2.2 日程/任务流 ============ */
+.timeline-scroll.data-v-e6e5e79f {
+  flex: 1;
+}
+.timeline-body.data-v-e6e5e79f {
+  padding: 24px 20px 0;
+}
+.day-header.data-v-e6e5e79f {
+  margin-bottom: 24px;
+}
+.day-title.data-v-e6e5e79f {
+  font-size: 20px;
+  font-weight: 600;
+  color: #222222;
+  display: block;
+}
+.day-highlights.data-v-e6e5e79f {
+  font-size: 13px;
+  color: #888888;
+  margin-top: 4px;
+  display: block;
+}
+
+/* -- Section -- */
+.section.data-v-e6e5e79f {
+  margin-bottom: 24px;
+}
+.section-label.data-v-e6e5e79f {
+  font-size: 10px;
+  color: #888888;
+  letter-spacing: 1.5px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* -- Time Slot Row (no shadow, border only) -- */
+.slot-row.data-v-e6e5e79f {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #EAEAEA;
+}
+.slot-row.data-v-e6e5e79f:last-child {
+  border-bottom: none;
+}
+.slot-time.data-v-e6e5e79f {
+  width: 52px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #888888;
+  font-variant-numeric: tabular-nums;
+  padding-top: 2px;
+}
+.slot-divider.data-v-e6e5e79f {
+  display: none;
+}
+.slot-body.data-v-e6e5e79f {
+  flex: 1;
+  min-width: 0;
+}
+.slot-activity.data-v-e6e5e79f {
+  font-size: 15px;
+  font-weight: 500;
+  color: #222222;
+  display: block;
+}
+.slot-detail.data-v-e6e5e79f {
+  font-size: 12px;
+  color: #888888;
+  margin-top: 4px;
+  display: block;
+}
+
+/* -- Task Row -- */
+.task-row.data-v-e6e5e79f {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #EAEAEA;
+}
+.task-row.data-v-e6e5e79f:last-child {
+  border-bottom: none;
+}
+.task-check.data-v-e6e5e79f {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid #D0CEC7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.task-check.checked.data-v-e6e5e79f {
+  background-color: #222222;
+  border-color: #222222;
+}
+.check-icon.data-v-e6e5e79f {
+  font-size: 12px;
+  color: #FFFFFF;
+}
+.task-body.data-v-e6e5e79f {
+  flex: 1;
+  min-width: 0;
+}
+.task-name.data-v-e6e5e79f {
+  font-size: 14px;
+  color: #222222;
+  display: block;
+}
+.task-row.done .task-name.data-v-e6e5e79f {
+  text-decoration: line-through;
+  color: #888888;
+}
+.task-meta.data-v-e6e5e79f {
+  font-size: 11px;
+  color: #888888;
+  margin-top: 2px;
+  display: block;
+}
+
+/* -- Empty State -- */
+.empty-state.data-v-e6e5e79f {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+}
+.empty-text.data-v-e6e5e79f {
+  font-size: 13px;
+  color: #888888;
+}
+
+/* ============ 2.3 FAB ============ */
+.fab.data-v-e6e5e79f {
+  position: fixed;
+  right: 20px;
+  z-index: 998;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #222222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fab-press.data-v-e6e5e79f {
+  opacity: 0.7;
+  transform: scale(0.92);
+}
+.fab-icon.data-v-e6e5e79f {
+  font-size: 28px;
+  color: #FFFFFF;
+  font-weight: 300;
+  line-height: 1;
+}

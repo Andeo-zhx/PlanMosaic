@@ -1,0 +1,70 @@
+# Tasks
+
+- [x] Task 1: 创建深度规划UI组件（按钮 + 对话框界面）
+  - [x] 1.1 在index.html header区域（brand元素旁）添加深度规划入口按钮
+    - 按钮使用SVG图标（战略/望远镜/指南针等远见性图标）
+    - 样式遵循Design Token System v4.0，与现有icon-btn风格一致
+    - 添加hover交互效果和tooltip提示"深度规划"
+  - [x] 1.2 创建深度规划对话框HTML结构（deepPlanningModal）
+    - 模态覆盖层设计，复用现有agentModal的视觉风格
+    - 包含：标题栏（可拖拽）、聊天消息区域、输入区域、关闭按钮
+    - 与主聊天面板区分的专属配色方案（建议使用accent-primary色调）
+  - [x] 1.3 编写深度规划对话框CSS样式
+    - 响应式布局，支持窗口大小调整
+    - 动画过渡效果（打开/关闭）
+    - 消息气泡样式区分user/assistant角色
+    - 输入区域样式与整体设计语言一致
+- [x] Task 2: 实现深度规划前端交互逻辑
+  - [x] 2.1 在ai-agent.js中添加深度规划模式状态管理
+    - 新增isDeepPlanningMode标志位
+    - 独立的深度规划对话历史数组（deepPlanningHistory）
+    - 模态框打开/关闭控制函数
+  - [x] 2.2 实现深度规划消息发送与接收逻辑
+    - 调用新的深度规划API端点（/api/deep-planning-chat）
+    - 流式/打字机效果展示AI回复
+    - 消息实时渲染至对话框
+  - [x] 2.3 实现退出保存机制
+    - 关闭时自动触发聊天记录保存
+    - 触发用户画像异步更新
+    - ESC键和点击遮罩层关闭支持
+- [x] Task 3: 开发深度规划后端API与System Prompt
+  - [x] 3.1 在server.js中新增深度规划API端点
+    - POST /api/deep-planning-chat
+    - 接收消息、深度规划历史、用户画像参数
+    - 返回AI响应内容
+  - [x] 3.2 编写深度规划专用System Prompt
+    - 角色定义：Mosa战略规划顾问
+    - 核心特性强化指令（远见性、客观性、量化分析）
+    - 对话风格指导（结构化、挑战性、可执行）
+    - 量化分析框架说明
+  - [x] 3.3 配置深度规划工具白名单逻辑
+    - 过滤掉日常日程管理工具
+    - 仅保留/启用量化分析和只读类工具
+- [x] Task 4: 开发量化分析工具集
+  - [x] 4.1 在ai-tools.js中定义量化分析工具
+    - value_monetization：价值货币化评估工具
+    - roi_calculator：时间投资回报率计算器
+    - milestone_planner：里程碑拆解规划工具
+    - swot_analysis：SWOT结构化分析工具
+    - decision_matrix：多维度加权决策矩阵工具
+  - [x] 4.2 实现工具执行逻辑（server.js中）
+    - 每个工具的计算/分析算法实现
+    - 返回结构化的JSON数据结果
+- [x] Task 5: 实现数据持久化与用户画像整合
+  - [x] 5.1 实现深度规划聊天记录本地存储
+    - 存储结构设计（会话ID、时间戳、消息列表、摘要）
+    - 使用localStorage实现持久化
+    - 历史会话列表查看功能
+  - [x] 5.2 开发数据处理模块
+    - 从对话中提取关键实体（目标、价值观、能力、约束）
+    - 数据结构化处理并分配高权重
+    - 合并至用户画像数据结构
+  - [x] 5.3 实现用户画像异步更新机制
+    - 退出深度规划后10秒内完成更新
+    - 更新后的画像影响后续AI回复质量
+
+# Task Dependencies
+- [Task 2] depends on [Task 1]
+- [Task 3] depends on [Task 2]
+- [Task 4] depends on [Task 3]
+- [Task 5] depends on [Task 2] and [Task 3]
