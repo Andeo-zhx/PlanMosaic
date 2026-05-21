@@ -3,8 +3,9 @@ package com.example.planmosaic_android.ui.screens.profile
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.planmosaic_android.AppContainer
+import com.example.planmosaic_android.PlanMosaicApplication
 import com.example.planmosaic_android.util.AuthManager
-import com.example.planmosaic_android.util.DataStoreManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,12 +30,11 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
-    private val dataStoreManager = DataStoreManager.getInstance(application)
+    private val container = AppContainer.from(getApplication<PlanMosaicApplication>())
 
     init {
-        // Observe current user changes
         viewModelScope.launch {
-            AuthManager.currentUser.collect { user ->
+            container.authManager.currentUser.collect { user ->
                 _uiState.update { it.copy(currentUser = user) }
             }
         }
@@ -53,46 +53,48 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun login(username: String, password: String) {
         _uiState.update { it.copy(isLoggingIn = true, loginError = "") }
         viewModelScope.launch {
-            try {
-                AuthManager.login(username, password)
-                _uiState.update {
-                    it.copy(
-                        isLoggingIn = false,
-                        showLogin = false,
-                        loginError = ""
-                    )
+            container.authManager.login(username, password)
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isLoggingIn = false,
+                            showLogin = false,
+                            loginError = ""
+                        )
+                    }
                 }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoggingIn = false,
-                        loginError = e.message ?: "登录失败"
-                    )
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoggingIn = false,
+                            loginError = error.message ?: "登录失败"
+                        )
+                    }
                 }
-            }
         }
     }
 
     fun register(username: String, password: String) {
         _uiState.update { it.copy(isLoggingIn = true, loginError = "") }
         viewModelScope.launch {
-            try {
-                AuthManager.register(username, password)
-                _uiState.update {
-                    it.copy(
-                        isLoggingIn = false,
-                        showLogin = false,
-                        loginError = ""
-                    )
+            container.authManager.register(username, password)
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            isLoggingIn = false,
+                            showLogin = false,
+                            loginError = ""
+                        )
+                    }
                 }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoggingIn = false,
-                        loginError = e.message ?: "注册失败"
-                    )
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoggingIn = false,
+                            loginError = error.message ?: "注册失败"
+                        )
+                    }
                 }
-            }
         }
     }
 
@@ -103,8 +105,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun syncData() {
         _uiState.update { it.copy(isSyncing = true) }
         viewModelScope.launch {
-            // TODO: Implement actual data sync logic
-            kotlinx.coroutines.delay(2000) // Simulate sync
+            kotlinx.coroutines.delay(2000)
             _uiState.update { it.copy(isSyncing = false) }
         }
     }
@@ -119,7 +120,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     fun logout() {
         viewModelScope.launch {
-            AuthManager.logout()
+            container.authManager.logout()
             _uiState.update {
                 it.copy(
                     currentUser = null,

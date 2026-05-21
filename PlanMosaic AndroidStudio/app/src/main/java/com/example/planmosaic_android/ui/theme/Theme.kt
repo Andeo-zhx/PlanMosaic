@@ -1,7 +1,6 @@
 package com.example.planmosaic_android.ui.theme
 
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -74,6 +73,8 @@ data class ExtendedColors(
     val success: Color = PrimitiveColors.Success,
     val warning: Color = PrimitiveColors.Warning,
     val danger: Color = PrimitiveColors.Danger,
+    val glassBackground: Color = AppColors.glassBackground,
+    val glassBorder: Color = AppColors.glassBorder,
 )
 
 val LocalExtendedColors = staticCompositionLocalOf { ExtendedColors() }
@@ -85,8 +86,20 @@ fun PlanMosaicTheme(
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
+    val extendedColors = if (darkTheme) {
+        ExtendedColors(
+            glassBackground = AppColors.glassBackgroundDark,
+            glassBorder = AppColors.glassBorderDark,
+        )
+    } else {
+        ExtendedColors(
+            glassBackground = AppColors.glassBackground,
+            glassBorder = AppColors.glassBorder,
+        )
+    }
+
     CompositionLocalProvider(
-        LocalExtendedColors provides ExtendedColors()
+        LocalExtendedColors provides extendedColors
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

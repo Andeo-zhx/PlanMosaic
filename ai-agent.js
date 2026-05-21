@@ -8,6 +8,8 @@
     let _mosaProfileText = '';
     let _profileGenPending = false;
     let _lastProfileGenCount = 0;
+    let _profileGenFailCount = 0;
+    let _activeBlobUrls = [];
 
     // 深度规划模式状态
     let isDeepPlanningMode = false;
@@ -33,6 +35,7 @@
             if (modal) modal.addEventListener('click', (e) => {
                 if (e.target === modal) closeAgentModal();
             });
+            setTimeout(() => performStartupScan(), 500);
         }, 0);
     }
 
@@ -60,7 +63,109 @@
             }
         } catch (e) {
             console.error('[AI Agent] Load error:', e);
+            if (typeof showToast === 'function') { showToast('数据加载失败，请刷新页面', 'error'); }
         }
+    }
+
+    async function performStartupScan() {
+        if (!getIsElectron() || !window.electronAPI.getStartupScan) {
+            performStartupScanWeb();
+            return;
+        }
+        try {
+            const scan = await window.electronAPI.getStartupScan();
+            const now = new Date();
+            const utc8Offset = 8 * 60;
+            const utc8Now = new Date(now.getTime() + (now.getTimezoneOffset() + utc8Offset) * 60000);
+            const hour = utc8Now.getHours();
+            
+            let greeting;
+            if (hour >= 6 && hour < 12) greeting = '早上好呀～☀️';
+            else if (hour >= 12 && hour < 17) greeting = '下午好～🌿';
+            else if (hour >= 17 && hour < 22) greeting = '晚上好～🌙';
+            else greeting = '夜深了呢～🌙';
+            
+            let content = greeting + '\n';
+            
+            if (scan.todaySchedule && scan.todaySchedule.timeSlots && scan.todaySchedule.timeSlots.length > 0) {
+                content += '\n今天 ' + scan.today + ' 的日程是这样的：\n';
+                scan.todaySchedule.timeSlots.forEach(s => {
+                    content += `· ${s.time} ${s.activity}\n`;
+                });
+                if (scan.todaySchedule.highlights) {
+                    content += `\n重点：${scan.todaySchedule.highlights}\n`;
+                }
+            } else {
+                content += '\n今天还没有安排日程呢～要不要一起来规划一下？✨\n';
+            }
+            
+            if (scan.yesterdayIncompleteTasks && scan.yesterdayIncompleteTasks.length > 0) {
+                content += '\n对了，昨天好像还有些事情没完成哦 📋：\n';
+                scan.yesterdayIncompleteTasks.forEach(t => {
+                    content += `· ${t.name}` + (t.estimated ? ` (预计${t.estimated}分钟)` : '') + '\n';
+                });
+                content += '\n要不要今天接着做呢？💪\n';
+            }
+            
+            content += '\n有什么需要帮忙的尽管说～';
+            
+            const container = document.getElementById('agentChatContainer');
+            if (container && container.children.length === 0) {
+                addMessage('assistant', content);
+            }
+            const mainContainer = document.getElementById('agentMainChatContainer');
+            if (mainContainer && mainContainer.children.length === 0) {
+                addMessageToContainer(mainContainer, 'assistant', content);
+            }
+        } catch (e) {
+            console.warn('[Startup Scan] Error:', e);
+            var container = document.getElementById('agentChatContainer');
+            if (container && container.children.length === 0) {
+                addMessage('assistant', '早上好呀～☀️\n\n有什么可以帮你的吗？');
+            }
+            var mainContainer = document.getElementById('agentMainChatContainer');
+            if (mainContainer && mainContainer.children.length === 0) {
+                addMessageToContainer(mainContainer, 'assistant', '早上好呀～☀️\n\n有什么可以帮你的吗？');
+            }
+        }
+    }
+
+    function performStartupScanWeb() {
+        var container = document.getElementById('agentChatContainer');
+        if (!container || container.children.length > 0) return;
+
+        var data = window.scheduleData;
+        if (!data || !data.days) {
+            addMessage('assistant', '早上好呀～☀️\n\n有什么可以帮你的吗？');
+            return;
+        }
+
+        var now = new Date();
+        var utc8Offset = 8 * 60;
+        var utc8Now = new Date(now.getTime() + (now.getTimezoneOffset() + utc8Offset) * 60000);
+        var hour = utc8Now.getHours();
+
+        var greeting;
+        if (hour >= 6 && hour < 12) greeting = '早上好呀～☀️';
+        else if (hour >= 12 && hour < 17) greeting = '下午好～🌿';
+        else if (hour >= 17 && hour < 22) greeting = '晚上好～🌙';
+        else greeting = '夜深了呢～🌙';
+
+        var todayStr = utc8Now.toISOString().split('T')[0];
+        var todayData = (data.days || []).find(function(d) { return d.date === todayStr; });
+
+        var content = greeting + '\n';
+        if (todayData && todayData.timeSlots && todayData.timeSlots.length > 0) {
+            content += '\n今天 ' + todayStr + ' 的日程是这样的：\n';
+            todayData.timeSlots.forEach(function(s) {
+                content += '· ' + s.time + ' ' + s.activity + '\n';
+            });
+        } else {
+            content += '\n今天还没有安排日程呢～要不要一起来规划一下？✨\n';
+        }
+        content += '\n有什么需要帮忙的尽管说～';
+
+        addMessage('assistant', content);
     }
 
     window.openAgentModal = function() {
@@ -138,8 +243,74 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        if (role !== 'assistant' || !proposal) {
-            conversationHistory.push({ role, content, timestamp: new Date().toISOString() });
+        addToHistory(role, content, proposal);
+    }
+
+    function addMessageToContainer(container, role, content, proposal, skipSave) {
+        if (!container) return;
+        const div = document.createElement('div');
+        div.className = 'agent-message ' + role;
+
+        if (role === 'assistant') {
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'sender-name';
+            nameDiv.textContent = 'Mosa';
+            div.appendChild(nameDiv);
+        }
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.innerHTML = formatContent(content);
+        div.appendChild(contentDiv);
+
+        if (proposal) {
+            const actions = document.createElement('div');
+            actions.className = 'proposal-actions';
+            actions.innerHTML = '<button class="proposal-btn approve" onclick="approveProposal()">确认执行</button><button class="proposal-btn reject" onclick="rejectProposal()">取消</button>';
+            div.appendChild(actions);
+        }
+
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+
+        if (!skipSave) addToHistory(role, content, proposal);
+    }
+
+    function renderThinkingChain(messageDiv, content, reasoningContent) {
+        let thinkingText = '';
+        if (reasoningContent && reasoningContent.trim()) {
+            thinkingText = reasoningContent.trim();
+        } else if (content && typeof content === 'string') {
+            const match = content.match(/【思考】([\s\S]*?)【\/思考】/);
+            if (match) {
+                thinkingText = match[1].trim();
+            }
+        }
+        if (!thinkingText) return;
+
+        const processDiv = document.createElement('div');
+        processDiv.className = 'thinking-process has-thinking';
+
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'thinking-header';
+        headerDiv.onclick = function(e) {
+            e.stopPropagation();
+            processDiv.classList.toggle('expanded');
+        };
+
+        headerDiv.innerHTML = '<span class="thinking-icon"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span class="thinking-title">思考</span><span class="thinking-toggle">▼</span>';
+        processDiv.appendChild(headerDiv);
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'thinking-content';
+        contentDiv.textContent = thinkingText;
+        processDiv.appendChild(contentDiv);
+
+        const nameEl = messageDiv.querySelector('.sender-name');
+        if (nameEl && nameEl.nextSibling) {
+            messageDiv.insertBefore(processDiv, nameEl.nextSibling);
+        } else {
+            messageDiv.insertBefore(processDiv, messageDiv.firstChild);
         }
     }
 
@@ -150,9 +321,16 @@
         messageDiv.appendChild(proposalDiv);
     }
 
+    function addToHistory(role, content, proposal) {
+        var entry = { role: role, content: content, timestamp: new Date().toISOString() };
+        if (proposal) entry.proposal = proposal;
+        conversationHistory.push(entry);
+    }
+
     function formatContent(content) {
         if (typeof content !== 'string') return content;
         return content
+            .replace(/【思考】[\s\S]*?【\/思考】/g, '')
             .replace(/\n/g, '<br>')
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -251,73 +429,112 @@
     }
 
     window.sendAgentMessage = async function() {
-        if (isTyping) return;
+        const mainArea = document.getElementById('agentMainArea');
+        const isMainAreaVisible = mainArea && mainArea.offsetParent !== null;
+
+        var btn = document.activeElement && (document.activeElement.id === 'agentMainSendBtn' || (document.activeElement.closest && document.activeElement.closest('#agentMainArea')))
+            ? document.getElementById('agentMainSendBtn')
+            : (document.getElementById('agentSendBtn') || document.querySelector('.agent-send-btn'));
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+
+        if (isTyping) {
+            if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+            return;
+        }
         if (getIsElectron() && window.electronAPI.removeAllAgentListeners) {
             window.electronAPI.removeAllAgentListeners();
         }
 
-        const input = document.getElementById('agentInput');
-        const btn = document.getElementById('agentSendBtn');
+        const input = isMainAreaVisible ? document.getElementById('agentMainInput') : document.getElementById('agentInput');
         if (!input || !btn) return;
 
         const msg = input.value.trim();
-        if (!msg && uploadedImages.length === 0) return;
+        if (!msg && uploadedImages.length === 0) {
+            if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+            if (input) {
+                input.classList.add('shake-input');
+                setTimeout(function() { input.classList.remove('shake-input'); }, 400);
+            }
+            return;
+        }
+
+        const chatContainer = document.getElementById(isMainAreaVisible ? 'agentMainChatContainer' : 'agentChatContainer');
+        const typingIndicator = document.getElementById(isMainAreaVisible ? 'mainTypingIndicator' : 'typingIndicator');
 
         if (uploadedImages.length > 0) {
-            uploadedImages.forEach(img => addMessage('user', `<img src="${img}" style="max-width:280px;border-radius:12px;margin:4px 0;">`));
-        }
-        if (msg) { addMessage('user', msg); input.value = ''; input.style.height = 'auto'; }
+            uploadedImages.forEach(function(imgData) {
+                var div = document.createElement('div');
+                div.className = 'agent-message user';
+                var contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
 
-        btn.disabled = true;
-        const typingIndicator = document.getElementById('agentTypingIndicator');
+                var thumbImg = document.createElement('img');
+                thumbImg.src = imgData.objectUrl;
+                thumbImg.style.cssText = 'max-width:140px;border-radius:8px;margin:2px 0;';
+
+                var nameSpan = document.createElement('span');
+                nameSpan.style.cssText = 'display:block;font-size:11px;color:var(--text-secondary);margin-top:2px;';
+                nameSpan.textContent = imgData.name || 'image';
+
+                contentDiv.appendChild(thumbImg);
+                contentDiv.appendChild(nameSpan);
+                div.appendChild(contentDiv);
+                chatContainer.appendChild(div);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            });
+        }
+        if (msg) { addMessageToContainer(chatContainer, 'user', msg); addToHistory('user', msg, null); input.value = ''; input.style.height = 'auto'; }
+
         if (typingIndicator) typingIndicator.classList.add('active');
 
         try {
             let data;
             const isElectron = getIsElectron();
+            var imageDataUrls = uploadedImages.map(function(img) { return img.dataUrl || img; });
 
             if (isElectron) {
-                const container = document.getElementById('agentChatContainer');
                 const div = document.createElement('div');
                 div.className = 'agent-message assistant';
 
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'sender-name';
-                nameDiv.innerHTML = 'Mosa <span class="typing-status">思考中...</span>';
+                nameDiv.innerHTML = 'Mosa <span class="typing-status">thinking</span>';
                 div.appendChild(nameDiv);
 
                 const contentDiv = document.createElement('div');
                 contentDiv.className = 'message-content';
                 div.appendChild(contentDiv);
-                container.appendChild(div);
-                container.scrollTop = container.scrollHeight;
+                chatContainer.appendChild(div);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
 
                 let streamedContent = '';
 
-                const streamHandler = (event, chunk) => {
+                const streamHandler = (chunk) => {
                     if (chunk.type === 'content') {
                         streamedContent += chunk.content;
                         contentDiv.innerHTML = formatContent(streamedContent);
-                        container.scrollTop = container.scrollHeight;
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
                     } else if (chunk.type === 'reasoning') {
-                        // 静默丢弃
+                        if (!div._thinkingContent) div._thinkingContent = '';
+                        div._thinkingContent += chunk.content;
                     } else if (chunk.type === 'retry') {
                         streamedContent = '';
                         contentDiv.innerHTML = '';
-                        nameDiv.innerHTML = 'Mosa <span class="typing-status">重试中...</span>';
+                        nameDiv.innerHTML = 'Mosa <span class="typing-status">retrying</span>';
                     }
                 };
 
-                const statusHandler = (event, status) => {
+                const statusHandler = (status) => {
                     if (status.phase === 'thinking') {
-                        nameDiv.innerHTML = `Mosa <span class="typing-status">思考中...</span>`;
+                        nameDiv.innerHTML = 'Mosa <span class="typing-status">thinking</span>';
                     } else if (status.phase === 'executing_tools') {
-                        nameDiv.innerHTML = `Mosa <span class="typing-status">执行中...</span>`;
+                        nameDiv.innerHTML = 'Mosa <span class="typing-status">executing</span>';
                     }
                 };
 
                 const doneHandler = () => {
                     nameDiv.innerHTML = 'Mosa';
+                    renderThinkingChain(div, streamedContent, div._thinkingContent);
                     window.electronAPI.removeListener('agent-stream-chunk', streamHandler);
                     window.electronAPI.removeListener('agent-stream-done', doneHandler);
                     window.electronAPI.removeListener('agent-stream-status', statusHandler);
@@ -328,7 +545,7 @@
                 window.electronAPI.onAgentStreamStatus(statusHandler);
 
                 data = await window.electronAPI.agentChatStream({
-                    message: msg, images: uploadedImages,
+                    message: msg, images: imageDataUrls,
                     history: conversationHistory, profile: {},
                     userProfileText: getMosaProfile()
                 });
@@ -338,15 +555,15 @@
                 if (data.response) {
                     const { content, proposal } = data.response;
                     if (proposal) addProposalToMessage(div, proposal);
-                    conversationHistory.push({ role: 'assistant', content: content || streamedContent, timestamp: new Date().toISOString(), proposal });
-                    saveHistory();
+                    addToHistory('assistant', content || streamedContent, proposal);
+                    await saveHistory();
                     if (data.shouldRefresh) await refreshScheduleData();
                 }
             } else {
                 const res = await fetch('/api/agent-chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: msg, images: uploadedImages, history: conversationHistory, profile: {}, userProfileText: getMosaProfile() })
+                    body: JSON.stringify({ message: msg, images: imageDataUrls, history: conversationHistory, profile: {}, userProfileText: getMosaProfile() })
                 });
                 data = await res.json();
                 if (typingIndicator) typingIndicator.classList.remove('active');
@@ -368,28 +585,36 @@
 
                     if (proposal) addProposalToMessage(msgDiv, proposal);
 
-                    const container = document.getElementById('agentChatContainer');
-                    container.appendChild(msgDiv);
-                    container.scrollTop = container.scrollHeight;
+                    chatContainer.appendChild(msgDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
 
-                    conversationHistory.push({ role: 'assistant', content, timestamp: new Date().toISOString(), proposal });
-                    saveHistory();
+                    addToHistory('assistant', content, proposal);
+                    await saveHistory();
                     if (data.shouldRefresh) await refreshScheduleData();
                 }
             }
         } catch (e) {
             if (typingIndicator) typingIndicator.classList.remove('active');
             isTyping = false;
+            if (getIsElectron() && window.electronAPI.removeAllAgentListeners) {
+                window.electronAPI.removeAllAgentListeners();
+            }
             let errorMsg = '请求失败，请重试。';
             if (e.message?.includes('401')) errorMsg = 'API Key 无效或未配置。';
             else if (e.message?.includes('429')) errorMsg = '请求频率超限，请稍后重试。';
-            addMessage('assistant', errorMsg, null, true);
+            addMessageToContainer(chatContainer, 'assistant', errorMsg);
+            addToHistory('assistant', errorMsg, null);
+        } finally {
+            if (getIsElectron() && window.electronAPI.removeAllAgentListeners) {
+                window.electronAPI.removeAllAgentListeners();
+            }
         }
 
         uploadedImages = [];
         updatePreview();
         btn.disabled = false;
-        document.getElementById('agentInput')?.focus();
+        btn.style.opacity = '1';
+        if (input) input.focus();
     };
 
     function getMosaProfile() {
@@ -400,6 +625,7 @@
 
     function checkProfileGeneration() {
         if (_profileGenPending) return;
+        if (_profileGenFailCount >= 3) return;
         if (conversationHistory.length - _lastProfileGenCount >= 10) generateUserProfile();
     }
 
@@ -427,8 +653,16 @@
                 _mosaProfileText = text;
                 window._mosaUserProfile = text;
                 _lastProfileGenCount = conversationHistory.length;
+                _profileGenFailCount = 0;
+            } else {
+                _lastProfileGenCount = conversationHistory.length;
+                _profileGenFailCount++;
             }
-        } catch (e) { console.error('[Profile] Error:', e); }
+        } catch (e) {
+            console.warn('画像生成失败:', e);
+            _lastProfileGenCount = conversationHistory.length;
+            _profileGenFailCount++;
+        }
         finally { _profileGenPending = false; }
     }
 
@@ -444,7 +678,10 @@
                     body: JSON.stringify({ conversations: conversationHistory })
                 });
             }
-        } catch (e) { console.error('[AI Agent] Save error:', e); }
+        } catch (e) {
+            if (getIsElectron() && typeof showToast === 'function') { showToast('对话保存失败', 'error'); }
+            else { console.warn('[AI Agent] Save error:', e); }
+        }
     }
 
     window.handleAgentKeyPress = function(e) {
@@ -452,8 +689,14 @@
     };
 
     window.approveProposal = async function() {
+        var proposalBtns = document.querySelectorAll('.proposal-btn');
+        proposalBtns.forEach(function(b) { b.disabled = true; b.style.opacity = '0.5'; });
+
         const last = conversationHistory[conversationHistory.length - 1];
-        if (!last?.proposal) return;
+        if (!last?.proposal) {
+            proposalBtns.forEach(function(b) { b.disabled = false; b.style.opacity = '1'; });
+            return;
+        }
 
         try {
             let result;
@@ -469,26 +712,66 @@
             }
 
             if (result.success) {
-                const count = result.deletedCount || result.modifiedCount || 0;
-                addMessage('assistant', `已完成。${count ? '共 ' + count + ' 项。' : ''}`, null, true);                await refreshScheduleData();
+                var btnContainer = document.querySelector('.proposal-actions');
+                if (btnContainer) {
+                    btnContainer.innerHTML = '<span style="color: var(--accent-primary); font-size: 13px;">' + (result.message || '已执行') + ' ✓</span>';
+                }
+                var count = result.deletedCount || result.modifiedCount || 0;
+                var feedbackMsg = result.message || getProposalFeedback(last.proposal);
+                addMessage('assistant', feedbackMsg + (count ? ' 共 ' + count + ' 项。' : ''), null, true);
+                await refreshScheduleData();
             } else {
-                addMessage('assistant', `操作失败：${result.error || '未知错误'}`, null, true);
+                proposalBtns.forEach(function(b) { b.disabled = false; b.style.opacity = '1'; });
+                addMessage('assistant', '操作失败：' + (result.error || '未知错误'), null, true);
             }
         } catch (e) {
+            proposalBtns.forEach(function(b) { b.disabled = false; b.style.opacity = '1'; });
             addMessage('assistant', '操作失败，请重试。', null, true);
         }
     };
 
+    function getProposalFeedback(proposal) {
+        switch (proposal.type) {
+            case 'batch_delete_schedule': return '已批量删除日程';
+            case 'batch_delete_tasks': return '已批量删除任务';
+            case 'batch_delete_big_tasks': return '已批量删除大任务';
+            case 'add_schedule': return '已添加日程';
+            case 'modify_schedule': return '已修改日程';
+            case 'delete_schedule': return '已删除日程';
+            case 'add_task': return '已添加任务';
+            case 'complete_task': return '已标记任务完成';
+            default: return '操作已完成';
+        }
+    }
+
     window.rejectProposal = function() {
-        addMessage('assistant', '已取消。', null, true);
+        var proposalBtns = document.querySelectorAll('.proposal-btn');
+        proposalBtns.forEach(function(b) { b.disabled = true; b.style.opacity = '0.5'; });
+
+        var btnContainer = document.querySelector('.proposal-actions');
+        if (btnContainer) {
+            btnContainer.innerHTML = '<span style="color: var(--text-secondary); font-size: 13px;">已取消</span>';
+        }
     };
 
     window.handleImageUpload = function(e) {
         const file = e.target.files[0];
         if (!file || !file.type.startsWith('image/')) return;
-        if (file.size > 5 * 1024 * 1024) { alert('图片不能超过5MB'); return; }
-        const reader = new FileReader();
-        reader.onload = (ev) => { uploadedImages.push(ev.target.result); updatePreview(); };
+        if (file.size > 5 * 1024 * 1024) { showToast('图片不能超过5MB', 'warning'); return; }
+
+        var objectUrl = URL.createObjectURL(file);
+        _activeBlobUrls.push(objectUrl);
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+            uploadedImages.push({
+                dataUrl: ev.target.result,
+                objectUrl: objectUrl,
+                name: file.name,
+                size: file.size,
+                type: file.type
+            });
+            updatePreview();
+        };
         reader.readAsDataURL(file);
         e.target.value = '';
     };
@@ -497,30 +780,122 @@
         const container = document.getElementById('agentImagePreview');
         if (!container) return;
         container.innerHTML = '';
-        uploadedImages.forEach((img, i) => {
-            container.innerHTML += `<div class="preview-image"><img src="${img}"><button onclick="removeUploadedImage(${i})" class="remove-btn">✕</button></div>`;
+        uploadedImages.forEach(function(img, i) {
+            var previewDiv = document.createElement('div');
+            previewDiv.className = 'preview-image';
+
+            var imgEl = document.createElement('img');
+            imgEl.src = img.objectUrl;
+
+            var btn = document.createElement('button');
+            btn.className = 'remove-btn';
+            btn.textContent = '✕';
+            btn.onclick = function() { window.removeUploadedImage(i); };
+
+            previewDiv.appendChild(imgEl);
+            previewDiv.appendChild(btn);
+            container.appendChild(previewDiv);
         });
     }
 
-    window.removeUploadedImage = function(i) { uploadedImages.splice(i, 1); updatePreview(); };
+    window.removeUploadedImage = function(i) {
+        var img = uploadedImages[i];
+        if (img && img.objectUrl) {
+            URL.revokeObjectURL(img.objectUrl);
+            _activeBlobUrls = _activeBlobUrls.filter(function(u) { return u !== img.objectUrl; });
+        }
+        uploadedImages.splice(i, 1);
+        updatePreview();
+    };
 
     window.archiveConversations = async function() {
+        var confirmed = await showConfirmToast('确定要归档当前对话吗？');
+        if (!confirmed) return;
+
         if (getIsElectron()) {
-            await window.electronAPI.archiveConversations();
-            await loadData();
+            try {
+                await window.electronAPI.archiveConversations();
+                await loadData();
+            } catch (e) {
+                console.warn('[Archive] Electron error:', e);
+            }
+            conversationHistory = [];
             document.getElementById('agentChatContainer').innerHTML = '';
+            revokeAllBlobUrls();
+            resetConversationState();
+        } else {
+            try {
+                var archived = localStorage.getItem('mosaique-archived-conversations');
+                var archivedList = archived ? JSON.parse(archived) : [];
+                archivedList.push({
+                    conversations: conversationHistory,
+                    archivedAt: new Date().toISOString()
+                });
+                localStorage.setItem('mosaique-archived-conversations', JSON.stringify(archivedList));
+            } catch (e) {
+                console.warn('[Archive] Save error:', e);
+            }
+            conversationHistory = [];
+            document.getElementById('agentChatContainer').innerHTML = '';
+            await saveHistory();
+            resetConversationState();
         }
     };
 
     window.clearConversations = async function() {
-        if (confirm('确定要清空对话吗？')) {
-            if (getIsElectron()) {
+        var confirmed = await showConfirmToast('确定要清空对话吗？');
+        if (!confirmed) return;
+
+        if (getIsElectron()) {
+            try {
                 await window.electronAPI.clearConversations();
                 await loadData();
-                document.getElementById('agentChatContainer').innerHTML = '';
+            } catch (e) {
+                console.warn('[Clear] Electron error, falling back to local clear:', e);
             }
+            conversationHistory = [];
+            document.getElementById('agentChatContainer').innerHTML = '';
+            revokeAllBlobUrls();
+            resetConversationState();
+        } else {
+            conversationHistory = [];
+            document.getElementById('agentChatContainer').innerHTML = '';
+            try {
+                await saveHistory();
+            } catch (e) {
+                console.warn('[Clear] Save error:', e);
+            }
+            resetConversationState();
         }
+        if (typeof showToast === 'function') { showToast('对话已清空', 'info'); }
     };
+
+    function showConfirmToast(message) {
+        return new Promise(function(resolve) {
+            if (typeof window.showConfirmToast === 'function') {
+                window.showConfirmToast(message, function() { resolve(true); }, function() { resolve(false); });
+            } else {
+                resolve(confirm(message));
+            }
+        });
+    }
+
+    function resetConversationState() {
+        isTyping = false;
+        uploadedImages = [];
+        revokeAllBlobUrls();
+        if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
+        if (dpTypingTimeout) { clearTimeout(dpTypingTimeout); dpTypingTimeout = null; }
+        var container = document.getElementById('agentChatContainer');
+        if (container && container.children.length === 0) {
+            addMessage('assistant', '对话已清空。需要帮你规划什么呢？✨');
+        }
+    }
+
+    function revokeAllBlobUrls() {
+        _activeBlobUrls.forEach(function(url) { URL.revokeObjectURL(url); });
+        _activeBlobUrls = [];
+    }
 
     async function refreshScheduleData() {
         try {
@@ -536,7 +911,7 @@
                 window.bigTasks = window.scheduleData.bigTasks || [];
                 window.renderBigTasks();
             }
-        } catch (e) { console.error('[AI Agent] Refresh error:', e); }
+        } catch (e) { console.warn('[AI Agent] Refresh error:', e); }
     }
 
     // ============================================
@@ -555,7 +930,7 @@
             const session = (data.sessions || []).find(s => s.id === currentDeepPlanningSession);
             deepPlanningHistory = (session?.messages || []).map(m => ({ role: m.role, content: m.content }));
         } catch (e) {
-            console.error('[Deep Planning] Load history error:', e);
+            console.warn('[Deep Planning] Load history error:', e);
             deepPlanningHistory = [];
             currentDeepPlanningSession = null;
         }
@@ -596,7 +971,7 @@
 
             localStorage.setItem(getDPStorageKey(), JSON.stringify(data));
         } catch (e) {
-            console.error('[Deep Planning] Save error:', e);
+            console.warn('[Deep Planning] Save error:', e);
         }
     }
 
@@ -640,7 +1015,7 @@
 
             const nameDiv = document.createElement('div');
             nameDiv.className = 'dp-sender-name';
-            nameDiv.innerHTML = 'Mosa <span class="dp-typing-status">思考中...</span>';
+            nameDiv.innerHTML = 'Mosa <span class="dp-typing-status">thinking</span>';
             div.appendChild(nameDiv);
 
             const contentDiv = document.createElement('div');
@@ -718,7 +1093,18 @@
 
         loadDeepPlanningHistory();
 
-        if (container.children.length === 0) {
+        if (deepPlanningHistory.length > 0 && container.children.length === 0) {
+            var confirmed = await showConfirmToast('检测到上次未完成的规划，是否恢复？');
+            if (confirmed) {
+                deepPlanningHistory.forEach(function(m) {
+                    addDPMessage(m.role, m.content);
+                });
+            } else {
+                deepPlanningHistory = [];
+                currentDeepPlanningSession = null;
+                addDPMessage('assistant', '你好。我是Mosa的战略规划模式。\n\n在这个模式下，我们可以一起探讨你的长期目标、人生方向和战略决策。不需要寒暄，直接告诉我你在思考什么。');
+            }
+        } else if (container.children.length === 0) {
             addDPMessage('assistant', '你好。我是Mosa的战略规划模式。\n\n在这个模式下，我们可以一起探讨你的长期目标、人生方向和战略决策。不需要寒暄，直接告诉我你在思考什么。');
         }
 
@@ -739,6 +1125,7 @@
         isDpStreaming = false;
 
         saveDeepPlanningData();
+        if (typeof showToast === 'function') { showToast('规划已保存 ✓', 'info'); }
         scheduleProfileUpdate();
     };
 
@@ -749,6 +1136,12 @@
 
         addDPMessage('user', text);
         input.value = '';
+
+        var container = document.getElementById('dpChatContainer');
+        var loadingDiv = document.createElement('div');
+        loadingDiv.className = 'dp-loading';
+        loadingDiv.textContent = 'Mosa 正在深度思考... 🌿';
+        if (container) { container.appendChild(loadingDiv); container.scrollTop = container.scrollHeight; }
 
         isDpStreaming = true;
         updateDPSendButtonState();
@@ -766,6 +1159,8 @@
 
             const data = await response.json();
 
+            if (loadingDiv && loadingDiv.parentNode) { loadingDiv.parentNode.removeChild(loadingDiv); }
+
             console.log('[Deep Planning] Raw API response:', JSON.stringify(data).substring(0, 200));
 
             if (data.error) {
@@ -780,6 +1175,7 @@
             saveDeepPlanningData();
 
         } catch (error) {
+            if (loadingDiv && loadingDiv.parentNode) { loadingDiv.parentNode.removeChild(loadingDiv); }
             console.error('[Deep Planning] API error:', error);
             addDPMessage('assistant', '网络连接失败，请检查服务器是否运行。');
         }
@@ -794,4 +1190,78 @@
             window.sendDeepPlanningMessage();
         }
     };
+
+    window.generateReActLog = async function() {
+        if (!conversationHistory || conversationHistory.length === 0) {
+            showToast('暂无对话历史，请先进行对话', 'warning');
+            return;
+        }
+
+        try {
+            const isElectron = getIsElectron();
+            const baseUrl = isElectron ? 'http://localhost:3456' : '';
+
+            const resp = await fetch(baseUrl + '/api/generate-react-log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: conversationHistory })
+            });
+
+            if (!resp.ok) throw new Error('请求失败');
+
+            const data = await resp.json();
+            if (data.success && data.react_log) {
+                document.getElementById('reactLogText').textContent = data.react_log;
+                document.getElementById('reactLogModal').style.display = 'flex';
+            } else {
+                showToast('生成ReAct记录失败', 'error');
+            }
+        } catch (e) {
+            console.error('ReAct log generation error:', e);
+            showToast('生成ReAct记录时出错，请检查网络连接', 'error');
+        }
+    };
+
+    window.closeReActLog = function() {
+        document.getElementById('reactLogModal').style.display = 'none';
+    };
+
+    window.copyReActLog = function() {
+        const text = document.getElementById('reactLogText').textContent;
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('已复制到剪贴板', 'success');
+            }).catch(() => {
+                fallbackCopy(text);
+            });
+        } else {
+            fallbackCopy(text);
+        }
+    };
+
+    function fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.top = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showToast('已复制到剪贴板', 'success');
+        } catch (e) {
+            showToast('复制失败，请手动选择文本复制', 'error');
+        }
+        document.body.removeChild(textarea);
+    }
+
+    document.addEventListener('click', function(e) {
+        const modal = document.getElementById('reactLogModal');
+        if (modal && e.target === modal) {
+            closeReActLog();
+        }
+    });
 })();

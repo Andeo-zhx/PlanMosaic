@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lock
@@ -44,7 +43,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -153,7 +151,6 @@ fun VocabTabBar(currentTab: VocabTab, onTabSelected: (VocabTab) -> Unit) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LearnPanel(viewModel: VocabViewModel, uiState: VocabUiState) {
-    val book = uiState.currentBook
 
     LazyColumn(
         modifier = Modifier
@@ -360,9 +357,9 @@ fun LearnPanel(viewModel: VocabViewModel, uiState: VocabUiState) {
             }
 
             // Question card
-            item {
-                val word = uiState.currentWord!!
-                Card(
+            uiState.currentWord?.let { word ->
+                item {
+                    Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
@@ -528,8 +525,9 @@ fun LearnPanel(viewModel: VocabViewModel, uiState: VocabUiState) {
                     }
                 }
             }
+        }
 
-            // Skip / Next buttons
+        // Skip / Next buttons
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

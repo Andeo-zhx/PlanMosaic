@@ -1,7 +1,10 @@
 package com.example.planmosaic_android.data.remote
 
+import android.util.Log
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -22,7 +25,7 @@ import java.io.InputStreamReader
  * Generic OpenAI-compatible API client for DeepSeek and Qwen.
  * Supports function/tool calling with multi-turn recursive execution.
  */
-object AiApiClient {
+class AiApiClient {
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -34,6 +37,16 @@ object AiApiClient {
         install(ContentNegotiation) {
             json(json)
         }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 30_000
+            connectTimeoutMillis = 15_000
+            socketTimeoutMillis = 30_000
+        }
+        install(HttpRequestRetry) {
+            retryOnServerErrors(maxRetries = 2)
+            retryOnException(maxRetries = 2, retryOnTimeout = true)
+            delayMillis { retry -> retry * 1000L }
+        }
     }
 
     // API endpoints
@@ -41,7 +54,7 @@ object AiApiClient {
     private const val QWEN_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
 
     // Models
-    private const val DEEPSEEK_MODEL = "deepseek-chat"
+    private const val DEEPSEEK_MODEL = "deepseek-v4-flash"
     private const val DEEPSEEK_REASONER_MODEL = "deepseek-reasoner"
     private const val QWEN_MODEL = "qwen3.5-plus"
 
@@ -66,13 +79,6 @@ object AiApiClient {
     data class ToolFunction(
         val name: String,
         val arguments: String = "{}"
-    )
-
-    @Serializable
-    data class ToolMessage(
-        val role: String = "tool",
-        val tool_call_id: String,
-        val content: String
     )
 
     data class ChatResult(
@@ -255,7 +261,7 @@ object AiApiClient {
                         ?.jsonObject?.get("delta")?.jsonObject
                     val content = delta?.get("content")?.jsonPrimitive?.contentOrNull ?: ""
                     if (content.isNotEmpty()) emit(content)
-                } catch (_: Exception) { /* skip malformed chunks */ }
+                } catch (e: Exception) { Log.w("AiApiClient", "Skipping malformed SSE chunk", e) }
             }
         }
         reader.close()

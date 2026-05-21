@@ -25,12 +25,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -66,6 +64,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.planmosaic_android.model.TimeSlot
 import com.example.planmosaic_android.model.Task
+import com.example.planmosaic_android.ui.components.AgentFAB
+import com.example.planmosaic_android.ui.components.AgentSheetContent
+import com.example.planmosaic_android.ui.components.GlassSurface
 import com.example.planmosaic_android.ui.components.MinimalistCheckbox
 import com.example.planmosaic_android.ui.theme.AppColors
 import com.example.planmosaic_android.util.DateUtils
@@ -74,6 +75,7 @@ import java.time.LocalDate
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(
+    onBack: () -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -87,6 +89,8 @@ fun ScheduleScreen(
         }
     }
 
+    var showAgentSheet by remember { mutableStateOf(false) }
+
     // Add sheet
     if (uiState.showAddSheet) {
         AddTaskBottomSheet(
@@ -97,25 +101,29 @@ fun ScheduleScreen(
     }
 
     // Edit task sheet
-    if (uiState.showEditTaskSheet && uiState.editingTask != null) {
+    if (uiState.showEditTaskSheet) {
         val editingTask = uiState.editingTask
-        EditTaskBottomSheet(
-            task = editingTask!!,
+        if (editingTask != null) {
+            EditTaskBottomSheet(
+                task = editingTask,
             index = uiState.editingTaskIndex,
             onDismiss = { viewModel.onEvent(ScheduleEvent.HideEditTaskSheet) },
             onUpdateTask = { task, index -> viewModel.onEvent(ScheduleEvent.UpdateTask(task, index)) }
-        )
+            )
+        }
     }
 
     // Edit time slot sheet
-    if (uiState.showEditTimeSlotSheet && uiState.editingTimeSlot != null) {
+    if (uiState.showEditTimeSlotSheet) {
         val editingTimeSlot = uiState.editingTimeSlot
-        EditTimeSlotBottomSheet(
-            slot = editingTimeSlot!!,
+        if (editingTimeSlot != null) {
+            EditTimeSlotBottomSheet(
+                slot = editingTimeSlot,
             index = uiState.editingTimeSlotIndex,
             onDismiss = { viewModel.onEvent(ScheduleEvent.HideEditTimeSlotSheet) },
             onUpdateSlot = { slot, index -> viewModel.onEvent(ScheduleEvent.UpdateTimeSlot(slot, index)) }
         )
+        }
     }
 
     Scaffold(
@@ -142,6 +150,25 @@ fun ScheduleScreen(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
             ) {
+                GlassSurface(
+                    shape = RoundedCornerShape(0.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "返回"
+                            )
+                        }
+                    }
+                }
+
                 // Month/Year header
                 Text(
                     text = "${uiState.selectedDate.monthValue}月 ${uiState.selectedDate.year}",
@@ -237,28 +264,23 @@ fun ScheduleScreen(
                 }
             }
 
-            // FAB - warm dark style matching PC button aesthetic
-            FloatingActionButton(
-                onClick = { viewModel.onEvent(ScheduleEvent.ShowAddSheet) },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp),
+            AgentFAB(
+                onClick = { showAgentSheet = true },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(end = 24.dp, bottom = 24.dp)
-                    .size(56.dp)
-                    .shadow(
-                        elevation = 6.dp,
-                        shape = RoundedCornerShape(16.dp),
-                        spotColor = Color(0x0F1A1918) // subtle warm shadow
-                    )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "添加",
-                    modifier = Modifier.size(24.dp)
-                )
-            }
+                    .padding(16.dp)
+            )
+        }
+    }
+
+    if (showAgentSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showAgentSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = Color.Transparent,
+            dragHandle = null
+        ) {
+            AgentSheetContent(onDismiss = { showAgentSheet = false })
         }
     }
 }
@@ -472,7 +494,6 @@ fun TaskItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Task indicator bar - green for today's tasks, accent otherwise
-        val today = DateUtils.isToday(java.time.LocalDate.now())
         Box(
             modifier = Modifier
                 .width(4.dp)

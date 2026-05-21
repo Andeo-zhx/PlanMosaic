@@ -1,9 +1,11 @@
 package com.example.planmosaic_android.util
 
+import com.example.planmosaic_android.BuildConfig
+
 object Constants {
-    const val SUPABASE_URL = "https://nxbnognnkifiiitvbupq.supabase.co"
-    const val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54Ym5vZ25ua2lmaWlpdHZidXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTkzMDAsImV4cCI6MjA4OTczNTMwMH0.ATSkFMfkPF5O7w-q8mEkBVuatN9NKsJTNgQadwqJuUM"
-    const val SUPABASE_RPC = SUPABASE_URL + "/rest/v1/rpc/"
+    val SUPABASE_URL: String get() = BuildConfig.SUPABASE_URL
+    val SUPABASE_ANON_KEY: String get() = BuildConfig.SUPABASE_ANON_KEY
+    val SUPABASE_RPC: String get() = "$SUPABASE_URL/rest/v1/rpc/"
     const val DATA_STORE_NAME = "planmosaic_prefs"
     const val KEY_USER_DATA = "user_data"
     const val KEY_CREDENTIALS = "credentials"

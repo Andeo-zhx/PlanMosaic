@@ -102,30 +102,20 @@
 			<text class="fab-icon">+</text>
 		</view>
 
-		<!-- TabBar -->
-		<custom-tabbar current="/pages/schedule/schedule"></custom-tabbar>
-	</view>
+		</view>
 </template>
 
 <script>
-	import { useScheduleStore } from '@/store/schedule.js'
-	import customTabbar from '@/components/custom-tabbar/custom-tabbar.vue'
-
-	// Standalone helper: safe in data() context
-	function todayStr() {
-		const n = new Date()
-		return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0')
-	}
+	import { useScheduleStore } from '@/store/schedule.ts'
 
 	export default {
-		components: { customTabbar },
 		data() {
 			return {
 				statusBarHeight: 0,
 				screenHeight: 0,
 				safeBottom: 0,
-				selectedDate: todayStr(),
-				tabBarReserved: 70 // tabbar approx height
+				selectedDate: useScheduleStore().todayStr,
+				tabBarReserved: 0
 			}
 		},
 		computed: {
@@ -154,11 +144,6 @@
 				return this.buildWeekDays(this.selectedDate)
 			},
 
-			schedule() {
-				if (!this.selectedDate) return null
-				return this.store.getSchedule(this.selectedDate)
-			},
-
 			timeSlots() {
 				if (!this.selectedDate) return []
 				return this.store.getTimeSlots(this.selectedDate)
@@ -179,7 +164,8 @@
 			},
 
 			dayHighlights() {
-				return this.schedule?.highlights || ''
+				const schedule = this.store.getSchedule(this.selectedDate)
+				return schedule?.highlights || ''
 			}
 		},
 		onReady() {

@@ -1,9 +1,9 @@
 package com.example.planmosaic_android.data.remote
 
 import android.util.Log
-import com.example.planmosaic_android.util.Constants
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -11,8 +11,10 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.*
 
-object SupabaseClient {
-
+class SupabaseClient(
+    private val url: String,
+    private val anonKey: String
+) {
     val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
@@ -22,21 +24,21 @@ object SupabaseClient {
         install(ContentNegotiation) {
             json(json)
         }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 15_000
+            connectTimeoutMillis = 10_000
+            socketTimeoutMillis = 15_000
+        }
     }
 
-    /**
-     * Generic Supabase RPC call. Uses buildJsonObject for type-safe params.
-     * @param token Optional JWT token. If provided, uses "Bearer <token>" for Authorization header;
-     *              otherwise uses the anonymous key.
-     */
     suspend fun rpc(functionName: String, params: JsonObject, token: String? = null): JsonObject {
-        val url = Constants.SUPABASE_RPC + functionName
-        val effectiveToken = if (!token.isNullOrBlank()) token else Constants.SUPABASE_ANON_KEY
-        Log.d("SupabaseClient", "RPC request: $functionName, url: $url, using custom token: ${!token.isNullOrBlank()}")
+        val rpcUrl = "$url/rest/v1/rpc/$functionName"
+        val effectiveToken = if (!token.isNullOrBlank()) token else anonKey
+        Log.d("SupabaseClient", "RPC request: $functionName, url: $rpcUrl, using custom token: ${!token.isNullOrBlank()}")
 
-        val response = httpClient.post(url) {
+        val response = httpClient.post(rpcUrl) {
             contentType(ContentType.Application.Json)
-            header("apikey", Constants.SUPABASE_ANON_KEY)
+            header("apikey", anonKey)
             header("Authorization", "Bearer $effectiveToken")
             header("Prefer", "return=representation")
             setBody(params)

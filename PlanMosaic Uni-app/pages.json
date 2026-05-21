@@ -1,6 +1,13 @@
 {
 	"pages": [
 		{
+			"path": "pages/mosa/mosa",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "Mosa"
+			}
+		},
+		{
 			"path": "pages/schedule/schedule",
 			"style": {
 				"navigationStyle": "custom",
@@ -12,13 +19,6 @@
 			"style": {
 				"navigationStyle": "custom",
 				"navigationBarTitleText": "Timetable"
-			}
-		},
-		{
-			"path": "pages/mosa/mosa",
-			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText": "Mosa"
 			}
 		},
 		{

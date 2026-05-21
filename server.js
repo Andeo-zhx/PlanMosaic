@@ -256,7 +256,10 @@ ${profileSection}
 - 日常任务 → add_task / update_task / complete_task / view_tasks
 - 大任务(DDL) → add_big_task / list_big_tasks / complete_big_task
 - 冲突检测 → check_conflicts
-- 搜索 → search_schedules`;
+- 搜索 → search_schedules
+- 时间估算 → estimate_task_time（估算任务所需时间，用户完成任务后引导其说"重新训练时间估算模型"可提升估算准确度）
+- 搜索网络 → web_search_evaluate（搜索最佳实践、学习路径等）
+- 健康检查 → analyze(action="health_check")`;
 
 // ============ 深度规划模式 ============
 
@@ -267,6 +270,7 @@ const DEEP_PLANNING_TOOL_WHITELIST = [
     'milestone_planner',
     'swot_analysis',
     'decision_matrix',
+    'web_search_evaluate',
     'view_schedule'  // 只读查看，用于了解用户现状
 ];
 
@@ -918,6 +922,98 @@ function getFallbackResponse(error, messages, scheduleData) {
     };
 }
 
+// ============ ReAct 转录生成函数 ============
+function generateReActLog(messages) {
+    let reactLog = '';
+    let hasToolCalls = false;
+    let question = '';
+    let stepCount = 0;
+
+    for (let i = 0; i < messages.length; i++) {
+        const msg = messages[i];
+
+        if (msg.role === 'user') {
+            if (!question) {
+                question = msg.content || '';
+                reactLog += `Question: ${question}\n\n`;
+            }
+        }
+
+        if (msg.role === 'assistant' && msg.tool_calls) {
+            hasToolCalls = true;
+            for (const tc of msg.tool_calls) {
+                stepCount++;
+                const toolName = tc.function?.name || tc.name || 'unknown';
+                let args = {};
+                try {
+                    args = JSON.parse(tc.function?.arguments || tc.arguments || '{}');
+                } catch (e) { /* use empty args */ }
+
+                // Generate Thought based on tool name
+                const thoughts = {
+                    'web_search_evaluate': `用户需要搜索相关信息，我将搜索"${args.query || ''}"来获取资料。`,
+                    'view_schedule': `我需要先查看相关日期的日程安排，了解当前的时间占用情况。`,
+                    'add_schedule': `根据分析结果，我将为用户安排新的日程时段。`,
+                    'estimate_task_time': `在规划之前，我需要估算这个任务大概需要多长时间。`,
+                    'manage_tasks': `我需要管理任务：${args.action || '操作'}。`,
+                    'manage_big_tasks': `我需要处理大任务：${args.action || '操作'}。`,
+                    'check_conflicts': `我需要检查是否存在日程冲突。`,
+                    'modify_schedule': `我需要对日程进行调整：${args.operation || '修改'}。`,
+                    'analyze': `我需要分析日程数据：${args.action || '分析'}。`,
+                    'manage_courses': `我需要管理课程信息。`,
+                    'manage_templates': `我需要处理日程模板。`,
+                    'value_monetization': `我正在评估用户目标的价值潜力。`,
+                    'roi_calculator': `我正在计算投入回报率。`,
+                    'milestone_planner': `我正在将长期目标拆解为里程碑。`,
+                    'swot_analysis': `我正在对"${args.subject || ''}"进行结构化SWOT分析。`,
+                    'decision_matrix': `我正在构建多维度决策矩阵。`
+                };
+                const thought = thoughts[toolName] || `我需要使用 ${toolName} 工具来完成这个步骤。`;
+
+                reactLog += `Thought: ${thought}\n`;
+                reactLog += `Action: ${toolName}(${Object.entries(args).map(([k,v]) => {
+                    if (typeof v === 'string') return `${k}="${v}"`;
+                    return `${k}=${JSON.stringify(v)}`;
+                }).join(', ')})\n`;
+
+                // Look ahead for the corresponding tool result
+                const toolCallId = tc.id || '';
+                for (let j = i + 1; j < messages.length; j++) {
+                    if (messages[j].role === 'tool' && messages[j].tool_call_id === toolCallId) {
+                        const result = messages[j].content || '';
+                        const truncated = result.length > 300 ? result.substring(0, 300) + '...(截断)' : result;
+                        reactLog += `Observation: ${truncated}\n\n`;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (msg.role === 'assistant' && msg.content && !msg.tool_calls) {
+            if (hasToolCalls) {
+                reactLog += `Thought: 我已经获得了所需的信息，可以给出最终答案了。\n`;
+                reactLog += `Final Answer: ${msg.content}\n`;
+            } else if (!question) {
+                question = msg.content || '';
+                reactLog += `Question: ${question}\n`;
+                reactLog += `Final Answer: ${msg.content}\n`;
+            }
+        }
+    }
+
+    if (!hasToolCalls && question) {
+        // Pure conversation, find the last assistant content as final answer
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].role === 'assistant' && messages[i].content) {
+                reactLog = `Question: ${question}\n\nFinal Answer: ${messages[i].content}\n`;
+                break;
+            }
+        }
+    }
+
+    return reactLog || 'Question: (empty conversation)\n\nFinal Answer: (no response)';
+}
+
 // 执行单个工具调用并返回JSON字符串结果（用于多轮工具调用）
 // 使用新的 9 工具架构，通过路由兼容旧工具名称
 async function executeSingleToolCall(toolCall, scheduleData) {
@@ -1133,6 +1229,24 @@ async function executeSingleToolCall(toolCall, scheduleData) {
                 const t=sch.tasks.find(x=>x.name===tn);
                 if(!t) return JSON.stringify({success:false,content:`在 ${d} 没有找到"${tn}"`});
                 t.completed=true;t.actual=(routedArgs.actual_minutes||0).toString();
+                if (routedArgs.actual_minutes && routedArgs.actual_minutes > 0) {
+                    try {
+                        const controller = new AbortController();
+                        const timeout = setTimeout(() => controller.abort(), 3000);
+                        fetch('http://127.0.0.1:5100/api/collect-training-data', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                task_name: tn,
+                                category: '其他',
+                                context: `日期:${d}`,
+                                estimated_minutes: parseInt(t.estimated) || 0,
+                                actual_minutes: routedArgs.actual_minutes
+                            }),
+                            signal: controller.signal
+                        }).catch(() => {}).finally(() => clearTimeout(timeout));
+                    } catch (_) { /* silently ignore collection errors */ }
+                }
                 createBackup('data.json');
                 await fs.promises.writeFile(pmPaths.getDataFilePath(),safeJsonStringify(scheduleData,2),'utf8');
                 return JSON.stringify({success:true,content:`任务已完成：${tn}`,shouldRefresh:true});
@@ -1319,6 +1433,122 @@ async function executeSingleToolCall(toolCall, scheduleData) {
                 const bh=Object.entries(tc).sort((a,b)=>b[1]-a[1])[0];
                 return JSON.stringify({success:true,habits:{busiestDay:bd?`${wdN[bd[0]]} (${bd[1]}项)`:'无数据',busiestHour:bh?`${bh[0]}:00 (${bh[1]}项)`:'无数据',totalDays:Object.keys(schedules).length}});
             }
+            if(act==='health_check'){
+                const period = routedArgs.period || '本周';
+                const now = new Date();
+                now.setHours(0,0,0,0);
+                let startDate, endDate, label;
+                if(period === '本周'){
+                    const dayOfWeek = now.getDay();
+                    startDate = new Date(now); startDate.setDate(now.getDate() - dayOfWeek + 1);
+                    endDate = new Date(startDate); endDate.setDate(startDate.getDate() + 6);
+                    label = '本周';
+                } else if(period === '本月'){
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    label = '本月';
+                } else {
+                    startDate = new Date(now); startDate.setDate(now.getDate() - 7);
+                    endDate = new Date(now); endDate.setDate(now.getDate() + 7);
+                    label = '近两周';
+                }
+                endDate.setHours(23,59,59,999);
+                const datesInRange = [];
+                for(const [date, sch] of Object.entries(schedules)){
+                    const d = new Date(date); d.setHours(0,0,0,0);
+                    if(d >= startDate && d <= endDate) datesInRange.push({ date, schedule: sch });
+                }
+                if(datesInRange.length === 0) return JSON.stringify({ success: true, period: label, message: '该时段暂无日程安排，建议先规划日程', dimensions: {}, overall_score: 0 });
+                // Dimension 1: 负荷均衡度
+                const dailyLoads = {};
+                datesInRange.forEach(({date, schedule}) => {
+                    let totalMin = 0;
+                    (schedule.timeSlots || []).forEach(s => { const range = parseTimeRange(s.time); totalMin += range.endMinutes - range.startMinutes; });
+                    (schedule.tasks || []).forEach(t => { if(!t.completed) totalMin += parseInt(t.estimated) || 0; });
+                    dailyLoads[date] = totalMin;
+                });
+                const loads = Object.values(dailyLoads);
+                const avgLoad = loads.reduce((a,b)=>a+b,0) / (loads.length || 1);
+                const loadVariance = loads.reduce((sum, l) => sum + Math.pow(l - avgLoad, 2), 0) / (loads.length || 1);
+                const loadStdDev = Math.sqrt(loadVariance);
+                const cv = avgLoad > 0 ? loadStdDev / avgLoad : 0;
+                const loadBalanceScore = Math.max(0, Math.min(100, Math.round(100 * (1 - Math.min(cv, 1)))));
+                // Dimension 2: 休息保障
+                let restIssues = 0;
+                datesInRange.forEach(({schedule}) => {
+                    const slots = (schedule.timeSlots || []).map(s => ({...s, parsed: parseTimeRange(s.time)})).sort((a,b) => a.parsed.startMinutes - b.parsed.startMinutes);
+                    let lastEnd = 0;
+                    slots.forEach(s => {
+                        if(s.parsed.startMinutes - lastEnd > 360) restIssues++;
+                        lastEnd = s.parsed.endMinutes;
+                    });
+                    if(lastEnd < 1320) restIssues++;
+                });
+                const restScore = Math.max(0, Math.min(100, Math.round(100 - restIssues * 10)));
+                // Dimension 3: 时间分配
+                const categories = { '学习': 0, '工作': 0, '生活': 0, '运动': 0, '其他': 0 };
+                const catKeywords = { '学习': ['学习','上课','复习','考试','作业','课程','阅读','研究','论文'], '工作': ['工作','会议','项目','报告','汇报','出差','加班'], '生活': ['吃饭','休息','娱乐','购物','家务','社交','聚会'], '运动': ['运动','跑步','健身','游泳','打球','瑜伽','锻炼'] };
+                let totalMinutes = 0;
+                datesInRange.forEach(({schedule}) => {
+                    (schedule.timeSlots || []).forEach(s => {
+                        const range = parseTimeRange(s.time);
+                        const mins = range.endMinutes - range.startMinutes;
+                        totalMinutes += mins;
+                        let matched = false;
+                        for(const [cat, kws] of Object.entries(catKeywords)){
+                            for(const kw of kws){
+                                if((s.activity || '').includes(kw) || (s.detail || '').includes(kw)){
+                                    categories[cat] += mins;
+                                    matched = true;
+                                    break;
+                                }
+                            }
+                            if(matched) break;
+                        }
+                        if(!matched) categories['其他'] += mins;
+                    });
+                });
+                const distribution = {};
+                for(const [cat, mins] of Object.entries(categories)){
+                    distribution[cat] = totalMinutes > 0 ? Math.round(mins / totalMinutes * 100) : 0;
+                }
+                const idealRatios = { '学习': 30, '工作': 30, '生活': 20, '运动': 10, '其他': 10 };
+                let ratioScore = 0;
+                for(const [cat, ideal] of Object.entries(idealRatios)){
+                    ratioScore += Math.max(0, 20 - Math.abs((distribution[cat] || 0) - ideal));
+                }
+                const timeAllocScore = Math.round(ratioScore);
+                // Dimension 4: DDL压力指数
+                const today = new Date(); today.setHours(0,0,0,0);
+                let urgentCount = 0, totalTasks = 0;
+                (scheduleData.bigTasks || []).forEach(t => {
+                    if(t.completed || !t.ddl) return;
+                    totalTasks++;
+                    const dd = new Date(t.ddl); dd.setHours(0,0,0,0);
+                    const daysLeft = Math.ceil((dd - today) / (1000*60*60*24));
+                    if(daysLeft <= 3) urgentCount++;
+                    if(daysLeft < 0) urgentCount += 2;
+                });
+                const ddlScore = totalTasks === 0 ? 100 : Math.max(0, Math.min(100, Math.round(100 - (urgentCount / Math.max(totalTasks, 1)) * 100)));
+                // Overall
+                const overallScore = Math.round((loadBalanceScore * 0.25 + restScore * 0.25 + timeAllocScore * 0.25 + ddlScore * 0.25));
+                let grade = '优秀', suggestion = '日程安排非常健康，继续保持！';
+                if(overallScore < 60){ grade = '需改善'; suggestion = '日程存在较多问题，建议使用Mosa的优化功能调整安排。'; }
+                else if(overallScore < 80){ grade = '良好'; suggestion = '日程整体合理，部分维度有优化空间。'; }
+                return JSON.stringify({
+                    success: true,
+                    period: label,
+                    overall_score: overallScore,
+                    grade,
+                    suggestion,
+                    dimensions: {
+                        load_balance: { score: loadBalanceScore, detail: `日均负荷 ${Math.round(avgLoad/60*10)/10} 小时，变异系数 ${Math.round(cv*100)}%`, suggestion: loadBalanceScore < 70 ? '建议均衡每日安排，避免某天过载' : '负荷分布合理' },
+                        rest_assurance: { score: restScore, detail: `检测到 ${restIssues} 个休息不足时段`, suggestion: restScore < 70 ? '建议每天安排休息时间，避免连续长时间工作' : '休息保障充足' },
+                        time_allocation: { score: timeAllocScore, detail: Object.entries(distribution).map(([k,v])=>`${k}:${v}%`).join('，'), suggestion: timeAllocScore < 70 ? '建议调整各类时间占比，增加运动和生活时间' : '时间分配合理' },
+                        ddl_pressure: { score: ddlScore, detail: `近期有 ${urgentCount} 个紧急DDL`, suggestion: ddlScore < 70 ? '紧急DDL较多，建议优先处理或拆分任务' : 'DDL压力在可控范围' }
+                    }
+                });
+            }
             return JSON.stringify({success:false,error:`analyze: 未知 action "${act}"`});
         }
 
@@ -1399,6 +1629,93 @@ async function executeSingleToolCall(toolCall, scheduleData) {
             const matrix=options.map((opt,idx)=>{const row={option:opt};criteria.forEach(c=>{row[c]=Math.min(5,Math.max(1,Math.round(3+(idx===0?2:-idx*0.5)+Math.random()*2)));});row.weighted_score=Math.round(criteria.reduce((sum,c)=>sum+(row[c]||3)*(weights[c]||0.2),0)*100)/100;return row;});
             matrix.sort((a,b)=>b.weighted_score-a.weighted_score);const winner=matrix[0];
             return safeJsonStringify({tool:'decision_matrix',decision_topic:topic,context,criteria:criteria.map(c=>({criterion:c,weight:weights[c]})),matrix,weighted_scores:matrix.map(m=>({option:m.option,score:m.weighted_score})),winner_recommendation:{option:winner.option,score:winner.weighted_score,reason:`综合评分最高(${winner.weighted_score}/5.00)，多维度表现均衡。建议进一步验证可行性。`},sensitivity_analysis:`权重变化：若最高权重维度下调20%，排名变化${options.length>2?'较小':'可能改变排序'}。关注得分接近选项的关键差异维度。`},2);
+        }
+
+        case 'web_search_evaluate': {
+            const query = encodeURIComponent(routedArgs.query || '');
+            const purpose = routedArgs.purpose || 'general';
+            const maxResults = routedArgs.max_results || 5;
+            try {
+                // Use DuckDuckGo Instant Answer API (free, no key required)
+                const ddgUrl = `https://api.duckduckgo.com/?q=${query}&format=json&no_html=1&skip_disambig=1`;
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 8000);
+                const resp = await fetch(ddgUrl, { signal: controller.signal });
+                clearTimeout(timeout);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const ddgData = await resp.json();
+                const results = [];
+                if (ddgData.AbstractText) {
+                    results.push({ title: ddgData.Heading || '摘要', snippet: ddgData.AbstractText, source: ddgData.AbstractSource || 'DuckDuckGo', url: ddgData.AbstractURL || '' });
+                }
+                if (ddgData.RelatedTopics) {
+                    for (const topic of ddgData.RelatedTopics.slice(0, maxResults - results.length)) {
+                        if (topic.Text && topic.FirstURL) {
+                            results.push({ title: topic.Text.split(' - ')[0] || '相关结果', snippet: topic.Text, url: topic.FirstURL });
+                        }
+                    }
+                }
+                if (results.length === 0) {
+                    return JSON.stringify({ success: true, query: routedArgs.query, results: [], message: '未找到相关搜索结果，建议尝试其他关键词' });
+                }
+                return JSON.stringify({ success: true, query: routedArgs.query, purpose, results: results.slice(0, maxResults), total_found: results.length });
+            } catch (e) {
+                console.error('[Web Search] Error:', e.message);
+                return JSON.stringify({ success: false, query: routedArgs.query, error: '网络搜索暂时不可用（请检查网络连接或API配置），Mosa将基于已有知识回答。', fallback: true });
+            }
+        }
+
+        case 'estimate_task_time': {
+            const taskName = routedArgs.task_name || '';
+            const category = routedArgs.category || '其他';
+            const context = routedArgs.context || '';
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 5000);
+                const pyResp = await fetch('http://127.0.0.1:5100/api/estimate-task-time', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task_name: taskName, category, context }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeout);
+                if (pyResp.ok) {
+                    const pyData = await pyResp.json();
+                    if (!pyData.fallback) {
+                        const hours = Math.floor(pyData.estimated_minutes / 60);
+                        const mins = pyData.estimated_minutes % 60;
+                        const timeStr = hours > 0 ? `${hours}小时${mins > 0 ? mins + '分钟' : ''}` : `${mins}分钟`;
+                        return JSON.stringify({
+                            success: true,
+                            task_name: taskName,
+                            category,
+                            estimated_minutes: pyData.estimated_minutes,
+                            estimated_time_display: timeStr,
+                            confidence_interval: pyData.confidence_interval,
+                            model_version: pyData.model_version,
+                            source: 'ml_model',
+                            suggestion: `基于 ${pyData.model_version} 模型估算，实际用时可能因个人情况有所不同。完成此任务后请记录实际用时，帮助Mosa更准确地估算。`
+                        });
+                    }
+                }
+            } catch (e) {
+                console.log('[Estimate Task Time] Python service unavailable, using LLM fallback');
+            }
+            const categoryHints = {
+                '学习': '学习类任务通常建议单次不超过90分钟（番茄工作法），复杂学习任务建议拆分为多个25-50分钟的时段',
+                '工作': '工作类任务建议单次专注45-90分钟，代码类任务建议预留30%调试时间',
+                '生活': '生活类任务时间弹性较大，建议预留20%缓冲时间应对意外',
+                '运动': '运动类任务建议30-60分钟（不含热身和拉伸），高强度运动不超过45分钟'
+            };
+            return JSON.stringify({
+                success: true,
+                task_name: taskName,
+                category,
+                source: 'llm_estimate',
+                hint: categoryHints[category] || '请根据任务复杂度估算合理时间',
+                fallback: true,
+                message: 'Python时间估算服务未运行，请基于以下提示估算此任务所需时间。启动Python ML服务可获得基于历史数据的精准估算。'
+            });
         }
 
         default:
@@ -2696,6 +3013,21 @@ const server = http.createServer((req, res) => {
                 console.error('Approve proposal error:', e);
                 res.writeHead(500, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ error: e.message }));
+            }
+        });
+    } else if (req.method === 'POST' && pathname === '/api/generate-react-log') {
+        let body = '';
+        req.on('data', chunk => { body += chunk; });
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                const messages = data.messages || [];
+                const reactLog = generateReActLog(messages);
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, react_log: reactLog }));
+            } catch (e) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: '无效请求' }));
             }
         });
     } else if (req.method === 'POST' && pathname === '/api/add-timeslot') {

@@ -14,9 +14,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.security.SecureRandom
 import javax.crypto.Cipher
-import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.PBEKeySpec
@@ -169,46 +167,27 @@ class DataStoreManager private constructor(private val context: Context) {
 
     private val KEY_CREDENTIALS_IV = stringPreferencesKey("credentials_iv")
 
-    private fun deriveKey(): SecretKey {
-        val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-        val spec = PBEKeySpec(
-            "planmosaic-local".toCharArray(),
-            ByteArray(16) { 0x42 },
-            10000,
-            256
-        )
-        return factory.generateSecret(spec)
-    }
-
-    private fun encrypt(plainText: String): Pair<String, String> {
-        val key = deriveKey()
-        val iv = ByteArray(12).also { SecureRandom().nextBytes(it) }
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(128, iv))
-        val encrypted = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
-        return Base64.encodeToString(encrypted, Base64.NO_WRAP) to
-                Base64.encodeToString(iv, Base64.NO_WRAP)
-    }
-
-    private fun decrypt(cipherText: String, ivText: String): String {
-        val key = deriveKey()
-        val encrypted = Base64.decode(cipherText, Base64.NO_WRAP)
-        val iv = Base64.decode(ivText, Base64.NO_WRAP)
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(128, iv))
-        return String(cipher.doFinal(encrypted), Charsets.UTF_8)
-    }
-
     val credentials: Flow<Credentials?> = context.dataStore.data.map { prefs ->
         val raw = prefs[KEY_CREDENTIALS]
         val iv = prefs[KEY_CREDENTIALS_IV]
-        if (raw.isNullOrBlank() || iv.isNullOrBlank()) null
+        if (raw.isNullOrBlank()) null
         else {
-            try {
-                val decrypted = decrypt(raw, iv)
-                val parts = decrypted.split(":", limit = 2)
-                if (parts.size == 2) Credentials(parts[0], parts[1]) else null
-            } catch (_: Exception) {
+            if (!iv.isNullOrBlank()) {
+                val decrypted = CryptoManager.decrypt(raw, iv)
+                if (decrypted != null) {
+                    val parts = decrypted.split(":", limit = 2)
+                    if (parts.size == 2) Credentials(parts[0], parts[1]) else null
+                } else {
+                    try {
+                        val legacyDecrypted = decryptLegacy(raw, iv)
+                        val parts = legacyDecrypted.split(":", limit = 2)
+                        if (parts.size == 2) Credentials(parts[0], parts[1]) else null
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to decrypt legacy credentials", e)
+                        null
+                    }
+                }
+            } else {
                 val parts = raw.split(":", limit = 2)
                 if (parts.size == 2) Credentials(parts[0], parts[1]) else null
             }
@@ -216,10 +195,18 @@ class DataStoreManager private constructor(private val context: Context) {
     }
 
     suspend fun saveCredentials(username: String, password: String) {
-        val (encrypted, iv) = encrypt("$username:$password")
-        context.dataStore.edit { prefs ->
-            prefs[KEY_CREDENTIALS] = encrypted
-            prefs[KEY_CREDENTIALS_IV] = iv
+        val pair = CryptoManager.encrypt("$username:$password")
+        if (pair != null) {
+            val (encrypted, iv) = pair
+            context.dataStore.edit { prefs ->
+                prefs[KEY_CREDENTIALS] = encrypted
+                prefs[KEY_CREDENTIALS_IV] = iv
+            }
+        } else {
+            Log.w(TAG, "Failed to encrypt credentials, saving as plain fallback")
+            context.dataStore.edit { prefs ->
+                prefs[KEY_CREDENTIALS] = "$username:$password"
+            }
         }
     }
 
@@ -227,6 +214,22 @@ class DataStoreManager private constructor(private val context: Context) {
         context.dataStore.edit { prefs ->
             prefs.remove(KEY_CREDENTIALS)
         }
+    }
+
+    private fun decryptLegacy(cipherText: String, ivText: String): String {
+        val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+        val spec = PBEKeySpec(
+            "planmosaic-local".toCharArray(),
+            ByteArray(16) { 0x42 },
+            10000,
+            256
+        )
+        val key = factory.generateSecret(spec)
+        val encrypted = Base64.decode(cipherText, Base64.NO_WRAP)
+        val iv = Base64.decode(ivText, Base64.NO_WRAP)
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+        cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(128, iv))
+        return String(cipher.doFinal(encrypted), Charsets.UTF_8)
     }
 
     // ============ Token ============

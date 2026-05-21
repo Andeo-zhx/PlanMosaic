@@ -1,5 +1,9 @@
 package com.example.planmosaic_android.ui.screens.mosa
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -26,20 +30,29 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.example.planmosaic_android.R
+import com.example.planmosaic_android.ui.components.GlassSurface
+import com.example.planmosaic_android.ui.components.ThinkingChain
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,24 +63,27 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.planmosaic_android.model.ChatMessage
+import com.example.planmosaic_android.model.Proposal
 
 // ============ Quick Prompts for Deep Planning ============
 
@@ -79,15 +95,37 @@ private val DEEP_PLANNING_QUICK_PROMPTS = listOf(
     "评估一下某件事值不值得投入" to "ROI评估"
 )
 
+private val CHAT_WELCOME_QUICK_PROMPTS = listOf(
+    "今天有什么日程安排？" to "今日日程",
+    "帮我安排明天的计划" to "安排明天",
+    "查看我这一周的待办" to "本周待办",
+    "最近有什么重要事项？" to "重要事项"
+)
+
 // ============ Main Screen ============
 
 @Composable
 fun MosaScreen(
+    onNavigate: (String) -> Unit = {},
     viewModel: MosaViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val isDarkTheme = isSystemInDarkTheme()
+    var themeOverride by remember { mutableStateOf<String?>(null) }
+    var showMenu by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val systemDark = isSystemInDarkTheme()
+    val isDarkTheme = when (themeOverride) {
+        "dark" -> true
+        "light" -> false
+        else -> systemDark
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.onThemeChangeRequest = { theme ->
+            themeOverride = theme
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -95,47 +133,115 @@ fun MosaScreen(
             .background(MaterialTheme.colorScheme.background)
             .imePadding()
     ) {
-        // Header with avatar and tabs
-        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Mosa Avatar - switches based on theme
-                Image(
-                    painter = painterResource(
-                        id = if (isDarkTheme) R.drawable.mosa_avatar_dark else R.drawable.mosa_avatar_light
-                    ),
-                    contentDescription = "Mosa Avatar",
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                )
-                Text(
-                    text = "Mosa",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground
+        // Header with avatar and tabs - GlassSurface
+        GlassSurface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Mosa Avatar - switches based on theme
+                    Image(
+                        painter = painterResource(
+                            id = if (isDarkTheme) R.drawable.mosa_avatar_dark else R.drawable.mosa_avatar_light
+                        ),
+                        contentDescription = "Mosa Avatar",
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                    )
+                    Text(
+                        text = "Mosa",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Box {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = "更多",
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("生成 ReAct 记录") },
+                                onClick = {
+                                    showMenu = false
+                                    viewModel.onEvent(MosaEvent.GenerateReActLog)
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                MosaTabBar(
+                    currentTab = uiState.currentTab,
+                    onTabSelected = { viewModel.onEvent(MosaEvent.SwitchTab(it)) }
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            MosaTabBar(
-                currentTab = uiState.currentTab,
-                onTabSelected = { viewModel.onEvent(MosaEvent.SwitchTab(it)) }
-            )
         }
 
-        HorizontalDivider(
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.outline
-        )
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Content based on tab
         Box(modifier = Modifier.weight(1f)) {
             when (uiState.currentTab) {
-                MosaTab.CHAT -> ChatPanel(viewModel = viewModel, uiState = uiState)
+                MosaTab.CHAT -> ChatPanel(viewModel = viewModel, uiState = uiState, onNavigate = onNavigate)
                 MosaTab.DEEP_PLANNING -> DeepPlanningPanel(viewModel = viewModel, uiState = uiState)
             }
         }
+    }
+
+    if (uiState.showReActDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(MosaEvent.DismissReActDialog) },
+            title = {
+                Text(
+                    text = "ReAct 推理记录",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                        .heightIn(max = 400.dp)
+                ) {
+                    Text(
+                        text = uiState.reactLogText,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 13.sp,
+                        lineHeight = 20.sp
+                    )
+                }
+            },
+            confirmButton = {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText("ReAct Log", uiState.reactLogText)
+                        clipboard.setPrimaryClip(clip)
+                        Toast.makeText(context, "已复制到剪贴板", Toast.LENGTH_SHORT).show()
+                    }) {
+                        Text("复制")
+                    }
+                    TextButton(onClick = { viewModel.onEvent(MosaEvent.DismissReActDialog) }) {
+                        Text("关闭")
+                    }
+                }
+            }
+        )
     }
 }
 
@@ -201,9 +307,14 @@ private fun MosaTabBar(
 @Composable
 private fun ChatPanel(
     viewModel: MosaViewModel,
-    uiState: MosaUiState
+    uiState: MosaUiState,
+    onNavigate: (String) -> Unit = {}
 ) {
     val listState = rememberLazyListState()
+
+    LaunchedEffect(Unit) {
+        viewModel.performStartupScan()
+    }
 
     LaunchedEffect(uiState.messages.size) {
         if (uiState.messages.isNotEmpty()) {
@@ -211,7 +322,21 @@ private fun ChatPanel(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    val showWelcome = uiState.messages.size <= 1
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f),
+                        MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f)
+                    )
+                )
+            )
+    ) {
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -220,6 +345,18 @@ private fun ChatPanel(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+        if (showWelcome) {
+            item(key = "welcome_area") {
+                WelcomeArea(
+                    uiState = uiState,
+                    onQuickPrompt = { prompt ->
+                        viewModel.onEvent(MosaEvent.SendChatQuickPrompt(prompt))
+                    },
+                    onNavigate = onNavigate
+                )
+            }
+        }
+
         items(
             items = uiState.messages,
             key = { "${it.role}-${it.timestamp}" }
@@ -227,10 +364,10 @@ private fun ChatPanel(
             ChatBubble(message = message)
         }
 
-        if (uiState.activeProposal != null) {
+        uiState.activeProposal?.let { proposal ->
             item {
                 ProposalCard(
-                    proposal = uiState.activeProposal!!,
+                    proposal = proposal,
                     onApprove = {
                         viewModel.onEvent(MosaEvent.ApproveProposal(viewModel.getAppData()))
                     },
@@ -257,10 +394,14 @@ private fun ChatPanel(
         }
     }
 
-    HorizontalDivider(
-        thickness = 1.dp,
-        color = MaterialTheme.colorScheme.outline
-    )
+    if (uiState.hasConflict) {
+        ConflictWarningCard(
+            conflictMessage = uiState.conflictMessage,
+            suggestedAlternative = uiState.suggestedAlternative,
+            onForceAdd = { viewModel.onEvent(MosaEvent.ForceAddTask) },
+            onAdjustTime = { viewModel.onEvent(MosaEvent.AdjustTaskTime) }
+        )
+    }
 
     ChatInputArea(
         text = uiState.inputText,
@@ -268,6 +409,103 @@ private fun ChatPanel(
         onTextChange = { viewModel.onEvent(MosaEvent.UpdateInput(it)) },
         onSend = { viewModel.onEvent(MosaEvent.SendMessage) }
     )
+    }
+}
+
+// ============ Welcome Area ============
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun WelcomeArea(
+    uiState: MosaUiState,
+    onQuickPrompt: (String) -> Unit,
+    onNavigate: (String) -> Unit = {}
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        if (uiState.isStartupScanning) {
+            GlassSurface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Mosa 正在了解你的日程...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else if (uiState.startupMessage != null) {
+            Text(
+                text = uiState.startupMessage,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            if (uiState.todayScheduleSummary.isNotEmpty()) {
+                GlassSurface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "今日概览",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = uiState.todayScheduleSummary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+
+                TextButton(
+                    onClick = { onNavigate("schedule") },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(
+                        text = "查看完整日程 →",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+
+            Text(
+                text = "快速操作",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                CHAT_WELCOME_QUICK_PROMPTS.forEach { (prompt, label) ->
+                    QuickPromptChip(
+                        text = label,
+                        onClick = { onQuickPrompt(prompt) },
+                        enabled = true
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -287,7 +525,19 @@ private fun DeepPlanningPanel(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f),
+                        MaterialTheme.colorScheme.background.copy(alpha = 0f),
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f)
+                    )
+                )
+            )
+    ) {
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -341,11 +591,6 @@ private fun DeepPlanningPanel(
         }
     }
 
-    HorizontalDivider(
-        thickness = 1.dp,
-        color = MaterialTheme.colorScheme.outline
-    )
-
     ChatInputArea(
         text = uiState.dpInputText,
         isTyping = uiState.dpIsTyping,
@@ -364,14 +609,20 @@ private fun ChatInputArea(
     onTextChange: (String) -> Unit,
     onSend: () -> Unit
 ) {
-    Row(
+    GlassSurface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 12.dp, vertical = 6.dp)
             .imePadding(),
-        verticalAlignment = Alignment.Bottom,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        shape = RoundedCornerShape(20.dp)
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
         OutlinedTextField(
             value = text,
             onValueChange = onTextChange,
@@ -430,6 +681,7 @@ private fun ChatInputArea(
                 modifier = Modifier.size(18.dp)
             )
         }
+        }
     }
 }
 
@@ -441,29 +693,32 @@ private fun QuickPromptChip(
     onClick: () -> Unit,
     enabled: Boolean = true
 ) {
-    Box(
+    GlassSurface(
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(
-                MaterialTheme.colorScheme.secondaryContainer.copy(
-                    alpha = if (enabled) 1f else 0.5f
-                )
-            )
             .clickable(
                 enabled = enabled,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick
-            )
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontWeight = FontWeight.Medium
             ),
-            color = MaterialTheme.colorScheme.onSecondaryContainer
-        )
+        shape = RoundedCornerShape(20.dp),
+        borderAlpha = if (enabled) 0.15f else 0.05f
+    ) {
+        Box(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontWeight = FontWeight.Medium
+                ),
+                color = if (enabled) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                }
+            )
+        }
     }
 }
 
@@ -473,6 +728,12 @@ private fun QuickPromptChip(
 fun ChatBubble(message: ChatMessage) {
     val isUser = message.role == "user"
     val screenWidthDp = LocalConfiguration.current.screenWidthDp
+    val bubbleShape = RoundedCornerShape(
+        topStart = if (isUser) 16.dp else 4.dp,
+        topEnd = if (isUser) 4.dp else 16.dp,
+        bottomStart = 16.dp,
+        bottomEnd = 16.dp
+    )
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -486,45 +747,45 @@ fun ChatBubble(message: ChatMessage) {
                 modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
             )
         }
-        Box(
-            modifier = Modifier
-                .widthIn(max = (screenWidthDp * 0.75).dp)
-                .then(
-                    if (!isUser) {
-                        Modifier.shadow(
-                            elevation = 2.dp,
-                            shape = RoundedCornerShape(
-                                topStart = 4.dp,
-                                topEnd = 16.dp,
-                                bottomStart = 16.dp,
-                                bottomEnd = 16.dp
-                            ),
-                            spotColor = Color.Black.copy(alpha = 0.1f)
-                        )
-                    } else Modifier
-                )
-                .clip(
-                    RoundedCornerShape(
-                        topStart = if (isUser) 16.dp else 4.dp,
-                        topEnd = if (isUser) 4.dp else 16.dp,
-                        bottomStart = 16.dp,
-                        bottomEnd = 16.dp
-                    )
-                )
-                .background(
-                    if (isUser) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.surface
-                    }
-                )
-                .padding(horizontal = 14.dp, vertical = 10.dp)
-        ) {
-            Text(
-                text = formatMessageContent(message.content),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+
+        if (message.thinkingContent.isNotEmpty()) {
+            ThinkingChain(
+                thinkingContent = message.thinkingContent,
+                modifier = Modifier.padding(bottom = 4.dp)
             )
+        }
+
+        if (isUser) {
+            Box(
+                modifier = Modifier
+                    .widthIn(max = (screenWidthDp * 0.75).dp)
+                    .clip(bubbleShape)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
+                    )
+                    .padding(horizontal = 14.dp, vertical = 10.dp)
+            ) {
+                Text(
+                    text = formatMessageContent(message.content),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        } else {
+            GlassSurface(
+                modifier = Modifier.widthIn(max = (screenWidthDp * 0.75).dp),
+                shape = bubbleShape
+            ) {
+                Box(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+                ) {
+                    Text(
+                        text = formatMessageContent(message.content),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
         }
     }
 }
@@ -533,19 +794,39 @@ fun ChatBubble(message: ChatMessage) {
 
 @Composable
 fun ProposalCard(
-    proposal: com.example.planmosaic_android.model.Proposal,
+    proposal: Proposal,
     onApprove: () -> Unit,
     onReject: () -> Unit
 ) {
-    Card(
+    val title = when (proposal) {
+        is Proposal.BatchDeleteSchedule -> "批量删除日程"
+        is Proposal.DeleteTask -> "删除任务"
+        is Proposal.UpdateTask -> "修改任务"
+        is Proposal.DeleteBigTask -> "删除大任务"
+        is Proposal.UpdateBigTask -> "修改大任务"
+        is Proposal.BatchDeleteTasks -> "批量删除任务"
+        is Proposal.BatchDeleteBigTasks -> "批量删除大任务"
+        is Proposal.ModifySchedule -> "日程修改建议"
+        is Proposal.ApplyTemplate -> "应用模板"
+    }
+
+    val reason = when (proposal) {
+        is Proposal.BatchDeleteSchedule -> proposal.reason
+        is Proposal.DeleteTask -> proposal.reason
+        is Proposal.UpdateTask -> proposal.reason
+        is Proposal.DeleteBigTask -> proposal.reason
+        is Proposal.UpdateBigTask -> proposal.reason
+        is Proposal.BatchDeleteTasks -> proposal.reason
+        is Proposal.BatchDeleteBigTasks -> proposal.reason
+        is Proposal.ModifySchedule -> proposal.reason
+        is Proposal.ApplyTemplate -> ""
+    }
+
+    GlassSurface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -553,27 +834,17 @@ fun ProposalCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = when (proposal.type) {
-                        "batch_delete_schedule" -> "批量删除日程"
-                        "delete_task" -> "删除任务"
-                        "update_task" -> "修改任务"
-                        "delete_big_task" -> "删除大任务"
-                        "update_big_task" -> "修改大任务"
-                        "batch_delete_tasks" -> "批量删除任务"
-                        "batch_delete_big_tasks" -> "批量删除大任务"
-                        "modify_schedule" -> "日程修改建议"
-                        else -> "操作确认"
-                    },
+                    text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            if (proposal.reason.isNotEmpty()) {
+            if (reason.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "原因：${proposal.reason}",
+                    text = "原因：$reason",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -581,50 +852,73 @@ fun ProposalCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (proposal.dates.isNotEmpty()) {
-                Text(
-                    text = "将删除 ${proposal.dates.size} 个日期：${proposal.dates.take(3).joinToString()}${if (proposal.dates.size > 3) "..." else ""}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            if (proposal.changes.isNotEmpty()) {
-                proposal.changes.forEach { change ->
+            when (proposal) {
+                is Proposal.BatchDeleteSchedule -> {
                     Text(
-                        text = "- $change",
+                        text = "将删除 ${proposal.dates.size} 个日期：${proposal.dates.take(3).joinToString()}${if (proposal.dates.size > 3) "..." else ""}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(start = 8.dp, bottom = 2.dp)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-            }
-            if (proposal.taskName.isNotEmpty()) {
-                Text(
-                    text = "任务：${proposal.taskName}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            if (proposal.oldTaskName.isNotEmpty()) {
-                Text(
-                    text = "重命名：${proposal.oldTaskName} → ${proposal.newTaskName}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            if (proposal.taskNames.isNotEmpty()) {
-                Text(
-                    text = "将删除 ${proposal.taskNames.size} 项：${proposal.taskNames.take(3).joinToString()}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            if (proposal.tasks.isNotEmpty()) {
-                Text(
-                    text = "将删除 ${proposal.tasks.size} 个任务",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                is Proposal.ModifySchedule -> {
+                    proposal.changes.forEach { change ->
+                        Text(
+                            text = "- $change",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(start = 8.dp, bottom = 2.dp)
+                        )
+                    }
+                }
+                is Proposal.DeleteTask -> {
+                    Text(
+                        text = "任务：${proposal.taskName}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                is Proposal.UpdateTask -> {
+                    Text(
+                        text = "重命名：${proposal.oldTaskName} → ${proposal.newTaskName}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                is Proposal.BatchDeleteBigTasks -> {
+                    Text(
+                        text = "将删除 ${proposal.taskNames.size} 项：${proposal.taskNames.take(3).joinToString()}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                is Proposal.BatchDeleteTasks -> {
+                    Text(
+                        text = "将删除 ${proposal.tasks.size} 个任务",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                is Proposal.DeleteBigTask -> {
+                    Text(
+                        text = "大任务：${proposal.taskName}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                is Proposal.UpdateBigTask -> {
+                    Text(
+                        text = "修改：${proposal.oldTaskName}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                is Proposal.ApplyTemplate -> {
+                    Text(
+                        text = "将模板 ${proposal.templateName} 应用到 ${proposal.targetDate}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -668,23 +962,99 @@ fun TypingIndicator() {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
         )
-        Box(
-            modifier = Modifier
-                .widthIn(max = (LocalConfiguration.current.screenWidthDp * 0.75).dp)
-                .shadow(
-                    elevation = 2.dp,
-                    shape = RoundedCornerShape(topStart = 4.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 16.dp),
-                    spotColor = Color.Black.copy(alpha = 0.1f)
-                )
-                .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 16.dp))
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(12.dp)
-        ) {
-            Text(
-                text = "思考中...",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+        GlassSurface(
+            modifier = Modifier.widthIn(max = (LocalConfiguration.current.screenWidthDp * 0.75).dp),
+            shape = RoundedCornerShape(
+                topStart = 4.dp,
+                topEnd = 16.dp,
+                bottomStart = 16.dp,
+                bottomEnd = 16.dp
             )
+        ) {
+            Box(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = "思考中...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+// ============ Conflict Warning Card ============
+
+@Composable
+private fun ConflictWarningCard(
+    conflictMessage: String,
+    suggestedAlternative: String,
+    onForceAdd: () -> Unit,
+    onAdjustTime: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "⚠️",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "时段冲突",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = conflictMessage,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
+            if (suggestedAlternative.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = suggestedAlternative,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End)
+            ) {
+                TextButton(
+                    onClick = onForceAdd,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                ) {
+                    Text("仍然添加")
+                }
+                Button(
+                    onClick = onAdjustTime,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("调整时间", color = MaterialTheme.colorScheme.onPrimary)
+                }
+            }
         }
     }
 }

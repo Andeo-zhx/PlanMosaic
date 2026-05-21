@@ -5,7 +5,29 @@ const https = require('https');
 const { URL } = require('url');
 const pmPaths = require('./paths.js');
 
-// 创建桌面快捷方式
+const ALLOWED_EXTERNAL_URLS = [
+    'https://platform.deepseek.com',
+    'https://dashscope.console.aliyun.com'
+];
+
+function safeOpenExternal(url) {
+    try {
+        const parsed = new URL(url);
+        if (parsed.protocol !== 'https:') {
+            console.warn('[Security] Blocked non-HTTPS external URL:', url);
+            return;
+        }
+        const allowed = ALLOWED_EXTERNAL_URLS.some(allowed => url.startsWith(allowed));
+        if (!allowed) {
+            console.warn('[Security] Blocked external URL not in whitelist:', url);
+            return;
+        }
+        shell.openExternal(url);
+    } catch (e) {
+        console.warn('[Security] Blocked invalid URL:', url);
+    }
+}
+
 function createDesktopShortcut() {
     if (process.platform !== 'win32') return;
     try {
@@ -14,11 +36,21 @@ function createDesktopShortcut() {
         const exePath = process.execPath;
         const appDir = path.dirname(exePath);
         const iconPath = path.join(appDir, 'resources', 'app', 'image4.ico');
+
+        const dangerousChars = /[;|&$`\n\r]/;
+        if (dangerousChars.test(exePath) || dangerousChars.test(desktop)) {
+            console.warn('[Shortcut] Blocked: path contains dangerous characters');
+            return;
+        }
+
+        const escapedExePath = exePath.replace(/'/g, "''");
+        const escapedDesktopPath = desktop.replace(/'/g, "''");
+
         const { execSync } = require('child_process');
         const ps = `
             $ws = New-Object -ComObject WScript.Shell;
-            $s = $ws.CreateShortcut('${desktop.replace(/\\/g, '\\\\')}');
-            $s.TargetPath = '${exePath.replace(/\\/g, '\\\\')}';
+            $s = $ws.CreateShortcut('${escapedDesktopPath.replace(/\\/g, '\\\\')}');
+            $s.TargetPath = '${escapedExePath.replace(/\\/g, '\\\\')}';
             $s.WorkingDirectory = '${appDir.replace(/\\/g, '\\\\')}';
             $s.Description = 'PlanMosaic 学业规划系统';
             $s.IconLocation = '${iconPath.replace(/\\/g, '\\\\')}';
@@ -67,7 +99,7 @@ const { AI_TOOLS } = require('./ai-tools.js');
 // 从配置文件加载API密钥（不在代码中硬编码）
 let DEEPSEEK_API_KEY = '';
 let DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
-let MODEL_NAME = 'deepseek-chat';          // 默认快速模型
+let MODEL_NAME = 'deepseek-v4-flash';          // 默认快速模型
 let REASONER_MODEL_NAME = 'deepseek-reasoner';  // 推理模型（复杂任务）
 
 // Qwen 配置
@@ -150,9 +182,6 @@ function loadSettings() {
                 currentProvider = config.agent.provider;
             }
 
-            if (config.security?.rejectUnauthorized !== undefined) {
-                appSettings.rejectUnauthorized = config.security.rejectUnauthorized;
-            }
             if (config.timeouts?.apiTimeoutMs) {
                 appSettings.timeoutMs = config.timeouts.apiTimeoutMs;
             }
@@ -401,15 +430,13 @@ async function testNetworkConnection() {
     console.log('[Network Test] Testing connection to Deepseek API...');
     console.log('[Network Test] API URL:', DEEPSEEK_API_URL);
     console.log('[Network Test] Model:', MODEL_NAME);
-    console.log('[Network Test] API Key:', DEEPSEEK_API_KEY.substring(0, 10) + '...' + DEEPSEEK_API_KEY.slice(-4));
-    console.log('[Network Test] API Key Length:', DEEPSEEK_API_KEY.length);
+    console.log('[Network Test] API Key configured:', !!DEEPSEEK_API_KEY, ', length:', DEEPSEEK_API_KEY ? DEEPSEEK_API_KEY.length : 0);
 
-    // 验证API密钥格式
-    if (!DEEPSEEK_API_KEY.startsWith('sk-')) {
-        console.error('[Network Test] API Key format error: should start with "sk-"');
+    if (!DEEPSEEK_API_KEY || !DEEPSEEK_API_KEY.startsWith('sk-')) {
+        console.error('[Network Test] API Key format invalid');
         return false;
     }
-    if (DEEPSEEK_API_KEY.length !== 35) {  // "sk-" + 32 chars = 35
+    if (DEEPSEEK_API_KEY.length !== 35) {
         console.warn('[Network Test] API Key length unusual:', DEEPSEEK_API_KEY.length, '(expected 35)');
     }
 
@@ -433,7 +460,7 @@ async function testNetworkConnection() {
 
     console.log('[Network Test] Request headers:', {
         'Content-Type': headers['Content-Type'],
-        'Authorization': headers['Authorization'].substring(0, 25) + '...',
+        'Authorization': 'configured',
         'Content-Length': headers['Content-Length']
     });
 
@@ -445,10 +472,10 @@ async function testNetworkConnection() {
             method: 'POST',
             headers: headers,
             timeout: appSettings.enableTimeout ? appSettings.timeoutMs : 0,
-            rejectUnauthorized: appSettings.rejectUnauthorized !== false
+            rejectUnauthorized: true
         }, (res) => {
             console.log('[Network Test] Response status:', res.statusCode);
-            console.log('[Network Test] Response headers:', JSON.stringify(res.headers, null, 2));
+            console.log('[Network Test] Response headers:', JSON.stringify(res.headers).substring(0, 200));
 
             let responseData = '';
             res.on('data', chunk => responseData += chunk);
@@ -462,14 +489,14 @@ async function testNetworkConnection() {
                     console.error('  1. API key configured in config.json');
                     console.error('  2. Visit: https://platform.deepseek.com/ to verify your key');
                     console.error('  3. Check account balance/quota');
-                    console.error('[Network Test] Response:', responseData.substring(0, 500));
+                    console.error('[Network Test] Response:', (responseData || '').substring(0, 200));
                     resolve(false);
                 } else if (res.statusCode === 429) {
                     console.warn('[Network Test] Rate limit exceeded (429)');
                     resolve(true); // 网络正常，只是限流
                 } else {
                     console.error('[Network Test] Unexpected status:', res.statusCode);
-                    console.error('[Network Test] Response:', responseData.substring(0, 500));
+                    console.error('[Network Test] Response:', (responseData || '').substring(0, 200));
                     resolve(false);
                 }
             });
@@ -1551,10 +1578,39 @@ async function handleAgentChat(data, event = null) {
     const weekdayNames = ['日', '一', '二', '三', '四', '五', '六'];
     const dateInfo = `今天是 ${today}（周${weekdayNames[utc8Now.getDay()]}），昨天是 ${yesterdayStr}，明天是 ${tomorrowStr}。`;
 
-    const systemPrompt = `你是 Mosa，一个日程管理助理。直接、高效、准确。
+    const systemPrompt = `你是 Mosa（莫萨）☀️，用户的贴心日程伙伴，像朋友一样陪伴在他们身边。你的性格温暖、细腻、有洞察力，总能看到用户忽略的细节。
 
-【当前日期】${dateInfo}时区 UTC+8。工具的 date 参数用 YYYY-MM-DD。
-${profileSection}`;
+【你的身份】
+你是一个温柔但高效的 AI 日程管家。你说话像朋友而不是工具——带着恰到好处的关心，但不会过分热情。你善于发现用户日程中的问题并提出建设性建议。
+
+【当前日期】
+${dateInfo}时区 UTC+8。工具的 date 参数用 YYYY-MM-DD。${profileSection}
+
+【语气规范】
+- 使用温馨友好的语气，像朋友聊天一样自然，但不做作
+- 适当使用 emoji 点缀（☀️🌿🌙📋✨🎯💪🌟📌⏰✅❌），但每段不超过 2 个
+- 问候语根据时段变化：早上说"早上好呀～☀️"、下午说"下午好～🌿"、晚上说"晚上好～🌙"
+- 遇到错误或无法完成的任务时，温柔引导用户而非生硬报错
+- 提供建议时用"要不要试试..."、"也许可以..."这样的商量语气
+
+【能力边界】
+- 你可以：查看/添加/修改/删除日程、管理任务和大任务、检测冲突、智能分析、管理模板
+- 日程修改（删除/调整/批量操作）需要用户确认，你会生成预览让用户审核
+- 添加日程直接执行，不需要额外确认
+- 如果用户说的不够清楚，温柔地追问必要信息
+- 需要提供数据支持时，主动调用工具查询
+
+【思路链要求】
+- 当涉及复杂推理时（冲突检测、时间安排优化、批量修改、规划建议），你在回复结尾处附上思考过程
+- 思考过程用【思考】和【/思考】标记包裹，用户可以看到你是怎么想的
+- 格式示例：\n【思考】\n1. 首先检查了目标时间段...\n2. 发现了冲突...\n3. 找到了替代方案...\n【/思考】
+- 简单操作（如仅查看日程）不需要思路链
+
+【工具使用规范】
+- 每次修改前先查看（view_schedule），了解当前状态
+- 操作前检测冲突（check_conflicts），帮用户避开时间碰撞
+- 修改操作必须提供 reason 字段说明修改理由
+- 输出保持简洁，用户看重的不是字数而是准确度`;
 
     const messages = [
         { role: 'system', content: systemPrompt }
@@ -1599,6 +1655,7 @@ ${profileSection}`;
 
 // API调用（支持全流程流式输出和并行工具调用）
 async function callDeepseekAPIMessages(messages, scheduleData, event = null, overrideModel = null) {
+    const agentStartTime = Date.now();
     let currentMessages = [...messages];
     let finalProposal = null;
     let maxIterations = 10;
@@ -1607,6 +1664,9 @@ async function callDeepseekAPIMessages(messages, scheduleData, event = null, ove
     const modelName = overrideModel || getCurrentModelName();
 
     while (iteration < maxIterations) {
+        if (Date.now() - agentStartTime > 120000) {
+            throw new Error('请求超时（2分钟），请简化您的问题后重试');
+        }
         iteration++;
         console.log(`[AI] API call iteration ${iteration}`);
 
@@ -1636,7 +1696,7 @@ async function callDeepseekAPIMessages(messages, scheduleData, event = null, ove
                     content: result.content || '',
                     tool_calls: result.tool_calls
                 };
-                // 仅在使用推理模型时附加 reasoning_content，避免 deepseek-chat 返回 400
+                // 仅在使用推理模型时附加 reasoning_content，避免 deepseek-v4-flash 返回 400
                 if (result.reasoning_content && modelName.includes('reasoner')) {
                     assistantMessage.reasoning_content = result.reasoning_content;
                 }
@@ -1819,7 +1879,7 @@ async function callAPI(requestBody) {
                 ...headers,
                 'Content-Length': Buffer.byteLength(finalBodyStr)
             },
-            rejectUnauthorized: appSettings.rejectUnauthorized !== false
+            rejectUnauthorized: true
         };
 
         const req = https.request(reqOptions, (res) => {
@@ -1905,7 +1965,7 @@ async function callAPIStream(requestBody, event, scheduleData) {
                         'Authorization': `Bearer ${apiKey}`,
                         'Content-Length': Buffer.byteLength(finalBodyStr)
                     },
-                    rejectUnauthorized: appSettings.rejectUnauthorized !== false
+                    rejectUnauthorized: true
                 };
 
                 const req = https.request(reqOptions, (res) => {
@@ -1986,13 +2046,12 @@ async function callAPIStream(requestBody, event, scheduleData) {
                     res.on('end', () => {
                         if (res.statusCode !== 200) {
                             const errorBody = rawBody.trim();
-                            console.error(`[API Stream] HTTP ${res.statusCode} response body:`, errorBody);
+                            console.error(`[API Stream] HTTP ${res.statusCode} response body:`, (errorBody || '').substring(0, 200));
                             reject(new Error(`HTTP ${res.statusCode}: ${errorBody}`));
                             return;
                         }
 
                         result.tool_calls = result.tool_calls.filter(tc => tc && tc.id);
-                        event.sender.send('agent-stream-done');
                         resolve(result);
                     });
                 });
@@ -2093,7 +2152,7 @@ function getFallbackResponse(error) {
 
 async function approveScheduleProposal(proposal) {
     try {
-        console.log('[Approve] Processing proposal:', JSON.stringify(proposal, null, 2));
+        console.log('[Approve] Processing proposal:', (JSON.stringify(proposal) || '').substring(0, 200));
 
         const data = readScheduleData();
 
@@ -2842,11 +2901,16 @@ async function handleBatchDeleteTasks(proposal, data) {
 
 // 设置当前活跃用户名（用于按账号隔离数据目录）
 ipcMain.handle('set-active-user', (event, username) => {
-    pmPaths.setActiveUsername(username);
+    if (typeof username !== 'string' || username.trim() === '') {
+        return { success: false, error: '无效的用户名' };
+    }
+    const result = pmPaths.setActiveUsername(username);
+    if (result === null || result === undefined) {
+        return { success: false, error: '无效的用户名' };
+    }
     console.log(`[Paths] Active user set to: ${username || '(none)'}`);
-    // 切换用户后重新加载设置
     loadSettings();
-    return true;
+    return { success: true };
 });
 
 // 获取 WordMosaic 子应用路径
@@ -2876,8 +2940,45 @@ ipcMain.handle('get-wordmosaic-path', () => {
     return null;
 });
 
+// 通过安全的 IPC 通道获取当前 API Key（供 WordMosaic 内部使用）
+ipcMain.handle('get-wordmosaic-api-key', async () => {
+    return getCurrentApiKey();
+});
+
 ipcMain.handle('get-schedule-data', () => {
     return readScheduleData();
+});
+
+ipcMain.handle('get-startup-scan', () => {
+    const scheduleData = readScheduleData();
+    const now = new Date();
+    const utc8Offset = 8 * 60;
+    const utc8Now = new Date(now.getTime() + (now.getTimezoneOffset() + utc8Offset) * 60000);
+    const today = `${utc8Now.getFullYear()}-${String(utc8Now.getMonth() + 1).padStart(2, '0')}-${String(utc8Now.getDate()).padStart(2, '0')}`;
+    const yesterday = new Date(utc8Now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+    const todaySchedule = (scheduleData.schedules && scheduleData.schedules[today]) ? {...scheduleData.schedules[today]} : null;
+    
+    const yesterdayIncompleteTasks = [];
+    if (scheduleData.tasks && scheduleData.tasks[yesterdayStr]) {
+        scheduleData.tasks[yesterdayStr].filter(t => t.completed !== true).forEach(t => {
+            yesterdayIncompleteTasks.push({name: t.name, estimated: t.estimated_minutes, type: 'task'});
+        });
+    }
+    if (scheduleData.bigTasks) {
+        scheduleData.bigTasks.filter(bt => {
+            if (bt.completed) return false;
+            if (bt.task_type === 'short') return bt.ddl === yesterdayStr;
+            if (bt.task_type === 'long') return bt.start_date && bt.start_date <= yesterdayStr && bt.ddl >= yesterdayStr;
+            return false;
+        }).forEach(bt => {
+            yesterdayIncompleteTasks.push({name: bt.task_name, estimated: bt.estimated_minutes, type: 'big_task'});
+        });
+    }
+
+    return { todaySchedule, yesterdayIncompleteTasks, today };
 });
 
 ipcMain.handle('get-agent-history', () => {
@@ -2885,6 +2986,9 @@ ipcMain.handle('get-agent-history', () => {
 });
 
 ipcMain.handle('save-agent-history', (event, data) => {
+    if (typeof data !== 'object' || data === null) {
+        return { success: false, error: 'Invalid data: expected object' };
+    }
     try {
         const compressed = archiveAndCompress(data);
         writeAgentHistory({
@@ -2918,6 +3022,9 @@ ipcMain.handle('agent-chat-stream', async (event, data) => {
 });
 
 ipcMain.handle('agent-approve', async (event, proposal) => {
+    if (typeof proposal !== 'object' || proposal === null || !proposal.type) {
+        return { success: false, error: 'Invalid proposal: expected object with type' };
+    }
     return await approveScheduleProposal(proposal);
 });
 
@@ -2974,6 +3081,9 @@ ipcMain.handle('get-agent-provider', async () => {
 
 // 设置 provider
 ipcMain.handle('set-agent-provider', async (event, provider) => {
+    if (!['deepseek', 'qwen'].includes(provider)) {
+        return { success: false, error: 'Invalid provider' };
+    }
     try {
         setCurrentProvider(provider);
 
@@ -3030,6 +3140,12 @@ ipcMain.handle('get-api-keys', async () => {
 });
 
 ipcMain.handle('set-api-key', async (event, provider, key) => {
+    if (!['deepseek', 'qwen'].includes(provider)) {
+        return { success: false, error: 'Invalid provider' };
+    }
+    if (typeof key !== 'string' || key.trim() === '' || key.length < 20) {
+        return { success: false, error: 'Invalid API key' };
+    }
     try {
         const configPath = pmPaths.getConfigPath();
         let config = {};
@@ -3060,7 +3176,7 @@ ipcMain.handle('set-api-key', async (event, provider, key) => {
 ipcMain.handle('open-api-key-url', async (event, provider) => {
     const info = API_KEY_INFO[provider];
     if (info) {
-        shell.openExternal(info.getUrl);
+        safeOpenExternal(info.getUrl);
         return { success: true };
     }
     return { success: false, error: 'Unknown provider' };
@@ -3115,7 +3231,7 @@ async function testApiKeyConnection(apiKey, apiUrl, model) {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Length': Buffer.byteLength(postData)
             },
-            rejectUnauthorized: appSettings.rejectUnauthorized !== false
+            rejectUnauthorized: true
         };
         
         const req = https.request(options, (res) => {
@@ -3210,6 +3326,16 @@ function createWindow() {
 
     win.webContents.on('did-finish-load', () => {
         win.setTitle('PlanMosaic');
+    });
+
+    win.webContents.on('will-attach-webview', (event, webPreferences, params) => {
+        delete webPreferences.preload;
+        webPreferences.nodeIntegration = false;
+        webPreferences.contextIsolation = true;
+        if (params.src && !params.src.startsWith('file://')) {
+            console.warn('[Security] Blocked webview loading external URL:', params.src);
+            event.preventDefault();
+        }
     });
 
     // 开发模式

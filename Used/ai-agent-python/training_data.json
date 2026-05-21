@@ -1,0 +1,6002 @@
+[
+  {
+    "task_name": "写英文日记练习写作",
+    "category": "学习",
+    "context": "英语学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "滑板练习",
+    "category": "运动",
+    "context": "极限运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "整理家庭账单",
+    "category": "生活",
+    "context": "家庭管理",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "性能压测执行与分析",
+    "category": "工作",
+    "context": "性能测试",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "跑步2公里热身",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "设计API接口文档",
+    "category": "工作",
+    "context": "接口设计",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "编写发布checklist",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "复习近代史纲要笔记",
+    "category": "学习",
+    "context": "思政复习",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "去医院看病",
+    "category": "生活",
+    "context": "健康医疗",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "做物理实验报告",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "参加5公里跑步比赛",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "处理报销申请",
+    "category": "工作",
+    "context": "日常事务",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "复习教师资格证考试内容",
+    "category": "学习",
+    "context": "考证备考",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "复习概率论第三章笔记",
+    "category": "学习",
+    "context": "考前复习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "撰写项目季度报告",
+    "category": "工作",
+    "context": "项目汇报",
+    "estimated_minutes": 125
+  },
+  {
+    "task_name": "服务器环境配置",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "学做一道新菜",
+    "category": "生活",
+    "context": "烹饪学习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "复习操作系统笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "复习概率论第三章笔记",
+    "category": "学习",
+    "context": "考前复习",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "学习日语基础语法",
+    "category": "学习",
+    "context": "语言学习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "跳绳3000个",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "缴纳手机话费",
+    "category": "生活",
+    "context": "生活缴费",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "合并分支解决冲突",
+    "category": "工作",
+    "context": "版本管理",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "清洗冰箱",
+    "category": "生活",
+    "context": "家电维护",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "编写发布checklist",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "绘制机械制图作业",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "去植物园赏花",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "学习Vue前端框架",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "练习吉他1小时",
+    "category": "学习",
+    "context": "乐器练习",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "复习思修法基笔记",
+    "category": "学习",
+    "context": "思政复习",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "去美术馆看展览",
+    "category": "生活",
+    "context": "文化休闲",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "柔道训练",
+    "category": "运动",
+    "context": "武术训练",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "写2000字实验报告",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 140
+  },
+  {
+    "task_name": "设计系统架构方案",
+    "category": "工作",
+    "context": "系统设计",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "打扫客厅卫生",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "叫外卖点餐",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 5
+  },
+  {
+    "task_name": "清洗冰箱",
+    "category": "生活",
+    "context": "家电维护",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "背诵500个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 300
+  },
+  {
+    "task_name": "包饺子馄饨",
+    "category": "生活",
+    "context": "烹饪学习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "编写200行代码",
+    "category": "工作",
+    "context": "日常开发",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "学做一道新菜",
+    "category": "生活",
+    "context": "烹饪学习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "复习Python编程笔记",
+    "category": "学习",
+    "context": "技能巩固",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "背诵200个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "晾晒被子",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "写5000字论文",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 350
+  },
+  {
+    "task_name": "练习瑜伽中级",
+    "category": "运动",
+    "context": "瑜伽练习",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "写英文日记练习写作",
+    "category": "学习",
+    "context": "英语学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "做Tabata训练",
+    "category": "运动",
+    "context": "燃脂训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "跑坡道训练",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "早上起床洗漱",
+    "category": "生活",
+    "context": "日常起居",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "骑行30公里",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "参加篮球比赛",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "跑步机跑步45分钟",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "清洗油烟机",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "用户访谈调研",
+    "category": "工作",
+    "context": "用户研究",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "数据库备份与恢复",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "给家人打电话聊天",
+    "category": "生活",
+    "context": "家庭生活",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "春节大扫除",
+    "category": "生活",
+    "context": "节日准备",
+    "estimated_minutes": 240
+  },
+  {
+    "task_name": "烤面包做三明治",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "跆拳道训练",
+    "category": "运动",
+    "context": "武术训练",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "竞品技术调研",
+    "category": "工作",
+    "context": "技术调研",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "与伴侣旅行计划讨论",
+    "category": "生活",
+    "context": "情感生活",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "刷抖音短视频",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "复习数据库原理笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "做高等数学课后习题",
+    "category": "学习",
+    "context": "巩固练习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "制定迭代开发计划",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "买年货",
+    "category": "生活",
+    "context": "节日准备",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "熨衣服",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "去图书馆看书",
+    "category": "生活",
+    "context": "文化休闲",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "晚上睡前洗漱",
+    "category": "生活",
+    "context": "日常起居",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "编写技术方案文档",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "复习毛概笔记",
+    "category": "学习",
+    "context": "思政复习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "新人技术培训",
+    "category": "工作",
+    "context": "团队建设",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "修理家具螺丝松动",
+    "category": "生活",
+    "context": "居家维修",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "复习思修法基笔记",
+    "category": "学习",
+    "context": "思政复习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "敷面膜护肤",
+    "category": "生活",
+    "context": "个人护理",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "健身胸肌训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "服务器环境配置",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "练习小提琴1小时",
+    "category": "学习",
+    "context": "乐器练习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "编写200行代码",
+    "category": "工作",
+    "context": "日常开发",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "参加项目启动会议",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "学习视频剪辑基础",
+    "category": "学习",
+    "context": "兴趣爱好",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "学习Docker容器基础",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "与朋友喝下午茶",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "游泳蛙泳训练",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "背诵50个英语单词",
+    "category": "学习",
+    "context": "每日单词记忆",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "阅读学术论文2篇",
+    "category": "学习",
+    "context": "论文阅读",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "泡沫轴放松按摩",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "做午餐",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "准备英语六级考试复习",
+    "category": "学习",
+    "context": "英语考级",
+    "estimated_minutes": 160
+  },
+  {
+    "task_name": "整理技术文档",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "轮滑溜冰",
+    "category": "运动",
+    "context": "休闲运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "阅读学术论文1篇",
+    "category": "学习",
+    "context": "论文阅读",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "需求文档编写",
+    "category": "工作",
+    "context": "需求分析",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "舞蹈练习中国舞",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "做化学实验报告",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "复习高等数学第一章笔记",
+    "category": "学习",
+    "context": "课后复习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "复习会计从业资格证",
+    "category": "学习",
+    "context": "考证备考",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "代码审查review复杂模块",
+    "category": "工作",
+    "context": "代码质量",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "复习计算机网络笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "俯卧撑训练100个",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "编写嵌入式系统程序",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "学习Vue前端框架",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "拉伸放松训练",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "复习马克思主义原理笔记",
+    "category": "学习",
+    "context": "思政复习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "仰卧起坐200个",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "与朋友桌游聚会",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "骑行20公里",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "背诵500个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 300
+  },
+  {
+    "task_name": "做物理实验报告",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "做概率论课后习题",
+    "category": "学习",
+    "context": "巩固练习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "代码审查review复杂模块",
+    "category": "工作",
+    "context": "代码质量",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "户外登山",
+    "category": "运动",
+    "context": "户外运动",
+    "estimated_minutes": 240
+  },
+  {
+    "task_name": "写1500字读书笔记",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "写800字读书笔记",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "设计前端页面原型",
+    "category": "工作",
+    "context": "UI设计",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "学习日语五十音",
+    "category": "学习",
+    "context": "语言学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "烤面包做三明治",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "骑行50公里",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 155
+  },
+  {
+    "task_name": "游泳自由泳训练",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "复习大学物理力学部分笔记",
+    "category": "学习",
+    "context": "考前复习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "参加10公里跑步比赛",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "合并分支解决冲突",
+    "category": "工作",
+    "context": "版本管理",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "做早餐",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "健身力量训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "舞蹈练习中国舞",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "准备年夜饭",
+    "category": "生活",
+    "context": "节日准备",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "制定技术方案规划",
+    "category": "工作",
+    "context": "技术规划",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "制定Sprint计划",
+    "category": "工作",
+    "context": "敏捷开发",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "背诵50个英语单词",
+    "category": "学习",
+    "context": "每日单词记忆",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "打羽毛球双打",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "与朋友逛街购物",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "健身背部训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "健身全身综合训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "编写端到端测试用例",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "波比跳训练100个",
+    "category": "运动",
+    "context": "燃脂训练",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "整理错题集",
+    "category": "学习",
+    "context": "知识整理",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "跑步机跑步30分钟",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "骑行10公里",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "清理手机存储空间",
+    "category": "生活",
+    "context": "数码管理",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "用户数据分析",
+    "category": "工作",
+    "context": "数据分析",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "复习Python编程笔记",
+    "category": "学习",
+    "context": "技能巩固",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "配置CI/CD流水线",
+    "category": "工作",
+    "context": "DevOps",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "复习前端开发笔记",
+    "category": "学习",
+    "context": "技能巩固",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "壶铃训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "与朋友唱KTV",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 190
+  },
+  {
+    "task_name": "准备考研英语复习",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 150
+  },
+  {
+    "task_name": "家庭照片整理归档",
+    "category": "生活",
+    "context": "家庭管理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "健身房热身",
+    "category": "运动",
+    "context": "运动准备",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "玩电脑游戏",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "参加内部技术分享",
+    "category": "工作",
+    "context": "技术交流",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "整理电脑文件",
+    "category": "生活",
+    "context": "数码管理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "阅读专业教材第一章",
+    "category": "学习",
+    "context": "教材阅读",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "跑步3公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "编写1000行代码",
+    "category": "工作",
+    "context": "功能开发",
+    "estimated_minutes": 235
+  },
+  {
+    "task_name": "打篮球",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "家庭照片整理归档",
+    "category": "生活",
+    "context": "家庭管理",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "复习高等数学第一章笔记",
+    "category": "学习",
+    "context": "课后复习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "舞蹈练习拉丁舞",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "参加部门周会",
+    "category": "工作",
+    "context": "团队协作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "蛙跳训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "与朋友打牌聊天",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "制定迭代开发计划",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "清理手机存储空间",
+    "category": "生活",
+    "context": "数码管理",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "学习摄影后期处理",
+    "category": "学习",
+    "context": "兴趣爱好",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "做概率论课后习题",
+    "category": "学习",
+    "context": "巩固练习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "修理漏水水管",
+    "category": "生活",
+    "context": "居家维修",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "撰写项目年度总结",
+    "category": "工作",
+    "context": "项目汇报",
+    "estimated_minutes": 175
+  },
+  {
+    "task_name": "练习小提琴1小时",
+    "category": "学习",
+    "context": "乐器练习",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "缴纳水电燃气费",
+    "category": "生活",
+    "context": "生活缴费",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "做英语完形填空3篇",
+    "category": "学习",
+    "context": "英语训练",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "与伴侣约会晚餐",
+    "category": "生活",
+    "context": "情感生活",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "骑行踏青",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "去超市购物",
+    "category": "生活",
+    "context": "日常采购",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "编写接口使用文档",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "阅读专业教材第一章",
+    "category": "学习",
+    "context": "教材阅读",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "滑板练习",
+    "category": "运动",
+    "context": "极限运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "泡沫轴放松按摩",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "审核外包开发代码",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "写2000字实验报告",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 150
+  },
+  {
+    "task_name": "数据库备份与恢复",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "与伴侣看电影",
+    "category": "生活",
+    "context": "情感生活",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "编写售前技术方案",
+    "category": "工作",
+    "context": "售前支持",
+    "estimated_minutes": 190
+  },
+  {
+    "task_name": "练习绘画2小时",
+    "category": "学习",
+    "context": "兴趣爱好",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "与朋友聚餐聚会",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "打篮球半场3v3",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "默写英语作文模板",
+    "category": "学习",
+    "context": "英语学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "养花浇水施肥",
+    "category": "生活",
+    "context": "园艺养护",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "默写英语作文模板",
+    "category": "学习",
+    "context": "英语学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "学习深度学习入门",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "宠物喂食换水",
+    "category": "生活",
+    "context": "宠物养护",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "编写100行代码",
+    "category": "工作",
+    "context": "日常开发",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "接送孩子上下学",
+    "category": "生活",
+    "context": "亲子时光",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "午休小憩",
+    "category": "生活",
+    "context": "日常起居",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "冥想放松身心",
+    "category": "生活",
+    "context": "个人成长",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "去快递站取快递",
+    "category": "生活",
+    "context": "日常事务",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "整理发票报销",
+    "category": "工作",
+    "context": "行政事务",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "做项目预算申请",
+    "category": "工作",
+    "context": "行政事务",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "做高等数学课后习题",
+    "category": "学习",
+    "context": "巩固练习",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "编写集成测试",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "用户访谈调研",
+    "category": "工作",
+    "context": "用户研究",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "大扫除全屋",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 125
+  },
+  {
+    "task_name": "编写自动化测试脚本",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "租房签约看房",
+    "category": "生活",
+    "context": "房产事宜",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "编写技术方案文档",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "排查生产环境故障",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "引体向上训练50个",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "打篮球全场5v5",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "参加羽毛球比赛",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "参加Sprint回顾会",
+    "category": "工作",
+    "context": "敏捷开发",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "编写集成测试",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "去医院体检",
+    "category": "生活",
+    "context": "健康医疗",
+    "estimated_minutes": 190
+  },
+  {
+    "task_name": "编写嵌入式系统程序",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "处理报销申请",
+    "category": "工作",
+    "context": "日常事务",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "陪孩子读绘本",
+    "category": "生活",
+    "context": "亲子时光",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "写日记记录生活",
+    "category": "生活",
+    "context": "个人成长",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "舞蹈练习爵士舞",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "学习深度学习入门",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "学习日语五十音",
+    "category": "学习",
+    "context": "语言学习",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "练习瑜伽初级",
+    "category": "运动",
+    "context": "瑜伽练习",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "手机数据备份",
+    "category": "生活",
+    "context": "数码管理",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "参加内部技术分享",
+    "category": "工作",
+    "context": "技术交流",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "做LeetCode算法题3道",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "跑步6公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "健身手臂训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "做Python编程练习题",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "钓鱼休闲",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 175
+  },
+  {
+    "task_name": "处理报销申请",
+    "category": "工作",
+    "context": "日常事务",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "烘焙蛋糕饼干",
+    "category": "生活",
+    "context": "烹饪学习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "筛选简历",
+    "category": "工作",
+    "context": "招聘工作",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "去游乐园游玩",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 300
+  },
+  {
+    "task_name": "晨间散步30分钟",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "编写数据分析报告",
+    "category": "工作",
+    "context": "数据分析",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "与朋友看电影",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "布置生日派对",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "踢足球11人制",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "处理工作邮件",
+    "category": "工作",
+    "context": "日常事务",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "背诵政治知识点",
+    "category": "学习",
+    "context": "文科学习",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "腌制泡菜制作",
+    "category": "生活",
+    "context": "烹饪学习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "撰写工作周报",
+    "category": "工作",
+    "context": "日常汇报",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "优化SQL查询性能",
+    "category": "工作",
+    "context": "性能优化",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "编写技术方案文档",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "刷考研英语真题一套",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 150
+  },
+  {
+    "task_name": "进行技术分享演讲",
+    "category": "工作",
+    "context": "技术交流",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "背诵500个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 300
+  },
+  {
+    "task_name": "准备毕业答辩演讲稿",
+    "category": "学习",
+    "context": "答辩准备",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "整理考研笔记",
+    "category": "学习",
+    "context": "知识整理",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "处理审批流程",
+    "category": "工作",
+    "context": "日常事务",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "叫外卖点餐",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 5
+  },
+  {
+    "task_name": "背诵50个英语单词",
+    "category": "学习",
+    "context": "每日单词记忆",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "健身肩部训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "阅读学术论文1篇",
+    "category": "学习",
+    "context": "论文阅读",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "去咖啡店看书办公",
+    "category": "生活",
+    "context": "休闲日常",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "椭圆机训练",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "做公务员申论练习",
+    "category": "学习",
+    "context": "考公备考",
+    "estimated_minutes": 150
+  },
+  {
+    "task_name": "审核外包开发代码",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "客户需求沟通会议",
+    "category": "工作",
+    "context": "客户沟通",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "晨跑晨练",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "蛙跳训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "编写500行代码",
+    "category": "工作",
+    "context": "功能开发",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "学习TensorFlow基础",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "写800字论文",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "准备考研专业课复习",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "做有氧操训练",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "搭建测试环境",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "制定技术方案规划",
+    "category": "工作",
+    "context": "技术规划",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "更换灯泡灯管",
+    "category": "生活",
+    "context": "居家维修",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "设计API接口文档",
+    "category": "工作",
+    "context": "接口设计",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "散打训练",
+    "category": "运动",
+    "context": "武术训练",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "跑步15公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "刷考研英语真题一套",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 160
+  },
+  {
+    "task_name": "做大学物理课后习题",
+    "category": "学习",
+    "context": "巩固练习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "做公务员申论练习",
+    "category": "学习",
+    "context": "考公备考",
+    "estimated_minutes": 150
+  },
+  {
+    "task_name": "出差拜访客户",
+    "category": "工作",
+    "context": "商务工作",
+    "estimated_minutes": 480
+  },
+  {
+    "task_name": "去药店买药",
+    "category": "生活",
+    "context": "健康医疗",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "整理发票报销",
+    "category": "工作",
+    "context": "行政事务",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "跑步5公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "背诵100个英语单词",
+    "category": "学习",
+    "context": "每日单词记忆",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "骑行20公里",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "写2000字论文",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 155
+  },
+  {
+    "task_name": "做午餐",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "户外爬山4小时",
+    "category": "运动",
+    "context": "户外运动",
+    "estimated_minutes": 240
+  },
+  {
+    "task_name": "优化后端接口响应时间",
+    "category": "工作",
+    "context": "性能优化",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "背诵300个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "动感单车训练",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "去咖啡店看书办公",
+    "category": "生活",
+    "context": "休闲日常",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "给孩子做辅食",
+    "category": "生活",
+    "context": "亲子时光",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "修剪指甲",
+    "category": "生活",
+    "context": "个人护理",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "代码审查review",
+    "category": "工作",
+    "context": "代码质量",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "背诵200个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "新技术调研评估",
+    "category": "工作",
+    "context": "技术调研",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "平板支撑训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "处理审批流程",
+    "category": "工作",
+    "context": "日常事务",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "去理发店染发烫发",
+    "category": "生活",
+    "context": "个人护理",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "深蹲训练100个",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "去物业交费",
+    "category": "生活",
+    "context": "日常事务",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "筛选简历",
+    "category": "工作",
+    "context": "招聘工作",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "背诵200个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "编写自动化测试脚本",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "整理家庭药箱",
+    "category": "生活",
+    "context": "家庭管理",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "清洗洗衣机",
+    "category": "生活",
+    "context": "家电维护",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "打保龄球",
+    "category": "运动",
+    "context": "休闲运动",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "复习线性代数笔记",
+    "category": "学习",
+    "context": "课后复习",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "去美术馆看展览",
+    "category": "生活",
+    "context": "文化休闲",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "制定项目排期计划",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "撰写项目季度报告",
+    "category": "工作",
+    "context": "项目汇报",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "做Python编程练习题",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "骑行10公里",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "整理家庭药箱",
+    "category": "生活",
+    "context": "家庭管理",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "编写单元测试",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "背诵400个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 235
+  },
+  {
+    "task_name": "做电子电路实验报告",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "绘制业务流程图",
+    "category": "工作",
+    "context": "产品工作",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "跑后拉伸放松",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "做电子电路实验报告",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "学习Git版本控制",
+    "category": "学习",
+    "context": "工具学习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "阅读专业教材三章",
+    "category": "学习",
+    "context": "教材阅读",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "修剪指甲",
+    "category": "生活",
+    "context": "个人护理",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "做英语听力练习",
+    "category": "学习",
+    "context": "英语训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "写3000字论文",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 240
+  },
+  {
+    "task_name": "宠物喂食换水",
+    "category": "生活",
+    "context": "宠物养护",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "去邮局寄快递",
+    "category": "生活",
+    "context": "日常事务",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "刷考研数学真题一套",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "参加项目复盘会议",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "修复线上Bug",
+    "category": "工作",
+    "context": "问题修复",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "部署新版本上线",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "学习机器学习基础概念",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "需求文档编写",
+    "category": "工作",
+    "context": "需求分析",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "带宠物去宠物医院",
+    "category": "生活",
+    "context": "宠物养护",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "优化前端页面加载速度",
+    "category": "工作",
+    "context": "性能优化",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "冲刺间歇跑训练",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "搬家打包行李",
+    "category": "生活",
+    "context": "搬家事宜",
+    "estimated_minutes": 170
+  },
+  {
+    "task_name": "准备期中考复习",
+    "category": "学习",
+    "context": "考试备考",
+    "estimated_minutes": 185
+  },
+  {
+    "task_name": "安全漏洞修复",
+    "category": "工作",
+    "context": "安全工作",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "撰写项目年度总结",
+    "category": "工作",
+    "context": "项目汇报",
+    "estimated_minutes": 190
+  },
+  {
+    "task_name": "修复紧急线上Bug",
+    "category": "工作",
+    "context": "问题修复",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "性能压测执行与分析",
+    "category": "工作",
+    "context": "性能测试",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "学习TensorFlow基础",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 125
+  },
+  {
+    "task_name": "写课程作业报告",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "与朋友聚餐聚会",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 125
+  },
+  {
+    "task_name": "整理书桌",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "复习数据结构笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "练习钢琴1小时",
+    "category": "学习",
+    "context": "乐器练习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "与朋友逛街购物",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "整理书架",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "整理杂物间",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "估算开发任务工时",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "五禽戏练习",
+    "category": "运动",
+    "context": "传统武术",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "整理专业课笔记",
+    "category": "学习",
+    "context": "知识整理",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "健身肩部训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "玩手机游戏",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "新房看房",
+    "category": "生活",
+    "context": "房产事宜",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "背诵100个英语单词",
+    "category": "学习",
+    "context": "每日单词记忆",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "做晚餐",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "遛狗散步",
+    "category": "生活",
+    "context": "宠物养护",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "背诵语文古诗文",
+    "category": "学习",
+    "context": "文科学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "设计数据库表结构",
+    "category": "工作",
+    "context": "系统设计",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "参加足球比赛",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "健身手臂训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "跑步10公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "游泳蛙泳训练",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "户外爬山4小时",
+    "category": "运动",
+    "context": "户外运动",
+    "estimated_minutes": 230
+  },
+  {
+    "task_name": "包压岁钱红包",
+    "category": "生活",
+    "context": "节日准备",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "整理电脑文件",
+    "category": "生活",
+    "context": "数码管理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "熨衣服",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "搬家打包行李",
+    "category": "生活",
+    "context": "搬家事宜",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "整理家庭账单",
+    "category": "生活",
+    "context": "家庭管理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "晾晒被子",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "编写500行代码",
+    "category": "工作",
+    "context": "功能开发",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "练习书法1小时",
+    "category": "学习",
+    "context": "兴趣爱好",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "复习马克思主义原理笔记",
+    "category": "学习",
+    "context": "思政复习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "跑前热身运动",
+    "category": "运动",
+    "context": "运动准备",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "练习绘画2小时",
+    "category": "学习",
+    "context": "兴趣爱好",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "背诵历史时间线",
+    "category": "学习",
+    "context": "文科学习",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "学习音乐乐理知识",
+    "category": "学习",
+    "context": "兴趣爱好",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "阅读学术论文3篇",
+    "category": "学习",
+    "context": "论文阅读",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "做金工实习报告",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "复习数据结构笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "学习音乐乐理知识",
+    "category": "学习",
+    "context": "兴趣爱好",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "参加行业技术大会",
+    "category": "工作",
+    "context": "行业交流",
+    "estimated_minutes": 485
+  },
+  {
+    "task_name": "参加项目复盘会议",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "游泳2000米",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "晚间散步1小时",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "整理杂物间",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "设计数据库表结构",
+    "category": "工作",
+    "context": "系统设计",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "去动物园游玩",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 185
+  },
+  {
+    "task_name": "玩电脑游戏",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "打羽毛球双打",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "跑步8公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "椭圆机训练",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "与朋友桌游聚会",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "五禽戏练习",
+    "category": "运动",
+    "context": "传统武术",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "复习操作系统笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "晚上睡前洗漱",
+    "category": "生活",
+    "context": "日常起居",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "优化SQL查询性能",
+    "category": "工作",
+    "context": "性能优化",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "洗衣服",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "陪孩子去游乐场",
+    "category": "生活",
+    "context": "亲子时光",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "操场跑圈训练",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "拖地",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "制定项目排期计划",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "需求分析梳理",
+    "category": "工作",
+    "context": "需求分析",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "与伴侣约会晚餐",
+    "category": "生活",
+    "context": "情感生活",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "面试候选人技术面",
+    "category": "工作",
+    "context": "招聘工作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "整理项目知识库",
+    "category": "工作",
+    "context": "知识管理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "打扫客厅卫生",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "复习前端开发笔记",
+    "category": "学习",
+    "context": "技能巩固",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "搭建监控告警系统",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "去博物馆参观",
+    "category": "生活",
+    "context": "文化休闲",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "设计前端页面原型",
+    "category": "工作",
+    "context": "UI设计",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "健身房热身",
+    "category": "运动",
+    "context": "运动准备",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "追剧看电视剧",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "舞蹈练习广场舞",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "学习视频剪辑基础",
+    "category": "学习",
+    "context": "兴趣爱好",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "春节大扫除",
+    "category": "生活",
+    "context": "节日准备",
+    "estimated_minutes": 250
+  },
+  {
+    "task_name": "去菜市场买菜",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "骑行夜骑环湖",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "观看教学视频3小时",
+    "category": "学习",
+    "context": "在线学习",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "复习英语语法笔记",
+    "category": "学习",
+    "context": "语言学习",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "Code Review团队代码",
+    "category": "工作",
+    "context": "代码质量",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "骑行长途拉练",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "编写产品PRD文档",
+    "category": "工作",
+    "context": "产品工作",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "跆拳道训练",
+    "category": "运动",
+    "context": "武术训练",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "撰写工作月报",
+    "category": "工作",
+    "context": "日常汇报",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "冥想放松身心",
+    "category": "生活",
+    "context": "个人成长",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "设计产品功能原型",
+    "category": "工作",
+    "context": "产品设计",
+    "estimated_minutes": 170
+  },
+  {
+    "task_name": "缴纳水电燃气费",
+    "category": "生活",
+    "context": "生活缴费",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "跳绳2000个",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "游泳2000米",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "看综艺节目",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "竞品技术调研",
+    "category": "工作",
+    "context": "技术调研",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "跑步半程马拉松",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "修复线上Bug",
+    "category": "工作",
+    "context": "问题修复",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "擦窗户",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "跑步15公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "健身核心腹肌训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "去理发店剪头发",
+    "category": "生活",
+    "context": "个人护理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "包压岁钱红包",
+    "category": "生活",
+    "context": "节日准备",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "准备英语六级考试复习",
+    "category": "学习",
+    "context": "英语考级",
+    "estimated_minutes": 150
+  },
+  {
+    "task_name": "观看教学视频3小时",
+    "category": "学习",
+    "context": "在线学习",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "撰写项目季度报告",
+    "category": "工作",
+    "context": "项目汇报",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "打扫卫生间",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "护肤美容护理",
+    "category": "生活",
+    "context": "个人护理",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "学习PyTorch框架入门",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "处理工作邮件",
+    "category": "工作",
+    "context": "日常事务",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "跑坡道训练",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "编写项目标书",
+    "category": "工作",
+    "context": "商务工作",
+    "estimated_minutes": 230
+  },
+  {
+    "task_name": "饭后散步40分钟",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "跑后拉伸放松",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "观看教学视频1小时",
+    "category": "学习",
+    "context": "在线学习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "健身力量训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "优化后端接口响应时间",
+    "category": "工作",
+    "context": "性能优化",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "波比跳训练100个",
+    "category": "运动",
+    "context": "燃脂训练",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "敷面膜护肤",
+    "category": "生活",
+    "context": "个人护理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "优化前端页面加载速度",
+    "category": "工作",
+    "context": "性能优化",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "参加产品需求评审会",
+    "category": "工作",
+    "context": "需求评审",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "骑行夜骑环湖",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "踢足球11人制",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "练习英语口语30分钟",
+    "category": "学习",
+    "context": "英语学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "优化前端页面加载速度",
+    "category": "工作",
+    "context": "性能优化",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "整理技术文档",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "给孩子做辅食",
+    "category": "生活",
+    "context": "亲子时光",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "学习React前端框架基础",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "客户需求沟通会议",
+    "category": "工作",
+    "context": "客户沟通",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "跑步半程马拉松",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "护肤美容护理",
+    "category": "生活",
+    "context": "个人护理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "参加家庭聚餐",
+    "category": "生活",
+    "context": "家庭生活",
+    "estimated_minutes": 150
+  },
+  {
+    "task_name": "整理错题集",
+    "category": "学习",
+    "context": "知识整理",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "学习Git版本控制",
+    "category": "学习",
+    "context": "工具学习",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "出差拜访客户",
+    "category": "工作",
+    "context": "商务工作",
+    "estimated_minutes": 480
+  },
+  {
+    "task_name": "陪孩子读绘本",
+    "category": "生活",
+    "context": "亲子时光",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "发布hotfix补丁",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "搭建监控告警系统",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "做数据结构习题",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "露营过夜",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 475
+  },
+  {
+    "task_name": "练习科目二倒车入库",
+    "category": "生活",
+    "context": "驾照考试",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "煮咖啡冲茶",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "参加项目复盘会议",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "翻译英文短文",
+    "category": "学习",
+    "context": "英语学习",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "游泳前热身",
+    "category": "运动",
+    "context": "运动准备",
+    "estimated_minutes": 5
+  },
+  {
+    "task_name": "陪孩子去游乐场",
+    "category": "生活",
+    "context": "亲子时光",
+    "estimated_minutes": 185
+  },
+  {
+    "task_name": "数据库迁移操作",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "跑步5公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "去车管所办理业务",
+    "category": "生活",
+    "context": "行政事务",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "优化后端接口响应时间",
+    "category": "工作",
+    "context": "性能优化",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "轮滑溜冰",
+    "category": "运动",
+    "context": "休闲运动",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "参加5公里跑步比赛",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "整理书架",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "擦窗户",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "编写运维手册",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "攀岩训练",
+    "category": "运动",
+    "context": "户外运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "八段锦练习",
+    "category": "运动",
+    "context": "传统武术",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "观看教学视频1小时",
+    "category": "学习",
+    "context": "在线学习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "做有氧操训练",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "做大学物理课后习题",
+    "category": "学习",
+    "context": "巩固练习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "打扫房间卫生",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "跳绳3000个",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "叠衣服整理衣柜",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "学习Python新框架",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "长距离慢跑LSD训练",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "复习高等数学第一章笔记",
+    "category": "学习",
+    "context": "课后复习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "代码审查review复杂模块",
+    "category": "工作",
+    "context": "代码质量",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "追剧看电视剧",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "复习概率论第三章笔记",
+    "category": "学习",
+    "context": "考前复习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "整理项目知识库",
+    "category": "工作",
+    "context": "知识管理",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "A/B测试数据分析",
+    "category": "工作",
+    "context": "数据分析",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "绘制业务流程图",
+    "category": "工作",
+    "context": "产品工作",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "拳击训练",
+    "category": "运动",
+    "context": "武术训练",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "第三方服务选型评估",
+    "category": "工作",
+    "context": "技术调研",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "八段锦练习",
+    "category": "运动",
+    "context": "传统武术",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "去派出所办理户口",
+    "category": "生活",
+    "context": "行政事务",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "做LeetCode算法题10道",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "准备英语四级考试复习",
+    "category": "学习",
+    "context": "英语考级",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "健身核心腹肌训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "跑步8公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "打羽毛球",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "打保龄球",
+    "category": "运动",
+    "context": "休闲运动",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "竞品功能分析",
+    "category": "工作",
+    "context": "产品分析",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "复习会计从业资格证",
+    "category": "学习",
+    "context": "考证备考",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "做LeetCode算法题5道",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "组装新购家具",
+    "category": "生活",
+    "context": "居家布置",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "准备技术分享PPT",
+    "category": "工作",
+    "context": "技术交流",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "换床单被套",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "打扫房间卫生",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "洗衣服",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "滑雪高级道",
+    "category": "运动",
+    "context": "冰雪运动",
+    "estimated_minutes": 245
+  },
+  {
+    "task_name": "背诵历史时间线",
+    "category": "学习",
+    "context": "文科学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "陪孩子写作业",
+    "category": "生活",
+    "context": "亲子时光",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "做广播体操",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "长距离慢跑LSD训练",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "编写2000行代码",
+    "category": "工作",
+    "context": "大型模块开发",
+    "estimated_minutes": 475
+  },
+  {
+    "task_name": "哑铃训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "面试候选人技术面",
+    "category": "工作",
+    "context": "招聘工作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "换床单被套",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "准备考研数学复习",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 170
+  },
+  {
+    "task_name": "练习吉他1小时",
+    "category": "学习",
+    "context": "乐器练习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "做计算机网络习题",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "编写1000行代码",
+    "category": "工作",
+    "context": "功能开发",
+    "estimated_minutes": 240
+  },
+  {
+    "task_name": "去植物园赏花",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "学习理财知识",
+    "category": "生活",
+    "context": "个人成长",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "去派出所办理户口",
+    "category": "生活",
+    "context": "行政事务",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "去公园野餐",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "做眼保健操",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "给家人打电话聊天",
+    "category": "生活",
+    "context": "家庭生活",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "做金工实习报告",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "打羽毛球",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "办理宽带业务",
+    "category": "生活",
+    "context": "生活缴费",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "做线性代数课后习题",
+    "category": "学习",
+    "context": "巩固练习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "客户问题跟进处理",
+    "category": "工作",
+    "context": "客户沟通",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "滑雪初级",
+    "category": "运动",
+    "context": "冰雪运动",
+    "estimated_minutes": 170
+  },
+  {
+    "task_name": "打排球",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "编写自动化脚本",
+    "category": "工作",
+    "context": "效率工具",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "舞蹈练习尊巴",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "登记软件著作权",
+    "category": "工作",
+    "context": "行政事务",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "复习教师资格证考试内容",
+    "category": "学习",
+    "context": "考证备考",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "跳绳2000个",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "新人入职培训",
+    "category": "工作",
+    "context": "团队建设",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "制定Sprint计划",
+    "category": "工作",
+    "context": "敏捷开发",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "跑步6公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "去游泳池游泳",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "学习Linux基本命令",
+    "category": "学习",
+    "context": "工具学习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "练习英语口语1小时",
+    "category": "学习",
+    "context": "英语学习",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "撰写项目年度总结",
+    "category": "工作",
+    "context": "项目汇报",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "新技术调研评估",
+    "category": "工作",
+    "context": "技术调研",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "听播客节目",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "编写100行代码",
+    "category": "工作",
+    "context": "日常开发",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "筛选简历",
+    "category": "工作",
+    "context": "招聘工作",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "客户培训讲解",
+    "category": "工作",
+    "context": "客户培训",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "新人技术培训",
+    "category": "工作",
+    "context": "团队建设",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "去公园野餐",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "跑步5公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "舞蹈练习尊巴",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "拳击训练",
+    "category": "运动",
+    "context": "武术训练",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "练习钢琴1小时",
+    "category": "学习",
+    "context": "乐器练习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "设计前端页面原型",
+    "category": "工作",
+    "context": "UI设计",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "准备毕业答辩PPT",
+    "category": "学习",
+    "context": "答辩准备",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "练习瑜伽初级",
+    "category": "运动",
+    "context": "瑜伽练习",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "写1500字论文",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "打网球",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "手机数据备份",
+    "category": "生活",
+    "context": "数码管理",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "更新技术wiki",
+    "category": "工作",
+    "context": "知识管理",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "学习SQL数据库操作",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "参加10公里跑步比赛",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "学习Python新框架",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "贴春联挂灯笼",
+    "category": "生活",
+    "context": "节日准备",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "学习摄影后期处理",
+    "category": "学习",
+    "context": "兴趣爱好",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "办公室久坐拉伸",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 5
+  },
+  {
+    "task_name": "编写售前技术方案",
+    "category": "工作",
+    "context": "售前支持",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "去水族馆参观",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 125
+  },
+  {
+    "task_name": "早上起床洗漱",
+    "category": "生活",
+    "context": "日常起居",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "准备朋友生日礼物",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "学习韩语基础发音",
+    "category": "学习",
+    "context": "语言学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "引体向上训练50个",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "露营过夜",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 480
+  },
+  {
+    "task_name": "编写接口使用文档",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "复习驾照科目一",
+    "category": "生活",
+    "context": "驾照考试",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "编写2000行代码",
+    "category": "工作",
+    "context": "大型模块开发",
+    "estimated_minutes": 480
+  },
+  {
+    "task_name": "编写单片机程序",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "编写产品PRD文档",
+    "category": "工作",
+    "context": "产品工作",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "壶铃训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "准备考研数学复习",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 190
+  },
+  {
+    "task_name": "编写项目标书",
+    "category": "工作",
+    "context": "商务工作",
+    "estimated_minutes": 240
+  },
+  {
+    "task_name": "阅读专业教材两章",
+    "category": "学习",
+    "context": "教材阅读",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "与伴侣旅行计划讨论",
+    "category": "生活",
+    "context": "情感生活",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "健身腿部训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "学习React前端框架基础",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "做HIIT高强度间歇训练",
+    "category": "运动",
+    "context": "燃脂训练",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "与外包团队沟通需求",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "健身腿部训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "练普拉提",
+    "category": "运动",
+    "context": "瑜伽练习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "包饺子馄饨",
+    "category": "生活",
+    "context": "烹饪学习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "洗碗收拾厨房",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "复习Python编程笔记",
+    "category": "学习",
+    "context": "技能巩固",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "编写500行代码",
+    "category": "工作",
+    "context": "功能开发",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "去药店买药",
+    "category": "生活",
+    "context": "健康医疗",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "编写端到端测试用例",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "修理漏水水管",
+    "category": "生活",
+    "context": "居家维修",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "修理堵塞下水道",
+    "category": "生活",
+    "context": "居家维修",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "安全审计检查",
+    "category": "工作",
+    "context": "安全工作",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "复习操作系统笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "去物业交费",
+    "category": "生活",
+    "context": "日常事务",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "平板支撑训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "发布hotfix补丁",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "参加篮球比赛",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "哑铃训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "敏捷梯训练",
+    "category": "运动",
+    "context": "体能训练",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "修剪花草盆栽",
+    "category": "生活",
+    "context": "园艺养护",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "做眼保健操",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "制作思维导图",
+    "category": "学习",
+    "context": "知识整理",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "刷英语六级真题一套",
+    "category": "学习",
+    "context": "英语考级",
+    "estimated_minutes": 140
+  },
+  {
+    "task_name": "跑步机跑步45分钟",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "做高等数学课后习题",
+    "category": "学习",
+    "context": "巩固练习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "办理宽带业务",
+    "category": "生活",
+    "context": "生活缴费",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "修复线上Bug",
+    "category": "工作",
+    "context": "问题修复",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "编写端到端测试用例",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "听音乐放松",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "开合跳训练500个",
+    "category": "运动",
+    "context": "燃脂训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "太极拳练习",
+    "category": "运动",
+    "context": "传统武术",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "买年货",
+    "category": "生活",
+    "context": "节日准备",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "洗碗收拾厨房",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "复习英语语法笔记",
+    "category": "学习",
+    "context": "语言学习",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "去健身房锻炼",
+    "category": "运动",
+    "context": "综合健身",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "刷英语六级真题一套",
+    "category": "学习",
+    "context": "英语考级",
+    "estimated_minutes": 160
+  },
+  {
+    "task_name": "晨间散步30分钟",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "打台球",
+    "category": "运动",
+    "context": "休闲运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "清洗空调滤网",
+    "category": "生活",
+    "context": "家电维护",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "新房看房",
+    "category": "生活",
+    "context": "房产事宜",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "学习Linux基本命令",
+    "category": "学习",
+    "context": "工具学习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "准备期末考试",
+    "category": "学习",
+    "context": "考试备考",
+    "estimated_minutes": 240
+  },
+  {
+    "task_name": "客户现场演示",
+    "category": "工作",
+    "context": "客户沟通",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "制定项目排期计划",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "养花浇水施肥",
+    "category": "生活",
+    "context": "园艺养护",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "缴纳手机话费",
+    "category": "生活",
+    "context": "生活缴费",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "整理考研笔记",
+    "category": "学习",
+    "context": "知识整理",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "参加项目组例会",
+    "category": "工作",
+    "context": "团队协作",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "参加Sprint回顾会",
+    "category": "工作",
+    "context": "敏捷开发",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "做公务员行测模拟题",
+    "category": "学习",
+    "context": "考公备考",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "参加项目组例会",
+    "category": "工作",
+    "context": "团队协作",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "学习Docker容器基础",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "撰写工作月报",
+    "category": "工作",
+    "context": "日常汇报",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "背诵语文古诗文",
+    "category": "学习",
+    "context": "文科学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "空手道训练",
+    "category": "运动",
+    "context": "武术训练",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "复习英语语法笔记",
+    "category": "学习",
+    "context": "语言学习",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "踢足球5人制",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "做晚餐",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "去游泳池游泳",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "做早餐",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "背诵300个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "打网球",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "处理审批流程",
+    "category": "工作",
+    "context": "日常事务",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "设计系统架构方案",
+    "category": "工作",
+    "context": "系统设计",
+    "estimated_minutes": 185
+  },
+  {
+    "task_name": "背诵500个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 290
+  },
+  {
+    "task_name": "制定家庭月度预算",
+    "category": "生活",
+    "context": "家庭管理",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "深蹲训练100个",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "去银行办理业务",
+    "category": "生活",
+    "context": "金融事务",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "跑步2公里热身",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 5
+  },
+  {
+    "task_name": "练习英语口语30分钟",
+    "category": "学习",
+    "context": "英语学习",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "做数据结构习题",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "学习PyTorch框架入门",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "参加项目组例会",
+    "category": "工作",
+    "context": "团队协作",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "优化SQL查询性能",
+    "category": "工作",
+    "context": "性能优化",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "打乒乓球",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "配置CI/CD流水线",
+    "category": "工作",
+    "context": "DevOps",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "跑前热身运动",
+    "category": "运动",
+    "context": "运动准备",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "租房签约看房",
+    "category": "生活",
+    "context": "房产事宜",
+    "estimated_minutes": 125
+  },
+  {
+    "task_name": "与朋友打牌聊天",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "打篮球半场3v3",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "听播客节目",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "背诵地理知识点",
+    "category": "学习",
+    "context": "文科学习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "烘焙蛋糕饼干",
+    "category": "生活",
+    "context": "烹饪学习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "运动后拉伸放松",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "修复紧急线上Bug",
+    "category": "工作",
+    "context": "问题修复",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "户外登山",
+    "category": "运动",
+    "context": "户外运动",
+    "estimated_minutes": 250
+  },
+  {
+    "task_name": "跑步15公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "开合跳训练500个",
+    "category": "运动",
+    "context": "燃脂训练",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "写1000字实验报告",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "B站刷视频放松",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "面试候选人",
+    "category": "工作",
+    "context": "招聘工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "设计API接口文档",
+    "category": "工作",
+    "context": "接口设计",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "编写单元测试",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "去车管所办理业务",
+    "category": "生活",
+    "context": "行政事务",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "练习瑜伽高级",
+    "category": "运动",
+    "context": "瑜伽练习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "制作复习提纲",
+    "category": "学习",
+    "context": "知识整理",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "复习数据库原理笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "写课程作业报告",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "参加游泳比赛",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "舞蹈练习芭蕾",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "学习理财知识",
+    "category": "生活",
+    "context": "个人成长",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "写1500字论文",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "写3000字论文",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 240
+  },
+  {
+    "task_name": "准备毕业答辩PPT",
+    "category": "学习",
+    "context": "答辩准备",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "组装新购家具",
+    "category": "生活",
+    "context": "居家布置",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "户外徒步旅行半天",
+    "category": "运动",
+    "context": "户外运动",
+    "estimated_minutes": 190
+  },
+  {
+    "task_name": "设计产品功能原型",
+    "category": "工作",
+    "context": "产品设计",
+    "estimated_minutes": 175
+  },
+  {
+    "task_name": "准备技术分享PPT",
+    "category": "工作",
+    "context": "技术交流",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "去医院看病",
+    "category": "生活",
+    "context": "健康医疗",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "清理猫砂盆",
+    "category": "生活",
+    "context": "宠物养护",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "背诵政治知识点",
+    "category": "学习",
+    "context": "文科学习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "学习SQL数据库操作",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "参加羽毛球比赛",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "部署新版本上线",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "更新技术wiki",
+    "category": "工作",
+    "context": "知识管理",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "舞蹈练习拉丁舞",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "舞蹈练习街舞",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "阅读学术论文3篇",
+    "category": "学习",
+    "context": "论文阅读",
+    "estimated_minutes": 190
+  },
+  {
+    "task_name": "参加项目启动会议",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "参加技术方案评审会",
+    "category": "工作",
+    "context": "技术评审",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "健身房练后拉伸",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "B站刷视频放松",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "准备考研政治复习",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "搭建测试环境",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "去游乐园游玩",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 300
+  },
+  {
+    "task_name": "参加部门周会",
+    "category": "工作",
+    "context": "团队协作",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "参加行业技术大会",
+    "category": "工作",
+    "context": "行业交流",
+    "estimated_minutes": 480
+  },
+  {
+    "task_name": "竞品功能分析",
+    "category": "工作",
+    "context": "产品分析",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "陪孩子写作业",
+    "category": "生活",
+    "context": "亲子时光",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "编写数据分析报告",
+    "category": "工作",
+    "context": "数据分析",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "健身胸肌训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "晚间散步1小时",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "更新项目进度看板",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "打高尔夫练习场",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 110
+  },
+  {
+    "task_name": "给宠物洗澡",
+    "category": "生活",
+    "context": "宠物养护",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "制作思维导图",
+    "category": "学习",
+    "context": "知识整理",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "去动物园游玩",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "灰度发布验证",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "翻译英文短文",
+    "category": "学习",
+    "context": "英语学习",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "A/B测试数据分析",
+    "category": "工作",
+    "context": "数据分析",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "跑步10公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "学习韩语基础发音",
+    "category": "学习",
+    "context": "语言学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "代码审查review",
+    "category": "工作",
+    "context": "代码质量",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "去邮局寄快递",
+    "category": "生活",
+    "context": "日常事务",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "健身背部训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "拖地",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "看综艺节目",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "打扫卫生间",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "柔道训练",
+    "category": "运动",
+    "context": "武术训练",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "申请服务器资源",
+    "category": "工作",
+    "context": "行政事务",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "练习瑜伽中级",
+    "category": "运动",
+    "context": "瑜伽练习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "编写100行代码",
+    "category": "工作",
+    "context": "日常开发",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "客户培训讲解",
+    "category": "工作",
+    "context": "客户培训",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "骑行30公里",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "舞蹈练习街舞",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "滑冰练习",
+    "category": "运动",
+    "context": "冰雪运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "户外爬山2小时",
+    "category": "运动",
+    "context": "户外运动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "兼容性测试",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "与伴侣看电影",
+    "category": "生活",
+    "context": "情感生活",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "参加游泳比赛",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "饭后散步40分钟",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "面试候选人",
+    "category": "工作",
+    "context": "招聘工作",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "背诵地理知识点",
+    "category": "学习",
+    "context": "文科学习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "去政务中心办理证件",
+    "category": "生活",
+    "context": "行政事务",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "打台球",
+    "category": "运动",
+    "context": "休闲运动",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "运动后拉伸放松",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "数据库备份与恢复",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "修剪花草盆栽",
+    "category": "生活",
+    "context": "园艺养护",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "客户现场演示",
+    "category": "工作",
+    "context": "客户沟通",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "骑行长途拉练",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "Code Review团队代码",
+    "category": "工作",
+    "context": "代码质量",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "安全漏洞修复",
+    "category": "工作",
+    "context": "安全工作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "阅读学术论文2篇",
+    "category": "学习",
+    "context": "论文阅读",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "敏捷梯训练",
+    "category": "运动",
+    "context": "体能训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "仰卧起坐200个",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "做公务员行测模拟题",
+    "category": "学习",
+    "context": "考公备考",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "需求分析梳理",
+    "category": "工作",
+    "context": "需求分析",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "写1500字读书笔记",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "踢足球5人制",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "准备年夜饭",
+    "category": "生活",
+    "context": "节日准备",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "健身房练后拉伸",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "做英语听力练习",
+    "category": "学习",
+    "context": "英语训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "观看教学视频2小时",
+    "category": "学习",
+    "context": "在线学习",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "清洗空调滤网",
+    "category": "生活",
+    "context": "家电维护",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "编写接口使用文档",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "游泳自由泳训练",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "编写单元测试",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "制定家庭月度预算",
+    "category": "生活",
+    "context": "家庭管理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "学习机器学习基础概念",
+    "category": "学习",
+    "context": "新技术学习",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "去快递站取快递",
+    "category": "生活",
+    "context": "日常事务",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "做项目预算申请",
+    "category": "工作",
+    "context": "行政事务",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "带宠物去宠物医院",
+    "category": "生活",
+    "context": "宠物养护",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "参加产品需求评审会",
+    "category": "工作",
+    "context": "需求评审",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "准备期中考复习",
+    "category": "学习",
+    "context": "考试备考",
+    "estimated_minutes": 190
+  },
+  {
+    "task_name": "做英语阅读理解5篇",
+    "category": "学习",
+    "context": "英语训练",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "灰度发布验证",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "打篮球全场5v5",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "跑步10公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "午休小憩",
+    "category": "生活",
+    "context": "日常起居",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "做Tabata训练",
+    "category": "运动",
+    "context": "燃脂训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "复习近代史纲要笔记",
+    "category": "学习",
+    "context": "思政复习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "大扫除全屋",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "与伴侣逛公园",
+    "category": "生活",
+    "context": "情感生活",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "跑步3公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "舞蹈练习芭蕾",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "编写1000行代码",
+    "category": "工作",
+    "context": "功能开发",
+    "estimated_minutes": 245
+  },
+  {
+    "task_name": "杠铃训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "攀岩训练",
+    "category": "运动",
+    "context": "户外运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "处理工作邮件",
+    "category": "工作",
+    "context": "日常事务",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "晚跑夜跑",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "健身全身综合训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "参加技术方案评审会",
+    "category": "工作",
+    "context": "技术评审",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "练普拉提",
+    "category": "运动",
+    "context": "瑜伽练习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "新人技术培训",
+    "category": "工作",
+    "context": "团队建设",
+    "estimated_minutes": 125
+  },
+  {
+    "task_name": "去理发店剪头发",
+    "category": "生活",
+    "context": "个人护理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "参加足球比赛",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "部署新版本上线",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "制定技术方案规划",
+    "category": "工作",
+    "context": "技术规划",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "做英语完形填空3篇",
+    "category": "学习",
+    "context": "英语训练",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "拉伸放松训练",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "做广播体操",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "户外爬山2小时",
+    "category": "运动",
+    "context": "户外运动",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "清洗油烟机",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "遛狗散步",
+    "category": "生活",
+    "context": "宠物养护",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "与朋友喝下午茶",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "观看教学视频2小时",
+    "category": "学习",
+    "context": "在线学习",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "设计数据库表结构",
+    "category": "工作",
+    "context": "系统设计",
+    "estimated_minutes": 125
+  },
+  {
+    "task_name": "去政务中心办理证件",
+    "category": "生活",
+    "context": "行政事务",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "刷英语四级真题一套",
+    "category": "学习",
+    "context": "英语考级",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "给宠物洗澡",
+    "category": "生活",
+    "context": "宠物养护",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "接送孩子上下学",
+    "category": "生活",
+    "context": "亲子时光",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "练习英语口语1小时",
+    "category": "学习",
+    "context": "英语学习",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "主持每日站会",
+    "category": "工作",
+    "context": "敏捷开发",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "散打训练",
+    "category": "运动",
+    "context": "武术训练",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "复习数据库原理笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "撰写工作周报",
+    "category": "工作",
+    "context": "日常汇报",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "去菜市场买菜",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "背诵100个英语单词",
+    "category": "学习",
+    "context": "每日单词记忆",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "兼容性测试",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "制定迭代开发计划",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "写2000字论文",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 150
+  },
+  {
+    "task_name": "布置生日派对",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "复习前端开发笔记",
+    "category": "学习",
+    "context": "技能巩固",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "写日记记录生活",
+    "category": "生活",
+    "context": "个人成长",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "去医院体检",
+    "category": "生活",
+    "context": "健康医疗",
+    "estimated_minutes": 175
+  },
+  {
+    "task_name": "清洗洗衣机",
+    "category": "生活",
+    "context": "家电维护",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "做线性代数课后习题",
+    "category": "学习",
+    "context": "巩固练习",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "参加家庭聚餐",
+    "category": "生活",
+    "context": "家庭生活",
+    "estimated_minutes": 150
+  },
+  {
+    "task_name": "去图书馆看书",
+    "category": "生活",
+    "context": "文化休闲",
+    "estimated_minutes": 115
+  },
+  {
+    "task_name": "晾衣服",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "游泳后放松拉伸",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "滑雪初级",
+    "category": "运动",
+    "context": "冰雪运动",
+    "estimated_minutes": 170
+  },
+  {
+    "task_name": "整理专业课笔记",
+    "category": "学习",
+    "context": "知识整理",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "设计系统架构方案",
+    "category": "工作",
+    "context": "系统设计",
+    "estimated_minutes": 175
+  },
+  {
+    "task_name": "晾衣服",
+    "category": "生活",
+    "context": "家务清洁",
+    "estimated_minutes": 5
+  },
+  {
+    "task_name": "滑雪高级道",
+    "category": "运动",
+    "context": "冰雪运动",
+    "estimated_minutes": 240
+  },
+  {
+    "task_name": "去牙科诊所洗牙",
+    "category": "生活",
+    "context": "健康医疗",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "估算开发任务工时",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "颈椎放松操",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "准备小组汇报PPT",
+    "category": "学习",
+    "context": "课程汇报",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "复习大学物理力学部分笔记",
+    "category": "学习",
+    "context": "考前复习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "客户问题跟进处理",
+    "category": "工作",
+    "context": "客户沟通",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "参加马拉松比赛",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 250
+  },
+  {
+    "task_name": "新人入职培训",
+    "category": "工作",
+    "context": "团队建设",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "动感单车训练",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "编写单片机程序",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "用户数据分析",
+    "category": "工作",
+    "context": "数据分析",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "杠铃训练",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "复习驾照科目一",
+    "category": "生活",
+    "context": "驾照考试",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "去水族馆参观",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "清理猫砂盆",
+    "category": "生活",
+    "context": "宠物养护",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "写800字读书笔记",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "舞蹈练习爵士舞",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "背诵400个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 240
+  },
+  {
+    "task_name": "撰写工作月报",
+    "category": "工作",
+    "context": "日常汇报",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "做英语阅读理解5篇",
+    "category": "学习",
+    "context": "英语训练",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "练习普通话发音",
+    "category": "学习",
+    "context": "语言学习",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "复习线性代数笔记",
+    "category": "学习",
+    "context": "课后复习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "去超市购物",
+    "category": "生活",
+    "context": "日常采购",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "晚跑夜跑",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "舞蹈练习广场舞",
+    "category": "运动",
+    "context": "舞蹈运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "煮咖啡冲茶",
+    "category": "生活",
+    "context": "日常饮食",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "打乒乓球",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "做LeetCode算法题10道",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "跑步3公里",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "听音乐放松",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "数据库迁移操作",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "颈椎放松操",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "面试候选人技术面",
+    "category": "工作",
+    "context": "招聘工作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "阅读专业教材两章",
+    "category": "学习",
+    "context": "教材阅读",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "做LeetCode算法题5道",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "写5000字论文",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 355
+  },
+  {
+    "task_name": "滑冰练习",
+    "category": "运动",
+    "context": "冰雪运动",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "与外包团队沟通需求",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "与朋友唱KTV",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 190
+  },
+  {
+    "task_name": "贴春联挂灯笼",
+    "category": "生活",
+    "context": "节日准备",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "参加马拉松比赛",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 240
+  },
+  {
+    "task_name": "背诵500个英语单词",
+    "category": "学习",
+    "context": "词汇突击",
+    "estimated_minutes": 290
+  },
+  {
+    "task_name": "主持每日站会",
+    "category": "工作",
+    "context": "敏捷开发",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "写800字论文",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "绘制机械制图作业",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "数据库迁移操作",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "学习日语基础语法",
+    "category": "学习",
+    "context": "语言学习",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "新人入职培训",
+    "category": "工作",
+    "context": "团队建设",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "复习大学物理力学部分笔记",
+    "category": "学习",
+    "context": "考前复习",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "服务器环境配置",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "太极拳练习",
+    "category": "运动",
+    "context": "传统武术",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "第三方服务选型评估",
+    "category": "工作",
+    "context": "技术调研",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "准备考研专业课复习",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "安全审计检查",
+    "category": "工作",
+    "context": "安全工作",
+    "estimated_minutes": 125
+  },
+  {
+    "task_name": "做计算机网络习题",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "参加项目启动会议",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "打高尔夫练习场",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "撰写工作周报",
+    "category": "工作",
+    "context": "日常汇报",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "战绳训练",
+    "category": "运动",
+    "context": "体能训练",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "做化学实验报告",
+    "category": "学习",
+    "context": "课程作业",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "练习书法1小时",
+    "category": "学习",
+    "context": "兴趣爱好",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "申请服务器资源",
+    "category": "工作",
+    "context": "行政事务",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "办公室久坐拉伸",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "写1000字实验报告",
+    "category": "学习",
+    "context": "学术写作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "去理发店染发烫发",
+    "category": "生活",
+    "context": "个人护理",
+    "estimated_minutes": 130
+  },
+  {
+    "task_name": "参加产品需求评审会",
+    "category": "工作",
+    "context": "需求评审",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "修复紧急线上Bug",
+    "category": "工作",
+    "context": "问题修复",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "准备毕业答辩演讲稿",
+    "category": "学习",
+    "context": "答辩准备",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "打排球",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "刷考研数学真题一套",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "游泳后放松拉伸",
+    "category": "运动",
+    "context": "恢复训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "复习计算机网络笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "冲刺间歇跑训练",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "去牙科诊所洗牙",
+    "category": "生活",
+    "context": "健康医疗",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "骑行踏青",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "腌制泡菜制作",
+    "category": "生活",
+    "context": "烹饪学习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "复习毛概笔记",
+    "category": "学习",
+    "context": "思政复习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "修理堵塞下水道",
+    "category": "生活",
+    "context": "居家维修",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "排查生产环境故障",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "打篮球",
+    "category": "运动",
+    "context": "球类运动",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "面试候选人",
+    "category": "工作",
+    "context": "招聘工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "去银行办理业务",
+    "category": "生活",
+    "context": "金融事务",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "准备考研政治复习",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "参加部门周会",
+    "category": "工作",
+    "context": "团队协作",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "游泳1000米",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "做LeetCode算法题3道",
+    "category": "学习",
+    "context": "编程练习",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "钓鱼休闲",
+    "category": "生活",
+    "context": "户外活动",
+    "estimated_minutes": 170
+  },
+  {
+    "task_name": "俯卧撑训练100个",
+    "category": "运动",
+    "context": "力量训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "刷英语四级真题一套",
+    "category": "学习",
+    "context": "英语考级",
+    "estimated_minutes": 125
+  },
+  {
+    "task_name": "空手道训练",
+    "category": "运动",
+    "context": "武术训练",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "准备小组汇报PPT",
+    "category": "学习",
+    "context": "课程汇报",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "更新项目进度看板",
+    "category": "工作",
+    "context": "项目管理",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "与朋友看电影",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "整理书桌",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "编写运维手册",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "跑步机跑步30分钟",
+    "category": "运动",
+    "context": "有氧运动",
+    "estimated_minutes": 40
+  },
+  {
+    "task_name": "整理技术文档",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "练习瑜伽高级",
+    "category": "运动",
+    "context": "瑜伽练习",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "设计产品功能原型",
+    "category": "工作",
+    "context": "产品设计",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "编写200行代码",
+    "category": "工作",
+    "context": "日常开发",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "玩手机游戏",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 50
+  },
+  {
+    "task_name": "修理家具螺丝松动",
+    "category": "生活",
+    "context": "居家维修",
+    "estimated_minutes": 15
+  },
+  {
+    "task_name": "编写集成测试",
+    "category": "工作",
+    "context": "测试工作",
+    "estimated_minutes": 80
+  },
+  {
+    "task_name": "练习普通话发音",
+    "category": "学习",
+    "context": "语言学习",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "游泳前热身",
+    "category": "运动",
+    "context": "运动准备",
+    "estimated_minutes": 10
+  },
+  {
+    "task_name": "骑行100公里",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 300
+  },
+  {
+    "task_name": "排查生产环境故障",
+    "category": "工作",
+    "context": "运维工作",
+    "estimated_minutes": 100
+  },
+  {
+    "task_name": "户外徒步旅行半天",
+    "category": "运动",
+    "context": "户外运动",
+    "estimated_minutes": 180
+  },
+  {
+    "task_name": "操场跑圈训练",
+    "category": "运动",
+    "context": "跑步训练",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "进行技术分享演讲",
+    "category": "工作",
+    "context": "技术交流",
+    "estimated_minutes": 65
+  },
+  {
+    "task_name": "复习计算机网络笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "与伴侣逛公园",
+    "category": "生活",
+    "context": "情感生活",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "复习线性代数笔记",
+    "category": "学习",
+    "context": "课后复习",
+    "estimated_minutes": 45
+  },
+  {
+    "task_name": "参加技术方案评审会",
+    "category": "工作",
+    "context": "技术评审",
+    "estimated_minutes": 95
+  },
+  {
+    "task_name": "骑行100公里",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 300
+  },
+  {
+    "task_name": "去健身房锻炼",
+    "category": "运动",
+    "context": "综合健身",
+    "estimated_minutes": 90
+  },
+  {
+    "task_name": "游泳1000米",
+    "category": "运动",
+    "context": "游泳训练",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "编写运维手册",
+    "category": "工作",
+    "context": "文档工作",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "练习科目三路考",
+    "category": "生活",
+    "context": "驾照考试",
+    "estimated_minutes": 85
+  },
+  {
+    "task_name": "编写2000行代码",
+    "category": "工作",
+    "context": "大型模块开发",
+    "estimated_minutes": 480
+  },
+  {
+    "task_name": "复习数据结构笔记",
+    "category": "学习",
+    "context": "期末复习",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "准备朋友生日礼物",
+    "category": "生活",
+    "context": "社交活动",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "更换灯泡灯管",
+    "category": "生活",
+    "context": "居家维修",
+    "estimated_minutes": 25
+  },
+  {
+    "task_name": "代码审查review",
+    "category": "工作",
+    "context": "代码质量",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "编写自动化脚本",
+    "category": "工作",
+    "context": "效率工具",
+    "estimated_minutes": 55
+  },
+  {
+    "task_name": "准备期末考试",
+    "category": "学习",
+    "context": "考试备考",
+    "estimated_minutes": 230
+  },
+  {
+    "task_name": "登记软件著作权",
+    "category": "工作",
+    "context": "行政事务",
+    "estimated_minutes": 60
+  },
+  {
+    "task_name": "去博物馆参观",
+    "category": "生活",
+    "context": "文化休闲",
+    "estimated_minutes": 125
+  },
+  {
+    "task_name": "准备考研英语复习",
+    "category": "学习",
+    "context": "考研备考",
+    "estimated_minutes": 140
+  },
+  {
+    "task_name": "骑行50公里",
+    "category": "运动",
+    "context": "骑行运动",
+    "estimated_minutes": 155
+  },
+  {
+    "task_name": "战绳训练",
+    "category": "运动",
+    "context": "体能训练",
+    "estimated_minutes": 20
+  },
+  {
+    "task_name": "叠衣服整理衣柜",
+    "category": "生活",
+    "context": "家务整理",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "做HIIT高强度间歇训练",
+    "category": "运动",
+    "context": "燃脂训练",
+    "estimated_minutes": 35
+  },
+  {
+    "task_name": "刷抖音短视频",
+    "category": "生活",
+    "context": "休闲娱乐",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "晨跑晨练",
+    "category": "运动",
+    "context": "日常运动",
+    "estimated_minutes": 30
+  },
+  {
+    "task_name": "制作复习提纲",
+    "category": "学习",
+    "context": "知识整理",
+    "estimated_minutes": 70
+  },
+  {
+    "task_name": "准备英语四级考试复习",
+    "category": "学习",
+    "context": "英语考级",
+    "estimated_minutes": 120
+  },
+  {
+    "task_name": "阅读专业教材三章",
+    "category": "学习",
+    "context": "教材阅读",
+    "estimated_minutes": 120
+  }
+]

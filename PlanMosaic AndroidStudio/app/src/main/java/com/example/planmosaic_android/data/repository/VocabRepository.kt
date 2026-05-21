@@ -1,6 +1,7 @@
 package com.example.planmosaic_android.data.repository
 
 import android.content.Context
+import android.util.Log
 import com.example.planmosaic_android.model.VocabBook
 import com.example.planmosaic_android.model.VocabProgress
 import com.example.planmosaic_android.util.AuthManager
@@ -12,7 +13,8 @@ import kotlinx.serialization.json.Json
 
 class VocabRepository(
     private val context: Context,
-    private val dataStoreManager: DataStoreManager
+    private val dataStoreManager: DataStoreManager,
+    private val authManager: AuthManager
 ) {
     private val json = Json {
         ignoreUnknownKeys = true
@@ -31,18 +33,20 @@ class VocabRepository(
             try {
                 val text = context.assets.open("vocab/$filename").bufferedReader().use { it.readText() }
                 json.decodeFromString<VocabBook>(text)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.w("VocabRepository", "Failed to load built-in book $filename", e)
                 null
             }
         }
     }
 
     suspend fun loadCustomBooks(): List<VocabBook> {
-        val userId = AuthManager.userId ?: return emptyList()
+        val userId = authManager.userId ?: return emptyList()
         val raw = dataStoreManager.loadVocabCustomBooksForUser(userId) ?: return emptyList()
         return try {
             json.decodeFromString<List<VocabBook>>(raw)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w("VocabRepository", "Failed to parse custom books", e)
             emptyList()
         }
     }
@@ -51,28 +55,29 @@ class VocabRepository(
         val existing = loadCustomBooks().toMutableList()
         val idx = existing.indexOfFirst { it.id == book.id }
         if (idx >= 0) existing[idx] = book else existing.add(book)
-        val userId = AuthManager.userId ?: return
+        val userId = authManager.userId ?: return
         dataStoreManager.saveVocabCustomBooksForUser(userId, json.encodeToString(existing))
     }
 
     suspend fun deleteCustomBook(bookId: String) {
         val existing = loadCustomBooks().filter { it.id != bookId }
-        val userId = AuthManager.userId ?: return
+        val userId = authManager.userId ?: return
         dataStoreManager.saveVocabCustomBooksForUser(userId, json.encodeToString(existing))
     }
 
     suspend fun loadProgress(bookId: String): VocabProgress {
-        val userId = AuthManager.userId ?: return VocabProgress()
+        val userId = authManager.userId ?: return VocabProgress()
         val raw = dataStoreManager.loadVocabProgressForUser(userId, bookId) ?: return VocabProgress()
         return try {
             json.decodeFromString<VocabProgress>(raw)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w("VocabRepository", "Failed to parse progress for $bookId", e)
             VocabProgress()
         }
     }
 
     suspend fun saveProgress(bookId: String, progress: VocabProgress) {
-        val userId = AuthManager.userId ?: return
+        val userId = authManager.userId ?: return
         dataStoreManager.saveVocabProgressForUser(userId, bookId, json.encodeToString(VocabProgress.serializer(), progress))
     }
 

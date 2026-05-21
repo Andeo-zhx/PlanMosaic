@@ -4,7 +4,7 @@
 		<view :style="{ height: statusBarHeight + 'px' }"></view>
 
 		<!-- ====== Not Logged In ====== -->
-		<view v-if="!store.state.isLoggedIn" class="auth-area">
+		<view v-if="!store.isLoggedIn" class="auth-area">
 			<!-- Brand -->
 			<view class="brand-area">
 				<text class="brand-text">PlanMosaic</text>
@@ -57,15 +57,16 @@
 				</view>
 
 				<!-- Submit -->
-				<view
-					class="form-submit"
-					hover-class="submit-press"
-					@click="isRegisterMode ? handleRegister() : handleLogin()"
-				>
-					<text class="form-submit-text">
-						{{ isRegisterMode ? 'Create Account' : 'Sign In' }}
-					</text>
-				</view>
+			<view
+				class="form-submit"
+				:class="{ 'submit-disabled': isLoading }"
+				hover-class="submit-press"
+				@click="isRegisterMode ? handleRegister() : handleLogin()"
+			>
+				<text class="form-submit-text">
+					{{ isLoading ? (isRegisterMode ? '注册中...' : '登录中...') : (isRegisterMode ? '注册' : '登录') }}
+				</text>
+			</view>
 
 				<!-- Switch -->
 				<view class="form-switch" hover-class="tap-active" @click="toggleMode">
@@ -87,13 +88,13 @@
 					<text class="avatar-letter">{{ avatarLetter }}</text>
 				</view>
 				<view class="user-meta">
-					<text class="user-name">{{ store.state.currentUser.username }}</text>
+					<text class="user-name">{{ store.currentUser.username }}</text>
 					<text class="user-status">Signed in</text>
 				</view>
 			</view>
 
 			<!-- Sync indicator -->
-			<view v-if="store.state.isSyncing" class="sync-row">
+			<view v-if="store.isSyncing" class="sync-row">
 				<view class="pm-spinner"></view>
 				<text class="sync-label">Syncing...</text>
 			</view>
@@ -128,17 +129,13 @@
 			<text class="version-label">PlanMosaic v1.0.0</text>
 		</view>
 
-		<!-- TabBar -->
-		<custom-tabbar current="/pages/profile/profile"></custom-tabbar>
-	</view>
+		</view>
 </template>
 
 <script>
-	import { useScheduleStore } from '@/store/schedule.js'
-	import customTabbar from '@/components/custom-tabbar/custom-tabbar.vue'
+	import { useScheduleStore } from '@/store/schedule.ts'
 
 	export default {
-		components: { customTabbar },
 		data() {
 			return {
 				statusBarHeight: 0,
@@ -157,7 +154,7 @@
 				return useScheduleStore()
 			},
 			avatarLetter() {
-				const name = this.store.state.currentUser?.username || ''
+				const name = this.store.currentUser?.username || ''
 				return name.charAt(0).toUpperCase()
 			},
 			menuItems() {
@@ -170,12 +167,12 @@
 					{
 						label: 'AI Provider',
 						action: 'provider',
-						value: this.store.state.aiProvider || 'deepseek'
+						value: this.store.aiProvider || 'deepseek'
 					},
 					{
 						label: 'Theme',
 						action: 'theme',
-						value: this.store.state.theme || 'light'
+						value: this.store.theme || 'light'
 					},
 					{
 						label: 'About',
@@ -252,13 +249,13 @@
 						this.doSync()
 						break
 					case 'provider': {
-						const next = this.store.state.aiProvider === 'deepseek' ? 'qwen' : 'deepseek'
+						const next = this.store.aiProvider === 'deepseek' ? 'qwen' : 'deepseek'
 						this.store.setAIProvider(next)
 						uni.showToast({ title: 'AI: ' + next, icon: 'none' })
 						break
 					}
 					case 'theme': {
-						const next = this.store.state.theme === 'light' ? 'dark' : 'light'
+						const next = this.store.theme === 'light' ? 'dark' : 'light'
 						this.store.setTheme(next)
 						uni.showToast({ title: next + ' mode', icon: 'none' })
 						break
@@ -371,6 +368,11 @@
 
 	.submit-press {
 		opacity: 0.7;
+	}
+
+	.submit-disabled {
+		opacity: 0.5;
+		pointer-events: none;
 	}
 
 	.form-submit-text {

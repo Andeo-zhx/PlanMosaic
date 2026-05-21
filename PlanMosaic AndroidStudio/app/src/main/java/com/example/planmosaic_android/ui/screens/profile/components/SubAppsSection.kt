@@ -1,6 +1,7 @@
 package com.example.planmosaic_android.ui.screens.profile.components
 
 import androidx.compose.foundation.layout.*
+import android.util.Log
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -14,6 +15,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.planmosaic_android.ui.components.GlassSurface
 import com.example.planmosaic_android.ui.theme.AppColors
 import com.example.planmosaic_android.util.DataStoreManager
 import kotlinx.coroutines.launch
@@ -60,7 +62,8 @@ fun SubAppsSection(
                 val value = obj[app.id]?.jsonPrimitive
                 app.id to (value?.boolean ?: false)
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.w("SubAppsSection", "Failed to parse subapp nav JSON", e)
             availableSubApps.associate { it.id to false }
         }
     }
@@ -83,7 +86,8 @@ fun SubAppsSection(
                         scope.launch {
                             val currentObj = try {
                                 Json.parseToJsonElement(subappNavJson).jsonObject
-                            } catch (_: Exception) {
+                            } catch (e: Exception) {
+                                Log.w("SubAppsSection", "Failed to parse subapp nav JSON on toggle", e)
                                 buildJsonObject {}
                             }
                             val updatedMap = currentObj.toMutableMap()
@@ -184,13 +188,9 @@ private fun SubAppRow(
 private fun SettingsGroupCard(
     content: @Composable () -> Unit
 ) {
-    Card(
+    GlassSurface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.padding(vertical = 4.dp)) {
             content()

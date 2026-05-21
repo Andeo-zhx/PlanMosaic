@@ -16,14 +16,17 @@ android {
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "SUPABASE_URL", "\"${project.findProperty("SUPABASE_URL") ?: "https://nxbnognnkifiiitvbupq.supabase.co"}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${project.findProperty("SUPABASE_ANON_KEY") ?: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54Ym5vZ25ua2lmaWlpdHZidXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTkzMDAsImV4cCI6MjA4OTczNTMwMH0.ATSkFMfkPF5O7w-q8mEkBVuatN9NKsJTNgQadwqJuUM"}\"")
     }
 
     signingConfigs {
         create("release") {
             storeFile = file("${project.rootDir}/planmosaic-release.keystore")
-            storePassword = "MosaicAndroid"
-            keyAlias = "PlanMosaicRelease"
-            keyPassword = "Mosaicseries_1097"
+            storePassword = project.findProperty("SIGNING_STORE_PASSWORD") as String? ?: "android"
+            keyAlias = project.findProperty("SIGNING_KEY_ALIAS") as String? ?: "key0"
+            keyPassword = project.findProperty("SIGNING_KEY_PASSWORD") as String? ?: "android"
         }
     }
 
@@ -45,6 +48,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

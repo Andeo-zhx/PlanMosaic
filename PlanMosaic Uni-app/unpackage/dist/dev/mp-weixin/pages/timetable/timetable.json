@@ -1,7 +1,0 @@
-{
-  "navigationStyle": "custom",
-  "navigationBarTitleText": "Timetable",
-  "usingComponents": {
-    "custom-tabbar": "../../components/custom-tabbar/custom-tabbar"
-  }
-}

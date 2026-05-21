@@ -10,14 +10,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.planmosaic_android.ui.components.GlassSurface
 import com.example.planmosaic_android.ui.screens.profile.common.DarkModeSettingRow
 import com.example.planmosaic_android.ui.screens.profile.common.SettingItem
 import com.example.planmosaic_android.ui.screens.profile.common.SettingRow
@@ -91,13 +90,9 @@ fun SettingsSection(
 private fun SettingsGroupCard(
     content: @Composable () -> Unit
 ) {
-    Card(
+    GlassSurface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.padding(vertical = 4.dp)) {
             content()

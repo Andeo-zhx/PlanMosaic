@@ -8,7 +8,8 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
-            webSecurity: false
+            webSecurity: true,
+            sandbox: true
         }
     });
     win.loadFile(path.join(__dirname, 'index.html'));

@@ -8,8 +8,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.runtime.saveable.rememberSaveable
-import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,14 +25,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.planmosaic_android.AppContainer
+import com.example.planmosaic_android.PlanMosaicApplication
 import com.example.planmosaic_android.data.repository.ScheduleRepository
 import com.example.planmosaic_android.util.DataStoreManager
-import com.example.planmosaic_android.util.AuthManager
 import com.example.planmosaic_android.ui.theme.AppColors
 import com.example.planmosaic_android.model.AppData
 import com.example.planmosaic_android.model.ApiKeys
 import com.example.planmosaic_android.model.AgentSettings
-import com.example.planmosaic_android.data.remote.SupabaseClient
 import io.ktor.client.request.*
 import kotlinx.coroutines.launch
 
@@ -43,7 +43,9 @@ fun ApiSettingsSection(
     onMessage: (String) -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val repository = remember { ScheduleRepository(dataStoreManager) }
+    val context = LocalContext.current
+    val container = remember { AppContainer.from(context.applicationContext as PlanMosaicApplication) }
+    val repository = remember { ScheduleRepository(dataStoreManager, container.authManager, container.supabaseClient) }
 
     var deepseekKey by rememberSaveable { mutableStateOf("") }
     var qwenKey by rememberSaveable { mutableStateOf("") }
@@ -55,15 +57,15 @@ fun ApiSettingsSection(
 
     // Load existing settings
     LaunchedEffect(Unit) {
-        val userId = AuthManager.userId
+        val userId = container.authManager.userId
         val appData = if (userId != null) {
-            try { repository.fullSync(userId) } catch (_: Exception) { repository.loadLocalData(userId) ?: AppData() }
+            try { repository.fullSync(userId) } catch (e: Exception) { Log.w("ApiSettings", "Failed to sync API settings", e); repository.loadLocalData(userId) ?: AppData() }
         } else {
             AppData()
         }
         deepseekKey = appData.apiKeys.deepseek
         qwenKey = appData.apiKeys.qwen
-        selectedProvider = appData.settings.aiProvider
+        selectedProvider = appData.settings.provider
     }
 
     Card(
@@ -236,15 +238,15 @@ fun ApiSettingsSection(
                     onClick = {
                         scope.launch {
                             isSaving = true
-                            val userId = AuthManager.userId
+                            val userId = container.authManager.userId
                             val appData = if (userId != null) {
-                                try { repository.fullSync(userId) } catch (_: Exception) { repository.loadLocalData(userId) ?: AppData() }
+                                try { repository.fullSync(userId) } catch (e: Exception) { Log.w("ApiSettings", "Failed to sync on save", e); repository.loadLocalData(userId) ?: AppData() }
                             } else {
                                 AppData()
                             }
                             val updated = appData.copy(
                                 apiKeys = ApiKeys(deepseek = deepseekKey, qwen = qwenKey),
-                                settings = AgentSettings(theme = appData.settings.theme, aiProvider = selectedProvider)
+                                settings = AgentSettings(theme = appData.settings.theme, provider = selectedProvider)
                             )
                             if (userId != null) {
                                 repository.saveLocalData(userId, updated)
@@ -288,7 +290,7 @@ fun ApiSettingsSection(
                                 return@launch
                             }
                             try {
-                                val client = com.example.planmosaic_android.data.remote.SupabaseClient.httpClient
+                                val client = container.supabaseClient.httpClient
                                 val url = if (selectedProvider == "qwen")
                                     "https://dashscope.aliyuncs.com/compatible-mode/v1/models"
                                 else

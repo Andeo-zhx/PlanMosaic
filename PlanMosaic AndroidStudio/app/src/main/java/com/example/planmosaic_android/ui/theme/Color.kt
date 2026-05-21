@@ -1,7 +1,6 @@
 package com.example.planmosaic_android.ui.theme
 
 
-import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.Color
 
 // =============================================
@@ -80,4 +79,10 @@ object AppColors {
         Color(0xFF9B7E6B), // Warm Brown
         Color(0xFF6B8A85), // Muted Teal
     )
+
+    // Glassmorphism tokens
+    val glassBackground: Color = Color(0xCCFAFAFA)
+    val glassBackgroundDark: Color = Color(0xCC1A1A1A)
+    val glassBorder: Color = Color(0x1AFFFFFF)
+    val glassBorderDark: Color = Color(0x1A000000)
 }

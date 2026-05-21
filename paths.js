@@ -15,6 +15,12 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
+function sanitizeUsername(username) {
+    if (typeof username !== 'string' || username.length === 0 || username.length > 64) return null;
+    if (!/^[\w\u4e00-\u9fff\-_]+$/.test(username)) return null;
+    return username;
+}
+
 const APP_NAME = 'PlanMosaic';
 
 // 数据文件名列表（不包括 preload.js 等程序文件）
@@ -51,7 +57,9 @@ let activeUsername = null;
  * @param {string|null} username - 用户名，null 表示未登录
  */
 function setActiveUsername(username) {
-    activeUsername = username;
+    const sanitized = sanitizeUsername(username);
+    if (sanitized === null) return null;
+    activeUsername = sanitized;
 }
 
 /**
@@ -62,7 +70,14 @@ function setActiveUsername(username) {
 function getAppDataDir() {
     const rootDir = getAppDataRootDir();
     if (activeUsername) {
-        return path.join(rootDir, activeUsername);
+        let dataDir = path.join(rootDir, activeUsername);
+        const resolved = path.resolve(dataDir);
+        if (!resolved.startsWith(path.resolve(rootDir) + path.sep) && resolved !== path.resolve(rootDir)) {
+            console.warn('[Security] Path traversal detected:', resolved);
+            return null;
+        }
+        dataDir = resolved;
+        return dataDir;
     }
     return rootDir;
 }
@@ -77,10 +92,13 @@ const APP_DATA_DIR = APP_DATA_ROOT_DIR;
  * 确保应用数据目录存在。
  */
 function ensureAppDataDir() {
-    const dir = getAppDataDir();
-    if (!fs.existsSync(dir)) {
+    try {
+        const dir = getAppDataDir();
         fs.mkdirSync(dir, { recursive: true });
-        console.log(`[Paths] Created app data directory: ${dir}`);
+        return true;
+    } catch (e) {
+        console.warn('[Paths] Failed to create app data dir:', e.message);
+        return false;
     }
 }
 
@@ -97,8 +115,12 @@ function cleanLegacyDataForPackagedApp() {
 
     // 确保根目录存在
     if (!fs.existsSync(rootDir)) {
-        fs.mkdirSync(rootDir, { recursive: true });
-        fs.writeFileSync(markFile, new Date().toISOString());
+        try {
+            fs.mkdirSync(rootDir, { recursive: true });
+            fs.writeFileSync(markFile, new Date().toISOString());
+        } catch (e) {
+            console.warn('[Paths] Failed to initialize root dir:', e.message);
+        }
         console.log('[Paths] Fresh install, no legacy data to clean.');
         return;
     }
@@ -128,7 +150,11 @@ function cleanLegacyDataForPackagedApp() {
     }
 
     // 写入标记文件
-    fs.writeFileSync(markFile, new Date().toISOString());
+    try {
+        fs.writeFileSync(markFile, new Date().toISOString());
+    } catch (e) {
+        console.warn('[Paths] Failed to write mark file:', e.message);
+    }
     console.log('[Paths] Packaged app data reset complete.');
 }
 
@@ -200,11 +226,16 @@ function getSettingsPath()   { return getDataPath('settings.json'); }
 function getAgentLogPath()   { return getDataPath('agent-log.json'); }
 
 function getBackupDir() {
-    const backupDir = getDataPath('backups');
-    if (!fs.existsSync(backupDir)) {
-        fs.mkdirSync(backupDir, { recursive: true });
+    try {
+        const backupDir = getDataPath('backups');
+        if (!fs.existsSync(backupDir)) {
+            fs.mkdirSync(backupDir, { recursive: true });
+        }
+        return backupDir;
+    } catch (e) {
+        console.warn('[Paths] Failed to get backup dir:', e.message);
+        return null;
     }
-    return backupDir;
 }
 
 module.exports = {

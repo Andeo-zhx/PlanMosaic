@@ -49,16 +49,13 @@
 				</view>
 			</view>
 		</scroll-view>
-		<custom-tabbar current="/pages/timetable/timetable"></custom-tabbar>
 	</view>
 </template>
 
 <script>
-	import customTabbar from '@/components/custom-tabbar/custom-tabbar.vue'
-	import { useScheduleStore } from '@/store/schedule.js'
+	import { useScheduleStore } from '@/store/schedule.ts'
 
 	export default {
-		components: { customTabbar },
 		data() {
 			return {
 				statusBarHeight: 0,
@@ -81,8 +78,7 @@
 			},
 			courseSchedule() {
 				const schedule = {}
-				const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-				for (const [dateStr, daySchedule] of Object.entries(this.store.state.schedules)) {
+				for (const [dateStr, daySchedule] of Object.entries(this.store.schedules)) {
 					if (daySchedule.timeSlots && daySchedule.timeSlots.length > 0) {
 						const d = new Date(dateStr + 'T00:00:00')
 						const dow = d.getDay()

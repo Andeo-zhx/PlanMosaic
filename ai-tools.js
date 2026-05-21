@@ -309,7 +309,7 @@ const AI_TOOLS = [
                 properties: {
                     action: {
                         type: 'string',
-                        enum: ['patterns', 'optimize', 'ddl_status', 'habits'],
+                        enum: ['patterns', 'optimize', 'ddl_status', 'habits', 'health_check'],
                         description: '分析类型'
                     },
                     period: { type: 'string', description: '分析时间段，如"本周"、"本月"' },
@@ -438,6 +438,42 @@ const AI_TOOLS = [
                     context: { type: 'string', description: '决策背景补充' }
                 },
                 required: ['decision_topic', 'options']
+            }
+        }
+    },
+
+    // ========== 15. 网络搜索评估 ==========
+    {
+        type: 'function',
+        function: {
+            name: 'web_search_evaluate',
+            description: '搜索网络资源，评估和汇总任务解决方案。用于查找最佳实践、学习路径、方法论等信息。',
+            parameters: {
+                type: 'object',
+                properties: {
+                    query: { type: 'string', description: '搜索关键词' },
+                    purpose: { type: 'string', description: '搜索目的，如"学习路径"、"最佳实践"、"时间评估"' },
+                    max_results: { type: 'number', description: '最大结果数，默认5' }
+                },
+                required: ['query']
+            }
+        }
+    },
+
+    // ========== 16. 任务时间估算 ==========
+    {
+        type: 'function',
+        function: {
+            name: 'estimate_task_time',
+            description: '根据任务描述估算合理完成时间。支持基于历史数据的机器学习模型估算（需Python服务运行）和LLM基础估算两种模式。完成任务后记录实际用时可训练模型提升准确度，用户可以说"重新训练时间估算模型"来更新模型。',
+            parameters: {
+                type: 'object',
+                properties: {
+                    task_name: { type: 'string', description: '任务名称或描述' },
+                    category: { type: 'string', enum: ['学习', '工作', '生活', '运动'], description: '任务类别' },
+                    context: { type: 'string', description: '补充背景信息，如"有一定基础"、"初学者"等' }
+                },
+                required: ['task_name', 'category']
             }
         }
     }

@@ -1,6 +1,7 @@
 <script>
 	import { initSupabase } from '@/utils/supabase.js'
-	import { useScheduleStore } from '@/store/schedule.js'
+	import { useScheduleStore } from '@/store/schedule.ts'
+	import { CREDENTIALS_KEY, AUTH_TOKEN_KEY } from '@/constants/storage-keys'
 
 	export default {
 		onLaunch: function() {
@@ -25,19 +26,23 @@
 		methods: {
 			async autoLogin() {
 				const store = useScheduleStore()
-				const saved = uni.getStorageSync('mosaique-credentials')
-				if (saved) {
+				const oldSaved = uni.getStorageSync(CREDENTIALS_KEY)
+				if (oldSaved) {
+					uni.removeStorageSync(CREDENTIALS_KEY)
+				}
+				const savedToken = uni.getStorageSync(AUTH_TOKEN_KEY)
+				if (savedToken) {
 					try {
-						const { username, password } = JSON.parse(saved)
-						const result = await store.login(username, password)
-						if (result.success) {
-							console.log('[App] Auto-login successful:', result.username)
+						const success = await store.restoreSession(savedToken)
+						if (success) {
+							console.log('[App] Session restored from token')
+							await store.loadCloud()
 						} else {
-							uni.removeStorageSync('mosaique-credentials')
+							uni.removeStorageSync(AUTH_TOKEN_KEY)
 						}
 					} catch (e) {
-						console.warn('[App] Auto-login failed:', e)
-						uni.removeStorageSync('mosaique-credentials')
+						console.warn('[App] Session restore failed:', e)
+						uni.removeStorageSync(AUTH_TOKEN_KEY)
 					}
 				}
 			}

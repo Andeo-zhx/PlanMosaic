@@ -3,15 +3,15 @@ package com.example.planmosaic_android.data.repository
 import android.util.Log
 import com.example.planmosaic_android.data.remote.SupabaseClient
 import com.example.planmosaic_android.data.remote.bool
-import com.example.planmosaic_android.data.remote.obj
 import com.example.planmosaic_android.model.AppData
-import com.example.planmosaic_android.model.DaySchedule
 import com.example.planmosaic_android.util.AuthManager
 import com.example.planmosaic_android.util.DataStoreManager
 import kotlinx.serialization.json.Json
 
 class ScheduleRepository(
-    private val dataStoreManager: DataStoreManager
+    private val dataStoreManager: DataStoreManager,
+    private val authManager: AuthManager,
+    private val supabaseClient: SupabaseClient
 ) {
     private val json = Json {
         ignoreUnknownKeys = true
@@ -39,9 +39,9 @@ class ScheduleRepository(
     suspend fun loadCloudData(userId: String): AppData? {
         Log.d("ScheduleRepository", "loadCloudData for userId: $userId")
         return try {
-            val token = AuthManager.token
+            val token = authManager.token
             Log.d("ScheduleRepository", "Using token: ${token != null}")
-            val result = SupabaseClient.getUserData(userId, token)
+            val result = supabaseClient.getUserData(userId, token)
             val success = result.bool("success")
             val exists = result.bool("exists")
             Log.d("ScheduleRepository", "Result: success=$success, exists=$exists, keys=${result.keys}")
@@ -97,10 +97,10 @@ class ScheduleRepository(
     suspend fun saveCloudData(userId: String, data: AppData): Boolean {
         Log.d("ScheduleRepository", "saveCloudData for userId: $userId, schedules: ${data.schedules.size}")
         return try {
-            val token = AuthManager.token
+            val token = authManager.token
             Log.d("ScheduleRepository", "Using token: ${token != null}")
             val dataStr = json.encodeToString(AppData.serializer(), data)
-            val result = SupabaseClient.upsertUserData(userId, dataStr, token)
+            val result = supabaseClient.upsertUserData(userId, dataStr, token)
             val success = result.bool("success")
             Log.d("ScheduleRepository", "saveCloudData result: success=$success")
             success

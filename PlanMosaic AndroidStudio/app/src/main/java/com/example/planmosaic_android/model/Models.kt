@@ -52,7 +52,8 @@ data class ChatMessage(
     val role: String = "user",
     val content: String = "",
     val timestamp: String = "",
-    val proposal: Proposal? = null
+    val proposal: Proposal? = null,
+    val thinkingContent: String = ""
 )
 
 // ============ AI Agent Models ============
@@ -66,35 +67,91 @@ data class ApiKeys(
 @Serializable
 data class AgentSettings(
     val theme: String = "light",
-    val aiProvider: String = "deepseek",
-    val provider: String = aiProvider
+    val provider: String = "deepseek"
 )
 
 @Serializable
-data class Proposal(
-    val type: String = "",
-    val date: String = "",
-    val reason: String = "",
-    val changes: List<String> = emptyList(),
-    val dates: List<String> = emptyList(),
-    val taskName: String = "",
-    val taskNames: List<String> = emptyList(),
-    val tasks: List<ProposalTask> = emptyList(),
-    val oldTaskName: String = "",
-    val newTaskName: String = "",
-    val newEstimatedMinutes: Int = 0,
-    val newDdl: String = "",
-    val operation: String = "",
-    val timeSlots: List<String> = emptyList(),
-    val newSlotDetails: TimeSlot? = null,
-    val title: String = "",
-    val criteria: ProposalCriteria? = null,
-    val newDetails: ProposalNewDetails? = null,
-    val action: String = "",
-    val templateName: String = "",
-    val targetDate: String = "",
-    val templateData: String = ""
-)
+sealed class Proposal {
+    @Serializable
+    @SerialName("batch_delete_schedule")
+    data class BatchDeleteSchedule(
+        val dates: List<String> = emptyList(),
+        val reason: String = ""
+    ) : Proposal()
+
+    @Serializable
+    @SerialName("delete_task")
+    data class DeleteTask(
+        val date: String = "",
+        val taskName: String = "",
+        val reason: String = ""
+    ) : Proposal()
+
+    @Serializable
+    @SerialName("update_task")
+    data class UpdateTask(
+        val date: String = "",
+        val oldTaskName: String = "",
+        val newTaskName: String = "",
+        val newEstimatedMinutes: Int = 0,
+        val reason: String = ""
+    ) : Proposal()
+
+    @Serializable
+    @SerialName("delete_big_task")
+    data class DeleteBigTask(
+        val taskName: String = "",
+        val reason: String = ""
+    ) : Proposal()
+
+    @Serializable
+    @SerialName("update_big_task")
+    data class UpdateBigTask(
+        val oldTaskName: String = "",
+        val newTaskName: String = "",
+        val newEstimatedMinutes: Int = 0,
+        val newDdl: String = "",
+        val reason: String = ""
+    ) : Proposal()
+
+    @Serializable
+    @SerialName("batch_delete_tasks")
+    data class BatchDeleteTasks(
+        val tasks: List<ProposalTask> = emptyList(),
+        val reason: String = ""
+    ) : Proposal()
+
+    @Serializable
+    @SerialName("batch_delete_big_tasks")
+    data class BatchDeleteBigTasks(
+        val taskNames: List<String> = emptyList(),
+        val reason: String = ""
+    ) : Proposal()
+
+    @Serializable
+    @SerialName("modify_schedule")
+    data class ModifySchedule(
+        val date: String = "",
+        val operation: String = "",
+        val changes: List<String> = emptyList(),
+        val reason: String = "",
+        val timeSlots: List<String> = emptyList(),
+        val newSlotDetails: TimeSlot? = null,
+        val criteria: ProposalCriteria? = null,
+        val newDetails: ProposalNewDetails? = null,
+        val dates: List<String> = emptyList(),
+        val title: String = "",
+        val taskName: String = ""
+    ) : Proposal()
+
+    @Serializable
+    @SerialName("apply_template")
+    data class ApplyTemplate(
+        val templateName: String = "",
+        val targetDate: String = "",
+        val templateData: String = ""
+    ) : Proposal()
+}
 
 @Serializable
 data class ProposalTask(

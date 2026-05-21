@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.deepseek.com https://dashscope.aliyuncs.com https://*.supabase.co; img-src 'self' data: https://fonts.gstatic.com https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src 'self'">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlanMosaic</title>
@@ -14,8 +15,58 @@
             try {
                 var theme = localStorage.getItem('mosaique-theme') || 'light';
                 document.documentElement.setAttribute('data-theme', theme);
-            } catch(e) {}
+            } catch(e) { console.warn('主题初始化失败:', e); }
         })();
+
+        function showToast(message, type, duration) {
+            type = type || 'info';
+            duration = duration || 3000;
+            var container = document.getElementById('toastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            var item = document.createElement('div');
+            item.className = 'toast-item ' + type;
+            item.textContent = message;
+            container.appendChild(item);
+            setTimeout(function() {
+                item.style.opacity = '0';
+                item.style.transition = 'opacity 0.3s';
+                setTimeout(function() { if (item.parentNode) item.parentNode.removeChild(item); }, 300);
+            }, duration);
+        }
+        function showConfirmToast(message, onOk, onCancel) {
+            var overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+            overlay.innerHTML = '<div class="confirm-dialog"><div class="confirm-msg">' + message.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div><div class="confirm-buttons"><button class="confirm-btn confirm-btn-cancel">取消</button><button class="confirm-btn confirm-btn-ok">确认</button></div></div>';
+            document.body.appendChild(overlay);
+            overlay.querySelector('.confirm-btn-cancel').onclick = function() {
+                document.body.removeChild(overlay);
+                if (onCancel) onCancel();
+            };
+            overlay.querySelector('.confirm-btn-ok').onclick = function() {
+                document.body.removeChild(overlay);
+                if (onOk) onOk();
+            };
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) { document.body.removeChild(overlay); if (onCancel) onCancel(); } });
+        }
+
+        function escapeHtml(str) {
+            if (!str || typeof str !== 'string') return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        function sanitizeHtml(html) {
+            if (!html || typeof html !== 'string') return '';
+            return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                       .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+                       .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+                       .replace(/\bon\w+\s*=\s*["'][^"']*["']/gi, '')
+                       .replace(/\bon\w+\s*=\s*[^\s>]*/gi, '');
+        }
     </script>
     <style>
         * {
@@ -103,15 +154,16 @@
             --font-body: var(--primitive-font-body);
             --font-mono: var(--primitive-font-mono);
 
-            /* Shadows - 静谧悬浮感 */
-            --shadow-surface: 0 12px 32px -8px rgba(26, 25, 24, 0.04), 0 2px 6px rgba(26, 25, 24, 0.02);
-            --shadow-sm: 0 1px 2px rgba(26, 25, 24, 0.02);
-            --shadow-md: 0 8px 24px rgba(26, 25, 24, 0.04);
-            --shadow-lg: 0 16px 48px rgba(26, 25, 24, 0.06), 0 2px 8px rgba(26, 25, 24, 0.03);
-            --shadow-xl: 0 24px 64px rgba(26, 25, 24, 0.08), 0 4px 16px rgba(26, 25, 24, 0.04);
-            --shadow-button-hover: 0 8px 20px rgba(138, 125, 114, 0.2);
-            --shadow-agent: 0 32px 64px -16px rgba(26, 25, 24, 0.15), 0 8px 24px rgba(26, 25, 24, 0.08);
-            --shadow-agent-dragging: 0 40px 80px -20px rgba(26, 25, 24, 0.25), 0 12px 32px rgba(26, 25, 24, 0.12);
+            /* Shadows - 静谧悬浮感 - Enhanced Depth Hierarchy */
+            --shadow-xs: 0 1px 2px rgba(26, 25, 24, 0.03);
+            --shadow-sm: 0 1px 3px rgba(26, 25, 24, 0.04), 0 1px 2px rgba(26, 25, 24, 0.02);
+            --shadow-surface: 0 4px 16px -4px rgba(26, 25, 24, 0.06), 0 1px 3px rgba(26, 25, 24, 0.03);
+            --shadow-md: 0 8px 24px -6px rgba(26, 25, 24, 0.08), 0 2px 6px rgba(26, 25, 24, 0.04);
+            --shadow-lg: 0 16px 48px -12px rgba(26, 25, 24, 0.12), 0 4px 12px rgba(26, 25, 24, 0.06);
+            --shadow-xl: 0 24px 64px -16px rgba(26, 25, 24, 0.16), 0 8px 24px rgba(26, 25, 24, 0.08);
+            --shadow-button-hover: 0 8px 20px -6px rgba(138, 125, 114, 0.25), 0 2px 8px rgba(138, 125, 114, 0.12);
+            --shadow-agent: 0 32px 64px -16px rgba(26, 25, 24, 0.12), 0 8px 24px -4px rgba(26, 25, 24, 0.06);
+            --shadow-agent-dragging: 0 40px 80px -20px rgba(26, 25, 24, 0.2), 0 12px 32px rgba(26, 25, 24, 0.1);
 
             /* Animation */
             --easing: var(--primitive-easing);
@@ -132,6 +184,15 @@
             --glass-agent: rgba(255, 255, 255, 0.65);
             --glass-agent-border: rgba(255, 255, 255, 0.6);
             --glass-agent-blur: 24px;
+            --glass-card: rgba(249, 248, 246, 0.7);
+            --glass-card-border: rgba(232, 230, 224, 0.45);
+            --glass-card-blur: 16px;
+            --glass-sidebar: rgba(249, 248, 246, 0.8);
+            --glass-sidebar-border: rgba(232, 230, 224, 0.5);
+            --glass-sidebar-blur: 20px;
+            --glass-confirm: rgba(255, 255, 255, 0.78);
+            --glass-confirm-border: rgba(232, 230, 224, 0.55);
+            --glass-confirm-blur: 18px;
 
             /* Semantic Status Colors */
             --success: #7BA06A;
@@ -216,8 +277,24 @@
             --agent-transition-duration: 400ms;
             --agent-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
 
+            /* Gradient Tokens */
+            --gradient-subtle: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-paper) 100%);
+            --gradient-accent: linear-gradient(135deg, #8A7D72 0%, #6B635B 50%, #B0908F 100%);
+            --gradient-brand: linear-gradient(135deg, #5E5650 0%, #8A7D72 50%, #6B635B 100%);
+            --gradient-surface-warm: linear-gradient(135deg, rgba(138, 125, 114, 0.04) 0%, rgba(138, 125, 114, 0.01) 100%);
+
+            /* Surface Accent (for send buttons, CTAs) */
+            --surface-accent: #2A2927;
+            --surface-accent-hover: #3A3937;
+            --surface-accent-glow: rgba(42, 41, 39, 0.25);
+
+            /* Ring/Focus Tokens */
+            --ring-focus: 0 0 0 3px rgba(138, 125, 114, 0.15);
+            --ring-focus-dark: 0 0 0 3px rgba(160, 150, 140, 0.2);
+
             /* Backward Compatibility Aliases */
             --bg-app: var(--bg-paper);
+            --bg-base: var(--bg-paper);
             --bg-primary: var(--bg-paper);
             --bg-secondary: var(--bg-surface);
             --bg-tertiary: var(--bg-surface-hover);
@@ -261,20 +338,27 @@
             --border-dark: var(--primitive-border-dark);
 
             /* Shadow overrides for dark mode */
-            --shadow-surface: 0 12px 32px -8px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
-            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
-            --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4);
-            --shadow-button-hover: 0 8px 20px rgba(125, 117, 144, 0.15);
-            --shadow-agent: 0 32px 64px -16px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
-            --shadow-agent-dragging: 0 40px 80px -20px rgba(0, 0, 0, 0.5), 0 12px 32px rgba(0, 0, 0, 0.3);
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.25);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+            --shadow-surface: 0 4px 16px -4px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 8px 32px -6px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
+            --shadow-lg: 0 16px 48px -12px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+            --shadow-xl: 0 24px 64px -16px rgba(0, 0, 0, 0.55), 0 8px 24px rgba(0, 0, 0, 0.35);
+            --shadow-button-hover: 0 8px 20px -6px rgba(125, 117, 144, 0.2), 0 2px 8px rgba(125, 117, 144, 0.1);
+            --shadow-agent: 0 32px 64px -16px rgba(0, 0, 0, 0.35), 0 8px 24px -4px rgba(0, 0, 0, 0.2);
+            --shadow-agent-dragging: 0 40px 80px -20px rgba(0, 0, 0, 0.45), 0 12px 32px rgba(0, 0, 0, 0.3);
 
             /* Glass effect overrides */
             --glass: rgba(26, 24, 22, 0.8);
             --glass-border: rgba(50, 47, 40, 0.5);
             --glass-agent: rgba(37, 35, 32, 0.75);
             --glass-agent-border: rgba(60, 57, 50, 0.5);
+            --glass-card: rgba(26, 24, 22, 0.75);
+            --glass-card-border: rgba(50, 47, 40, 0.45);
+            --glass-sidebar: rgba(26, 24, 22, 0.82);
+            --glass-sidebar-border: rgba(50, 47, 40, 0.5);
+            --glass-confirm: rgba(37, 35, 32, 0.82);
+            --glass-confirm-border: rgba(60, 57, 50, 0.5);
 
             /* Status colors for dark mode */
             --success: #8BBF7A;
@@ -288,6 +372,20 @@
             --info: #8A9DB8;
             --info-bg: rgba(138, 157, 184, 0.1);
             --info-border: rgba(138, 157, 184, 0.2);
+
+            /* Gradient tokens for dark mode */
+            --gradient-subtle: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-paper) 100%);
+            --gradient-brand: linear-gradient(135deg, #C4BDB5 0%, #A0958A 50%, #D4C5C0 100%);
+            --gradient-surface-warm: linear-gradient(135deg, rgba(125, 117, 144, 0.06) 0%, rgba(125, 117, 144, 0.02) 100%);
+
+            /* Surface accent for dark mode */
+            --surface-accent: #F0EFEA;
+            --surface-accent-hover: #FFFFFF;
+            --surface-accent-glow: rgba(240, 239, 234, 0.2);
+
+            /* Ring/Focus for dark mode */
+            --ring-focus: 0 0 0 3px rgba(160, 150, 140, 0.2);
+            --ring-focus-dark: 0 0 0 3px rgba(180, 170, 160, 0.25);
 
             /* Component token overrides */
             --btn-bg-primary: #F0EFEA;
@@ -918,8 +1016,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 16px 0;
-            margin-bottom: 12px;
+            padding: 14px 0;
+            margin-bottom: 8px;
             flex-shrink: 0;
             position: relative;
             z-index: 100;
@@ -944,20 +1042,24 @@
             width: var(--primitive-touch-target);
             height: var(--primitive-touch-target);
             border: none;
-            background: transparent;
-            color: var(--text-disabled);
+            background: var(--glass);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: var(--text-secondary);
             cursor: pointer;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all var(--duration-normal) var(--easing);
+            border: 1px solid transparent;
         }
 
         .icon-btn:hover {
             background: var(--bg-surface-hover);
             color: var(--text-primary);
             box-shadow: var(--shadow-sm);
+            border-color: var(--border-subtle);
         }
 
         .icon-btn:active {
@@ -966,7 +1068,7 @@
 
         .icon-btn:focus-visible {
             outline: none;
-            box-shadow: 0 0 0 2px var(--accent-primary);
+            box-shadow: var(--ring-focus);
         }
 
         .icon-btn svg {
@@ -974,6 +1076,10 @@
             height: 18px;
             fill: currentColor;
             transition: transform var(--duration-fast) var(--easing);
+        }
+
+        .icon-btn:hover svg {
+            transform: rotate(-30deg);
         }
 
         .deep-planning-btn {
@@ -1090,11 +1196,11 @@
 
         .brand {
             font-size: 32px;
-            font-weight: 300;
-            letter-spacing: 5px;
+            font-weight: 400;
+            letter-spacing: 6px;
             font-family: var(--font-display);
             text-align: center;
-            background: linear-gradient(135deg, #8C8299, #635B70, #B0908F);
+            background: var(--gradient-brand);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -1104,11 +1210,12 @@
             justify-content: center;
             gap: 20px;
             user-select: none;
+            filter: drop-shadow(0 1px 2px rgba(90, 85, 80, 0.08));
         }
 
         .loading-logo {
             font-family: var(--font-display);
-            background: linear-gradient(135deg, #8C8299, #635B70, #B0908F);
+            background: var(--gradient-brand);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -1122,15 +1229,15 @@
             background: linear-gradient(
                 90deg,
                 transparent,
-                #635B70
+                rgba(90, 85, 80, 0.3)
             );
-            opacity: 0.4;
+            opacity: 0.5;
         }
 
         .brand::after {
             background: linear-gradient(
                 90deg,
-                #635B70,
+                rgba(90, 85, 80, 0.3),
                 transparent
             );
         }
@@ -1177,7 +1284,7 @@
 
         .btn:focus-visible {
             outline: none;
-            box-shadow: 0 0 0 2px var(--accent-primary), 0 0 0 4px rgba(138, 125, 114, 0.2);
+            box-shadow: var(--ring-focus), 0 0 0 5px rgba(138, 125, 114, 0.06);
         }
 
         [data-theme="dark"] .btn {
@@ -1279,7 +1386,7 @@
 
         .nav-btn:focus-visible {
             outline: none;
-            box-shadow: 0 0 0 2px var(--accent-primary);
+            box-shadow: var(--ring-focus);
         }
 
         .nav-btn:active {
@@ -1460,15 +1567,15 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             z-index: 1000;
             display: none;
             justify-content: center;
             align-items: center;
             opacity: 0;
-            transition: opacity 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .modal-overlay.open {
@@ -1483,22 +1590,30 @@
             max-height: 85vh;
             overflow-y: auto;
             box-shadow: var(--shadow-xl);
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-subtle);
+            transform: translateY(8px);
+            transition: transform 0.3s var(--easing);
+        }
+
+        .modal-overlay.open .modal-content {
+            transform: translateY(0);
         }
 
         .modal-header {
-            padding: 24px 28px;
-            border-bottom: none;
+            padding: 24px 28px 20px;
+            border-bottom: 1px solid var(--border-subtle);
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
         }
 
         .modal-date {
             font-family: var(--font-display);
-            font-weight: 500;
+            font-weight: 600;
             letter-spacing: 0.5px;
             font-size: 18px;
+            color: var(--text-primary);
         }
 
         .modal-highlights {
@@ -1508,18 +1623,18 @@
         }
 
         .close-btn {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border: none;
             background: transparent;
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
-            color: var(--text-muted);
+            color: var(--text-tertiary);
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: var(--radius-sm);
-            transition: all 0.2s;
+            transition: all 0.2s var(--easing);
         }
 
         .close-btn:hover {
@@ -2271,31 +2386,44 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             z-index: 4000;
             display: none;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.25s var(--easing);
         }
 
         .big-task-modal.active {
             display: flex;
+            opacity: 1;
         }
 
         .big-task-modal-content {
             background: var(--bg-secondary);
-            padding: 28px;
-            width: 400px;
-            box-shadow: var(--shadow-lg);
-            border-radius: var(--radius-md);
+            padding: 28px 30px;
+            width: 420px;
+            box-shadow: var(--shadow-xl);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-subtle);
+            transform: translateY(8px);
+            transition: transform 0.3s var(--easing);
+        }
+
+        .big-task-modal.active .big-task-modal-content {
+            transform: translateY(0);
         }
 
         .big-task-modal-title {
-            font-size: 16px;
-            font-weight: 400;
-            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 22px;
+            font-family: var(--font-display);
+            letter-spacing: 0.5px;
+            color: var(--text-primary);
         }
 
         .big-task-form-group {
@@ -2307,6 +2435,8 @@
             color: var(--text-secondary);
             margin-bottom: 8px;
             display: block;
+            font-weight: 500;
+            letter-spacing: 0.3px;
         }
 
         .big-task-form-input {
@@ -2317,14 +2447,14 @@
             color: var(--text-primary);
             font-size: 13px;
             font-family: inherit;
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .big-task-form-input:focus {
             outline: none;
-            border-color: var(--border-dark);
-            box-shadow: 0 0 0 2px var(--accent-subtle);
+            border-color: var(--accent-primary);
+            box-shadow: var(--ring-focus);
         }
 
         .big-task-form-input[type="date"]::-webkit-calendar-picker-indicator {
@@ -2333,6 +2463,17 @@
 
         [data-theme="light"] .big-task-form-input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(0.25) sepia(0.05);
+        }
+
+        .big-task-form-input.error {
+            border-color: #cf222e;
+            box-shadow: 0 0 0 1px rgba(207, 34, 46, 0.2);
+        }
+
+        .form-error-text {
+            color: #cf222e;
+            font-size: 11px;
+            margin-top: 4px;
         }
 
         .big-task-modal-actions {
@@ -2821,16 +2962,28 @@
         }
 
         .agent-content.docked:not(.dragging) {
-            transform: translateY(-50%) translateX(calc(100% - 24px));
-            box-shadow: var(--shadow-md);
+            transform: translateY(0) translateX(0);
+            right: auto;
+            left: 24px;
+            bottom: 24px;
+            top: auto;
+            width: 56px;
+            height: 56px;
+            min-height: 56px;
+            border-radius: 50%;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
             cursor: pointer;
+            overflow: visible;
         }
 
         .agent-content.docked:not(.dragging) .agent-chat-container,
         .agent-content.docked:not(.dragging) .agent-input-area,
-        .agent-content.docked:not(.dragging) .typing-indicator {
+        .agent-content.docked:not(.dragging) .typing-indicator,
+        .agent-content.docked:not(.dragging) .agent-drag-indicator,
+        .agent-content.docked:not(.dragging) .agent-brand {
             opacity: 0;
             pointer-events: none;
+            display: none;
         }
 
         .agent-content.docked:not(.dragging) .agent-drag-handle {
@@ -2845,48 +2998,32 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 0;
             z-index: 10;
-        }
-
-        .agent-content.docked:not(.dragging) .agent-drag-indicator {
-            width: 4px;
-            height: 48px;
-            opacity: 0.5;
+            cursor: pointer;
         }
 
         .agent-content.docked:not(.dragging) .agent-header {
             flex-direction: column;
-            gap: 8px;
-        }
-
-        .agent-content.docked:not(.dragging) .agent-brand {
-            writing-mode: vertical-lr;
-            letter-spacing: 3px;
-            font-size: 10px;
+            gap: 0;
+            margin: 0;
+            padding: 0;
         }
 
         .agent-content.docked:not(.dragging) .agent-avatar {
-            width: 48px;
-            height: 48px;
-            opacity: 0.9;
-        }
-
-        .agent-content.docked:not(.dragging):hover .agent-avatar {
+            width: 44px;
+            height: 44px;
             opacity: 1;
+            margin: 0;
         }
 
         .agent-content.docked:not(.dragging):hover {
-            transform: translateY(-50%) translateX(calc(100% - 28px));
+            transform: scale(1.08);
+            box-shadow: 0 6px 32px rgba(0,0,0,0.15);
         }
 
-        .agent-content.docked:not(.dragging):hover .agent-drag-indicator {
-            opacity: 0.8;
-            height: 64px;
-        }
-
-        .agent-content.docked:not(.dragging):hover .agent-brand {
-            opacity: 0.9;
+        .agent-content.docked:not(.dragging):active {
+            transform: scale(0.95);
         }
 
         /* Edge drag zones - invisible grab areas on all 4 edges */
@@ -3200,24 +3337,41 @@
             font-style: normal;
         }
 
-        /* Thinking Process */
+        /* ============ 思路链 (Thinking Chain) ============ */
         .thinking-process {
+            margin-bottom: 6px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .thinking-process:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        [data-theme="dark"] .thinking-process:hover {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .thinking-process:not(.has-thinking) {
             display: none;
         }
 
         .thinking-header {
             display: flex;
             align-items: center;
-            padding: 8px 12px;
+            padding: 10px 16px;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 12px;
             font-family: var(--font-body);
-            font-style: normal;
-            font-weight: 400;
+            font-weight: 500;
             color: var(--text-secondary);
             background: transparent;
-            letter-spacing: 0.5px;
-            transition: color 0.2s;
+            letter-spacing: 0.4px;
+            transition: color 0.2s, background 0.2s;
             user-select: none;
         }
 
@@ -3230,26 +3384,49 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 14px;
-            height: 14px;
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+            color: var(--text-tertiary);
+            flex-shrink: 0;
+            transition: all 0.2s var(--easing);
+        }
+
+        .thinking-process:hover .thinking-icon {
+            background: rgba(138, 125, 114, 0.1);
+            color: var(--accent-primary);
+        }
+
+        [data-theme="dark"] .thinking-process:hover .thinking-icon {
+            background: rgba(160, 150, 140, 0.12);
         }
 
         .thinking-icon svg {
-            width: 12px;
-            height: 12px;
+            width: 13px;
+            height: 13px;
             stroke: currentColor;
             fill: none;
-            stroke-width: 1.5;
+            stroke-width: 1.8;
         }
 
         .thinking-title {
             flex: 1;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
         }
 
         .thinking-toggle {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 10px;
-            transition: transform 0.2s;
-            opacity: 0.5;
+            transition: transform 0.3s var(--easing);
+            opacity: 0.4;
+            flex-shrink: 0;
         }
 
         .thinking-process:not(.expanded) .thinking-toggle {
@@ -3257,35 +3434,69 @@
         }
 
         .thinking-content {
-            padding: 0 12px 10px;
-            font-size: 11px;
-            color: var(--text-muted);
-            line-height: 1.65;
+            padding: 0 16px 14px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            line-height: 1.7;
             white-space: pre-wrap;
-            max-height: 200px;
-            overflow-y: auto;
+            max-height: 0;
+            overflow: hidden;
             font-family: var(--font-body);
+            transition: max-height 0.4s var(--easing), padding 0.4s var(--easing);
+            border-top: 0 solid var(--border-subtle);
+            background: linear-gradient(180deg, var(--bg-tertiary) 0%, transparent 100%);
+            margin: 0 1px;
+            border-radius: 0 0 10px 10px;
+            letter-spacing: 0.15px;
         }
 
-        .thinking-process:not(.expanded) .thinking-content {
-            display: none;
+        .thinking-process.expanded .thinking-content {
+            max-height: 360px;
+            overflow-y: auto;
+            padding: 12px 16px 14px;
+            border-top: 1px solid var(--border-subtle);
         }
 
         .thinking-content::-webkit-scrollbar {
-            width: 3px;
+            width: 4px;
         }
 
         .thinking-content::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 2px;
+            background: var(--border-subtle);
+            border-radius: 3px;
+        }
+
+        .thinking-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        [data-theme="dark"] .thinking-process {
+            background: var(--bg-surface);
+            border-color: var(--glass-border);
+        }
+
+        [data-theme="dark"] .thinking-process:hover {
+            border-color: var(--border-subtle);
+        }
+
+        [data-theme="dark"] .thinking-content {
+            background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+        }
+
+        [data-theme="dark"] .thinking-content {
+            background: rgba(255,255,255,0.02);
         }
 
         /* Schedule Proposal */
         .schedule-proposal {
             margin-top: 8px;
             padding: 0;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--glass-confirm-border);
+            background: var(--glass-confirm);
+            backdrop-filter: blur(var(--glass-confirm-blur));
+            -webkit-backdrop-filter: blur(var(--glass-confirm-blur));
             overflow: hidden;
+            border-radius: 10px;
         }
 
         .proposal-header {
@@ -3540,6 +3751,21 @@
         .proposal-item.item-new .item-time {
             color: var(--success);
             opacity: 0.7;
+        }
+
+        /* 思路链在主区域中的样式 */
+        .agent-main-area .thinking-process {
+            margin-bottom: 4px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--glass);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .agent-main-area .thinking-process:not(.has-thinking) {
+            display: none;
         }
 
         /* ========== 新提案样式 ========== */
@@ -3901,6 +4127,109 @@
             gap: 8px;
             margin-top: 12px;
             flex-wrap: wrap;
+        }
+
+        .agent-react-btn-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            padding: 4px 8px 0 8px;
+        }
+        .agent-react-btn {
+            background: none;
+            border: none;
+            color: var(--color-text-subtle, #888);
+            font-size: 11px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .agent-react-btn:hover {
+            color: var(--color-primary, #6366f1);
+            background: var(--color-bg-hover, rgba(99, 102, 241, 0.08));
+        }
+
+        .react-log-panel {
+            background: var(--color-bg-primary, #fff);
+            border-radius: 16px;
+            width: 90vw;
+            max-width: 700px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .react-log-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--color-border, #e5e7eb);
+        }
+        .react-log-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .react-log-close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--color-text-subtle, #888);
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .react-log-close-btn:hover {
+            background: var(--color-bg-hover, #f3f4f6);
+            color: var(--color-text-primary, #333);
+        }
+        .react-log-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            max-height: 55vh;
+        }
+        .react-log-text {
+            font-family: 'Courier New', Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: var(--color-text-primary, #333);
+            background: var(--color-bg-secondary, #f9fafb);
+            padding: 16px;
+            border-radius: 10px;
+            margin: 0;
+            user-select: text;
+        }
+        .react-log-actions {
+            display: flex;
+            justify-content: center;
+            padding: 12px 20px 16px;
+            border-top: 1px solid var(--color-border, #e5e7eb);
+        }
+        .react-log-copy-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 20px;
+            background: var(--color-primary, #6366f1);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .react-log-copy-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        #reactLogModal {
+            display: none;
         }
 
         .preview-image {
@@ -4601,39 +4930,767 @@
 
 
         /* ============ 右侧时间栏样式 ============ */
+        /* ============ 主布局 - Agent Centric ============ */
         .main-layout {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            grid-template-rows: 1fr;
-            gap: 16px;
+            display: flex;
             flex: 1;
             min-height: 0;
             overflow: hidden;
         }
 
-        .calendar-section {
-            grid-column: span 8;
+        /* Agent 主对话区域 */
+        .agent-main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             min-width: 0;
             min-height: 0;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            background: var(--bg-base);
+            border-radius: var(--radius-lg);
+            margin: 0;
+            position: relative;
         }
 
-        .sidebar-group {
-            grid-column: span 4;
+        .agent-main-area::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('Image/image1.png');
+            background-size: 45%;
+            background-position: center 55%;
+            background-repeat: no-repeat;
+            opacity: 0.04;
+            filter: blur(35px) saturate(0.8);
+            pointer-events: none;
+            z-index: 0;
+            mask-image: radial-gradient(ellipse 70% 60% at center, black 20%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse 70% 60% at center, black 20%, transparent 70%);
+            transition: opacity 0.5s var(--easing);
+        }
+
+        [data-theme="dark"] .agent-main-area::before {
+            background-image: url('Image/image2.png');
+            opacity: 0.05;
+            filter: blur(35px) saturate(0.6) brightness(0.8);
+        }
+
+        .agent-main-area > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .agent-main-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--glass-border);
+            flex-shrink: 0;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .agent-main-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border: 2px solid var(--glass-border);
+        }
+
+        .agent-main-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .agent-main-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .agent-main-name {
+            font-family: var(--font-display);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        .agent-main-subtitle {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            letter-spacing: 0.3px;
+            font-weight: 500;
+        }
+
+        .agent-main-chat {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .agent-main-chat::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .agent-main-chat::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 2px;
+        }
+
+        /* Agent 主区域输入框 */
+        .agent-main-input-area {
+            padding: 14px 24px 18px;
+            border-top: 1px solid var(--glass-border);
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            flex-shrink: 0;
+        }
+
+        .agent-main-input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 6px 8px 6px 16px;
+            transition: border-color 0.25s var(--easing), box-shadow 0.25s var(--easing);
+        }
+
+        .agent-main-input-wrapper:focus-within {
+            border-color: var(--accent-primary);
+            box-shadow: var(--ring-focus);
+        }
+
+        .agent-main-image-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--text-tertiary);
+            transition: all 0.2s var(--easing);
+            flex-shrink: 0;
+        }
+
+        .agent-main-image-btn:hover {
+            color: var(--accent-primary);
+            background: rgba(138, 125, 114, 0.08);
+        }
+
+        .agent-main-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: var(--font-body);
+            resize: none;
+            outline: none;
+            padding: 8px 0;
+            max-height: 120px;
+            min-height: 24px;
+            line-height: 1.5;
+        }
+
+        .agent-main-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .agent-main-send-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: none;
+            background: var(--surface-accent);
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s var(--easing);
+            flex-shrink: 0;
+        }
+
+        .agent-main-send-btn:hover {
+            background: var(--surface-accent-hover);
+            box-shadow: 0 4px 16px var(--surface-accent-glow);
+            transform: scale(1.05);
+        }
+
+        .agent-main-send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .agent-main-send-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .agent-main-image-preview {
+            display: flex;
+            gap: 8px;
+            padding-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Agent 消息样式（主区域） */
+        .agent-main-area .agent-message {
+            display: flex;
+            flex-direction: column;
+            animation: messageSlideIn 0.35s var(--easing);
+        }
+
+        @keyframes messageSlideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .agent-main-area .agent-message.user .message-content {
+            align-self: flex-end;
+            background: var(--surface-accent);
+            color: white;
+            border-radius: 22px 4px 22px 22px;
+            padding: 12px 20px;
+            max-width: 70%;
+            font-size: 14px;
+            line-height: 1.6;
+            box-shadow: 0 2px 10px var(--surface-accent-glow);
+            word-break: break-word;
+        }
+
+        .agent-main-area .agent-message.assistant .message-content {
+            align-self: flex-start;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            border-radius: 4px 22px 22px 22px;
+            padding: 14px 20px;
+            max-width: 85%;
+            font-size: 14px;
+            line-height: 1.7;
+            box-shadow: var(--shadow-xs);
+            word-break: break-word;
+        }
+
+        .agent-main-area .sender-name {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            padding: 0 4px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        /* 主区域打字指示器 */
+        .main-typing {
+            display: none;
+            padding: 10px 24px;
+            gap: 5px;
+        }
+
+        .main-typing.active {
+            display: flex;
+            align-items: center;
+        }
+
+        .main-typing span {
+            width: 5px;
+            height: 5px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .main-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .main-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 0.9; }
+        }
+
+        /* ============ 右侧垂直按钮栏 ============ */
+        .right-panel-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            padding: 12px 4px;
+            width: 48px;
+            flex-shrink: 0;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-left: 1px solid var(--glass-border);
+            z-index: 10;
+        }
+
+        .right-panel-bar-separator {
+            width: 24px;
+            height: 1px;
+            margin: 4px auto;
+            background: var(--border-subtle);
+            border-radius: 1px;
+        }
+
+        .right-panel-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            width: 40px;
+            height: 52px;
+            border: none;
+            background: transparent;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            border-radius: 10px;
+            padding: 4px 2px;
+            transition: all 0.25s var(--easing);
+            position: relative;
+        }
+
+        .right-panel-btn::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2px;
+            height: 0;
+            background: var(--accent-primary);
+            border-radius: 0 2px 2px 0;
+            transition: height 0.25s var(--easing);
+        }
+
+        .right-panel-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .right-panel-btn:hover::before {
+            height: 12px;
+        }
+
+        .right-panel-btn.active {
+            color: var(--accent-primary);
+            background: var(--bg-active);
+            box-shadow: inset 0 0 0 1px rgba(138, 125, 114, 0.1);
+        }
+
+        .right-panel-btn.active::before {
+            height: 24px;
+            background: var(--accent-primary);
+            box-shadow: 0 0 8px rgba(138, 125, 114, 0.25);
+        }
+
+        .right-panel-btn-label {
+            font-size: 9px;
+            font-family: var(--font-body);
+            line-height: 1.3;
+            font-weight: 500;
+            width: 1em;
+            word-break: break-all;
+            text-align: center;
+        }
+
+        .right-panel-btn svg {
+            flex-shrink: 0;
+            transition: transform 0.25s var(--easing), stroke-width 0.25s;
+        }
+
+        .right-panel-btn:hover svg {
+            transform: scale(1.1);
+        }
+
+        .right-panel-btn.active svg {
+            stroke-width: 1.8;
+        }
+
+        [data-theme="dark"] .right-panel-bar {
+            background: var(--glass);
+            border-color: var(--glass-border);
+        }
+
+        [data-theme="dark"] .right-panel-btn.active {
+            box-shadow: inset 0 0 0 1px rgba(160, 150, 140, 0.12);
+        }
+
+        [data-theme="dark"] .right-panel-btn.active::before {
+            box-shadow: 0 0 10px rgba(160, 150, 140, 0.3);
+        }
+
+        /* ============ 右侧可展开面板 ============ */
+        .right-panel {
+            width: 0;
+            min-width: 0;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-surface);
+            border-left: 1px solid var(--border-subtle);
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease;
+            z-index: 5;
+            position: relative;
+        }
+
+        .right-panel.expanded {
+            width: 340px;
+            min-width: 340px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .right-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border-subtle);
+            flex-shrink: 0;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .right-panel-title {
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 0.5px;
+        }
+
+        .right-panel-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s var(--easing);
+        }
+
+        .right-panel-close:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .right-panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 18px;
+        }
+
+        .right-panel-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .right-panel-body::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 2px;
+        }
+
+        .right-panel-add-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            margin-top: 14px;
+            padding: 12px;
+            border: 1.5px dashed var(--border-dark);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 12px;
+            font-size: 13px;
+            font-family: var(--font-body);
+            font-weight: 500;
+            transition: all 0.25s var(--easing);
+            letter-spacing: 0.3px;
+        }
+
+        .right-panel-add-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            background: rgba(138, 125, 114, 0.04);
+        }
+
+        .right-panel-add-btn:active {
+            transform: scale(0.98);
+        }
+
+        .right-panel-body .big-task-card {
+            padding: 16px;
+            margin-bottom: 10px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            transition: all 0.2s var(--easing);
+            cursor: pointer;
+        }
+
+        .right-panel-body .big-task-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-xs);
+            transform: translateY(-1px);
+        }
+
+        /* ============ 规划面板入口卡片 ============ */
+        .plan-entry-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            background: var(--gradient-surface-warm);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.25s var(--easing);
+        }
+
+        .plan-entry-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .plan-entry-card:active {
+            transform: translateY(0);
+        }
+
+        .plan-entry-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: var(--bg-secondary);
+            color: var(--accent-primary);
+            flex-shrink: 0;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .plan-entry-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .plan-entry-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-family: var(--font-body);
+        }
+
+        .plan-entry-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* ============ 附功能面板 ============ */
+        .right-panel-aux .right-panel-body {
+            padding: 16px;
+        }
+
+        .aux-btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .aux-func-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 18px 12px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 12px;
+            transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s;
+            font-family: var(--font-body);
+        }
+
+        .aux-func-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            background: var(--bg-surface-hover);
+            transform: translateY(-1px);
+        }
+
+        .aux-func-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+        }
+
+        .aux-func-btn:hover .aux-func-icon {
+            color: var(--accent-primary);
+        }
+
+        .aux-func-label {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        /* ============ 右侧可折叠侧边栏 ============ */
+        .sidebar-collapsible {
+            display: flex;
+            flex-direction: row;
+            min-height: 0;
+            overflow: hidden;
+            transition: width 0.3s ease;
+            width: 480px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-collapsible.collapsed {
+            width: 40px;
+        }
+
+        .sidebar-toggle-bar {
+            width: 40px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 12px;
+            background: var(--glass);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+        }
+
+        .sidebar-toggle-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 8px 4px;
+            border-radius: 8px;
+            transition: color 0.2s, background 0.2s;
+            writing-mode: horizontal-tb;
+        }
+
+        .sidebar-toggle-btn:hover {
+            color: var(--text-primary);
+            background: var(--glass);
+        }
+
+        .sidebar-toggle-btn svg {
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-collapsible:not(.collapsed) .sidebar-toggle-btn svg {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-toggle-label {
+            font-size: 10px;
+            font-family: var(--font-body);
+            line-height: 1.3;
+            width: 1em;
+            word-break: break-all;
+            text-align: center;
+        }
+
+        .sidebar-inner {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+            min-height: 0;
+            overflow: hidden;
+            padding-left: 8px;
+            transition: opacity 0.2s, width 0.3s;
+        }
+
+        .sidebar-collapsible.collapsed .sidebar-inner {
+            opacity: 0;
+            pointer-events: none;
+            width: 0;
+            padding-left: 0;
+        }
+
+        /* 日历在侧边栏中的样式 */
+        .sidebar-inner .calendar-section {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .sidebar-inner .sidebar-group {
             display: flex;
             flex-direction: column;
             gap: 12px;
             min-height: 0;
             overflow: hidden;
+            flex: 1;
+        }
+
+        /* 日程提案样式（主区域） */
+        .agent-main-area .schedule-proposal {
+            margin-top: 8px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px;
+            background: var(--glass);
+            backdrop-filter: blur(8px);
         }
 
         .time-sidebar {
             width: 100%;
             flex: 1;
             min-height: 0;
-            background: var(--bg-surface);
+            background: var(--glass-sidebar);
+            backdrop-filter: blur(var(--glass-sidebar-blur));
+            -webkit-backdrop-filter: blur(var(--glass-sidebar-blur));
+            border: 1px solid var(--glass-sidebar-border);
             padding: 16px;
             overflow: hidden;
             display: flex;
@@ -4852,7 +5909,10 @@
             width: 100%;
             flex: 1;
             min-height: 0;
-            background: var(--bg-surface);
+            background: var(--glass-sidebar);
+            backdrop-filter: blur(var(--glass-sidebar-blur));
+            -webkit-backdrop-filter: blur(var(--glass-sidebar-blur));
+            border: 1px solid var(--glass-sidebar-border);
             padding: 16px;
             overflow: hidden;
             display: flex;
@@ -5485,6 +6545,88 @@
                 font-size: 13px;
             }
         }
+
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+        .toast-item {
+            pointer-events: auto;
+            padding: 12px 20px;
+            border-radius: 14px;
+            color: #fff;
+            font-family: var(--primitive-font-body);
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            animation: toastSlideIn 0.35s var(--easing);
+            max-width: 380px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toast-item.success { background: rgba(46, 160, 67, 0.9); }
+        .toast-item.error { background: rgba(207, 34, 46, 0.9); }
+        .toast-item.warning { background: rgba(191, 135, 0, 0.9); }
+        .toast-item.info { background: rgba(49, 109, 202, 0.9); }
+        @keyframes toastSlideIn {
+            from { opacity: 0; transform: translateX(40px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        .confirm-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10001;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        .confirm-dialog {
+            background: var(--bg-surface);
+            border-radius: 18px;
+            padding: 28px 24px 22px;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-subtle);
+            animation: confirmSlideIn 0.3s var(--easing);
+        }
+        @keyframes confirmSlideIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .confirm-dialog .confirm-msg { margin-bottom: 20px; font-size: 14px; color: var(--text-primary); line-height: 1.6; }
+        .confirm-dialog .confirm-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+        .confirm-dialog .confirm-btn {
+            padding: 10px 22px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: var(--primitive-font-body);
+            transition: all 0.2s var(--easing);
+        }
+        .confirm-dialog .confirm-btn-cancel { background: var(--bg-surface-hover); color: var(--text-secondary); }
+        .confirm-dialog .confirm-btn-ok { background: var(--text-hero); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .confirm-dialog .confirm-btn:hover { transform: translateY(-1px); }
+        .confirm-dialog .confirm-btn:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
@@ -5606,135 +6748,197 @@
             </div>
             <div class="brand">PlanMosaic</div>
             <div class="header-actions">
-                <button class="app-btn wordmosaic-btn" onclick="openWordMosaic()" title="WordMosaic 词汇学习">
-                    <div class="app-btn-icon">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                            <line x1="9" y1="7" x2="15" y2="7"/>
-                            <line x1="9" y1="11" x2="15" y2="11"/>
-                        </svg>
-                    </div>
-                    <span class="app-btn-label">词汇学习</span>
-                </button>
-                <button class="app-btn deep-planning-btn" onclick="openDeepPlanningModal()" title="深度规划">
-                    <div class="app-btn-icon">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                            <path d="M2 12h20"/>
-                        </svg>
-                    </div>
-                    <span class="app-btn-label">深度规划</span>
-                </button>
+                
             </div>
         </header>
 
-        <!-- Big Tasks Bar -->
-        <div class="big-tasks-bar" id="bigTasksBar">
-            <div class="big-tasks-header">
-                <button class="big-tasks-toggle" id="bigTasksToggle" onclick="toggleBigTasks()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </button>
-                <span class="big-tasks-title">任务栏</span>
-            </div>
-            <div class="big-tasks-content" id="bigTasksContent">
-                <!-- 大任务卡片将通过JS动态生成 -->
-            </div>
-            <div class="big-task-add">
-                <button class="big-task-add-btn" onclick="openBigTaskModal()">+ 添加</button>
-            </div>
-            <div class="schedule-actions-bar">
-                <button class="schedule-action-btn" onclick="openScheduleEditor()">课表编辑</button>
-            </div>
-        </div>
-
-        <!-- Big Task Modal -->
-        <div class="big-task-modal" id="bigTaskModal">
-            <div class="big-task-modal-content">
-                <div class="big-task-modal-title" id="bigTaskModalTitle">添加大任务</div>
-                <div class="big-task-form-group">
-                    <label class="big-task-form-label">任务类型</label>
-                    <div class="big-task-type-options">
-                        <label class="big-task-type-option">
-                            <input type="radio" name="bigTaskType" value="short" checked onchange="updateBigTaskTypeUI()">
-                            <span class="big-task-type-label">短期任务</span>
-                        </label>
-                        <label class="big-task-type-option">
-                            <input type="radio" name="bigTaskType" value="long" onchange="updateBigTaskTypeUI()">
-                            <span class="big-task-type-label">长期任务</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="big-task-form-group">
-                    <label class="big-task-form-label">任务名称</label>
-                    <input type="text" class="big-task-form-input" id="bigTaskName" placeholder="请输入任务名称">
-                </div>
-                <div class="big-task-form-group">
-                    <label class="big-task-form-label" id="bigTaskEstimatedLabel">预计用时（分钟）</label>
-                    <input type="number" class="big-task-form-input" id="bigTaskEstimated" placeholder="例如: 120" min="1">
-                </div>
-                <div class="big-task-form-group">
-                    <label class="big-task-form-label">截止日期 (DDL)</label>
-                    <input type="date" class="big-task-form-input" id="bigTaskDdl">
-                </div>
-                <div class="big-task-form-group" id="bigTaskStartDateGroup" style="display: none;">
-                    <label class="big-task-form-label">起始日期（选填）</label>
-                    <input type="date" class="big-task-form-input" id="bigTaskStartDate">
-                </div>
-                <div class="big-task-form-group">
-                    <label class="big-task-form-label">备注（选填）</label>
-                    <textarea class="big-task-form-input" id="bigTaskNote" placeholder="添加备注信息..." rows="2" style="resize: vertical;"></textarea>
-                </div>
-                <div class="big-task-modal-actions">
-                    <button class="btn-secondary" onclick="closeBigTaskModal()">取消</button>
-                    <button class="btn-primary" onclick="saveBigTask()">保存</button>
-                </div>
-            </div>
-        </div>
-
         <div class="main-layout">
-            <div class="calendar-section">
-                <div class="calendar-nav">
-                    <div class="nav-buttons left">
-                        <button class="nav-btn" onclick="previousMonth()" title="上一周">←</button>
+            <!-- Agent 主对话区域 -->
+            <div class="agent-main-area" id="agentMainArea">
+                <div class="agent-main-header">
+                    <div class="agent-main-avatar">
+                        <img id="mosaMainAvatar" src="Image/image1.png" alt="Mosa" class="agent-main-avatar-img">
                     </div>
-                    <div class="current-month" id="currentMonth"></div>
-                    <div class="nav-buttons right">
-                        <button class="nav-btn" onclick="nextMonth()" title="下一周">→</button>
-                        <button class="nav-btn view-toggle-btn" onclick="toggleViewMode()" title="切换到月视图">周</button>
+                    <div class="agent-main-brand">
+                        <span class="agent-main-name">Mosa</span>
+                        <span class="agent-main-subtitle">智能日程助手</span>
                     </div>
                 </div>
+                <div class="agent-main-chat" id="agentMainChatContainer">
+                    <!-- 消息由 JS 动态填充 -->
+                </div>
+                <div class="typing-indicator main-typing" id="mainTypingIndicator">
+                    <span></span><span></span><span></span>
+                </div>
+                <div class="agent-main-input-area">
+                    <div class="agent-main-input-wrapper">
+                        <label class="agent-main-image-btn" id="agentMainImageBtn" title="上传图片">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            <input type="file" accept="image/*" onchange="handleImageUpload(event)" style="display:none;">
+                        </label>
+                        <textarea
+                            class="agent-main-input"
+                            id="agentMainInput"
+                            placeholder="和 Mosa 聊聊你的日程安排吧..."
+                            rows="1"
+                            onkeydown="handleAgentKeyPress(event)"
+                        ></textarea>
+                        <button class="agent-main-send-btn" id="agentMainSendBtn" onclick="sendAgentMessage()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="agent-main-image-preview" id="agentMainImagePreview"></div>
+                </div>
+            </div>
 
-                <div class="calendar-grid" id="calendarGrid">
-                    <div style="grid-column: 1 / -1;" class="empty-state">
-                        <p class="empty-state-text">加载中...</p>
+            <div class="right-panel-bar" id="rightPanelBar">
+                <button class="right-panel-btn" data-panel="task" onclick="toggleRightPanel('task')" title="任务栏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                        <rect x="3" y="3" width="18" height="18" rx="3"/>
+                        <line x1="8" y1="9" x2="16" y2="9"/>
+                        <line x1="8" y1="13" x2="16" y2="13"/>
+                        <line x1="8" y1="17" x2="12" y2="17"/>
+                    </svg>
+                    <span class="right-panel-btn-label">任务栏</span>
+                </button>
+                <button class="right-panel-btn" data-panel="schedule" onclick="toggleRightPanel('schedule')" title="日程">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                        <rect x="7" y="13" width="3" height="3" rx="0.5"/>
+                        <rect x="14" y="13" width="3" height="3" rx="0.5"/>
+                    </svg>
+                    <span class="right-panel-btn-label">日程</span>
+                </button>
+                <button class="right-panel-btn" data-panel="plan" onclick="toggleRightPanel('plan')" title="规划">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        <path d="M2 12h20"/>
+                    </svg>
+                    <span class="right-panel-btn-label">规划</span>
+                </button>
+                <button class="right-panel-btn" data-panel="aux" onclick="toggleRightPanel('aux')" title="附功能">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                        <circle cx="12" cy="12" r="3"/>
+                        <line x1="12" y1="2" x2="12" y2="9"/>
+                        <line x1="12" y1="15" x2="12" y2="22"/>
+                        <line x1="2" y1="12" x2="9" y2="12"/>
+                        <line x1="15" y1="12" x2="22" y2="12"/>
+                    </svg>
+                    <span class="right-panel-btn-label">附功能</span>
+                </button>
+            </div>
+
+            <div class="right-panel" id="taskPanelRight">
+                <div class="right-panel-header">
+                    <span class="right-panel-title">任务栏</span>
+                    <button class="right-panel-close" onclick="toggleRightPanel('task')">&times;</button>
+                </div>
+                <div class="right-panel-body" id="taskPanelBody">
+                    <div class="big-tasks-list" id="bigTasksList">
+                        <div class="empty-state">暂无大任务</div>
+                    </div>
+                    <button class="right-panel-add-btn" onclick="openBigTaskModal()">+ 添加大任务</button>
+                </div>
+            </div>
+
+            <div class="right-panel" id="planPanelRight">
+                <div class="right-panel-header">
+                    <span class="right-panel-title">深度规划</span>
+                    <button class="right-panel-close" onclick="toggleRightPanel('plan')">&times;</button>
+                </div>
+                <div class="right-panel-body" id="planPanelBody">
+                    <div class="plan-entry-card" onclick="openDeepPlanningModal()">
+                        <div class="plan-entry-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="32" height="32">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                <path d="M2 12h20"/>
+                            </svg>
+                        </div>
+                        <div class="plan-entry-text">
+                            <div class="plan-entry-name">打开深度规划</div>
+                            <div class="plan-entry-desc">基于日程数据智能生成长期规划方案</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 右侧双卡片区域 -->
-            <div class="sidebar-group">
-                <div class="time-sidebar" id="timeSidebar">
-                    <div class="time-sidebar-header">
-                        <span class="time-sidebar-title">日程安排</span>
-                        <span class="time-sidebar-date" id="timeSidebarDate">--</span>
-                    </div>
-                    <div class="time-sidebar-content" id="timeSidebarContent">
-                        <!-- 内容由JS动态生成 -->
+            <div class="right-panel right-panel-aux" id="auxPanelRight">
+                <div class="right-panel-header">
+                    <span class="right-panel-title">附功能</span>
+                    <button class="right-panel-close" onclick="toggleRightPanel('aux')">&times;</button>
+                </div>
+                <div class="right-panel-body" id="auxPanelBody">
+                    <div class="aux-btn-grid">
+                        <button class="aux-func-btn" onclick="openWordMosaic()" title="词汇学习">
+                            <div class="aux-func-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                                    <line x1="9" y1="7" x2="15" y2="7"/>
+                                    <line x1="9" y1="11" x2="15" y2="11"/>
+                                </svg>
+                            </div>
+                            <span class="aux-func-label">词汇学习</span>
+                        </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- 最右侧任务列表框 -->
-                <div class="task-panel" id="taskPanel">
-                    <div class="task-panel-header">
-                        <span class="task-panel-title">任务列表</span>
-                        <span class="task-panel-date" id="taskPanelDate">--</span>
+            <!-- 右侧可折叠侧边栏 -->
+            <div class="sidebar-collapsible right-panel collapsed" id="sidebarCollapsible" data-panel="schedule">
+                <div class="sidebar-toggle-bar">
+                    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleRightPanel('schedule')" title="展开日程面板">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        <span class="sidebar-toggle-label">日程</span>
+                    </button>
+                </div>
+                <div class="sidebar-inner" id="sidebarInner">
+                    <div class="calendar-section" id="calendarSection">
+                        <div class="calendar-nav">
+                            <div class="nav-buttons left">
+                                <button class="nav-btn" onclick="previousMonth()" title="上一周">←</button>
+                            </div>
+                            <div class="current-month" id="currentMonth"></div>
+                            <div class="nav-buttons right">
+                                <button class="nav-btn" onclick="nextMonth()" title="下一周">→</button>
+                                <button class="nav-btn view-toggle-btn" onclick="toggleViewMode()" title="切换到月视图">周</button>
+                            </div>
+                        </div>
+                        <div class="calendar-grid" id="calendarGrid">
+                            <div style="grid-column: 1 / -1;" class="empty-state">
+                                <p class="empty-state-text">加载中...</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="task-panel-content" id="taskPanelContent">
-                        <!-- 任务由JS动态生成 -->
+                    <div class="sidebar-group">
+                        <div class="time-sidebar" id="timeSidebar">
+                            <div class="time-sidebar-header">
+                                <span class="time-sidebar-title">日程安排</span>
+                                <span class="time-sidebar-date" id="timeSidebarDate">--</span>
+                            </div>
+                            <div class="time-sidebar-content" id="timeSidebarContent"></div>
+                        </div>
+                        <div class="task-panel" id="taskPanel">
+                            <div class="task-panel-header">
+                                <span class="task-panel-title">任务列表</span>
+                                <span class="task-panel-date" id="taskPanelDate">--</span>
+                            </div>
+                            <div class="task-panel-content" id="taskPanelContent"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5746,6 +6950,50 @@
         <span class="page-footer-brand">PlanMosaic</span>
         <span class="page-footer-divider"></span>
         <span class="page-footer-org">by Mosaïque</span>
+    </div>
+
+    <!-- Big Task Modal -->
+    <div class="big-task-modal" id="bigTaskModal">
+        <div class="big-task-modal-content">
+            <div class="big-task-modal-title" id="bigTaskModalTitle">添加大任务</div>
+            <div class="big-task-form-group">
+                <label class="big-task-form-label">任务类型</label>
+                <div class="big-task-type-options">
+                    <label class="big-task-type-option">
+                        <input type="radio" name="bigTaskType" value="short" checked onchange="updateBigTaskTypeUI()">
+                        <span class="big-task-type-label">短期任务</span>
+                    </label>
+                    <label class="big-task-type-option">
+                        <input type="radio" name="bigTaskType" value="long" onchange="updateBigTaskTypeUI()">
+                        <span class="big-task-type-label">长期任务</span>
+                    </label>
+                </div>
+            </div>
+            <div class="big-task-form-group">
+                <label class="big-task-form-label">任务名称 <span style="color:#cf222e;">*</span></label>
+                <input type="text" class="big-task-form-input" id="bigTaskName" placeholder="请输入任务名称">
+            </div>
+            <div class="big-task-form-group">
+                <label class="big-task-form-label" id="bigTaskEstimatedLabel">预计用时（分钟） <span style="color:#cf222e;">*</span></label>
+                <input type="number" class="big-task-form-input" id="bigTaskEstimated" placeholder="例如: 120" min="1">
+            </div>
+            <div class="big-task-form-group">
+                <label class="big-task-form-label">截止日期 (DDL) <span style="color:#cf222e;">*</span></label>
+                <input type="date" class="big-task-form-input" id="bigTaskDdl">
+            </div>
+            <div class="big-task-form-group" id="bigTaskStartDateGroup" style="display: none;">
+                <label class="big-task-form-label">起始日期（选填）</label>
+                <input type="date" class="big-task-form-input" id="bigTaskStartDate">
+            </div>
+            <div class="big-task-form-group">
+                <label class="big-task-form-label">备注（选填）</label>
+                <textarea class="big-task-form-input" id="bigTaskNote" placeholder="添加备注信息..." rows="2" style="resize: vertical;"></textarea>
+            </div>
+            <div class="big-task-modal-actions">
+                <button class="btn-secondary" onclick="closeBigTaskModal()">取消</button>
+                <button class="btn-primary" onclick="saveBigTask()">保存</button>
+            </div>
+        </div>
     </div>
 
     <!-- Day Detail Modal -->
@@ -5919,8 +7167,8 @@
         </div>
     </div>
 
-    <!-- Agent Modal -->
-    <div class="agent-modal active" id="agentModal">
+    <!-- Agent 迷你对话小窗 -->
+    <div class="agent-modal" id="agentModal">
         <div class="agent-content" id="agentContent">
             <div class="agent-edge-drag top" id="agentEdgeTop"></div>
             <div class="agent-edge-drag bottom" id="agentEdgeBottom"></div>
@@ -5961,6 +7209,11 @@
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                             <polyline points="12 5 19 12 12 19"></polyline>
                         </svg>
+                    </button>
+                </div>
+                <div class="agent-react-btn-wrapper">
+                    <button class="agent-react-btn" onclick="generateReActLog()" title="将本次对话翻译为ReAct格式记录">
+                        <span>📋 生成ReAct记录</span>
                     </button>
                 </div>
                 <div class="agent-image-preview" id="agentImagePreview"></div>
@@ -6080,7 +7333,8 @@
                                 _injectWordMosaicKeyWebview(webview);
                             });
                         }
-                    }).catch(() => {
+                    }).catch((e) => {
+                        console.warn('获取WordMosaic路径失败，使用默认路径:', e);
                         webview.src = '../WordMosaic/index.html';
                         webview.addEventListener('dom-ready', () => {
                             _injectWordMosaicKeyWebview(webview);
@@ -6129,21 +7383,14 @@
         function _injectWordMosaicKeyWebview(webview) {
             const key = _getPlanMosaicApiKey();
             if (key) {
-                webview.executeJavaScript(`
-                    try {
-                        localStorage.setItem('vocab_deepseek_api_key', '${key.replace(/'/g, "\\'")}');
-                        if (typeof agentManager !== 'undefined') {
-                            agentManager.saveApiKey('${key.replace(/'/g, "\\'")}');
-                            if (typeof app !== 'undefined' && app.updateChatStatus) app.updateChatStatus();
-                        }
-                    } catch(e) { console.error('[WordMosaic] Key injection error:', e); }
-                `).catch(() => {});
+                try {
+                    webview.send('set-api-key', { key: key });
+                } catch(e) { console.warn('WordMosaic key注入失败:', e); }
             }
-            // Inject CSS to ensure WordMosaic fills the webview properly
             webview.insertCSS(`
                 .container { max-width: 100% !important; min-height: 100vh; }
                 body { margin: 0; }
-            `).catch(() => {});
+            `).catch((e) => { console.warn('WordMosaic CSS注入失败:', e); });
         }
 
         function _injectWordMosaicKeyIframe(iframe) {
@@ -6153,7 +7400,7 @@
                 const win = iframe.contentWindow;
                 if (!win) return;
                 win.postMessage({ type: 'planmosaic-api-key', provider: 'deepseek', key: key }, '*');
-            } catch(e) {}
+            } catch(e) { console.warn('WordMosaic iframe key注入失败:', e); }
         }
 
         // Listen for API key requests from WordMosaic iframe
@@ -6347,10 +7594,11 @@
                 agentContent.classList.remove('dragging');
                 agentContent.classList.add('smooth-transition');
                 
-                agentContent.style.right = '0px';
-                agentContent.style.bottom = '';
-                agentContent.style.top = '50%';
-                agentContent.style.transform = 'translateY(-50%) translateX(calc(100% - 24px))';
+                agentContent.style.right = 'auto';
+                agentContent.style.left = '24px';
+                agentContent.style.bottom = '24px';
+                agentContent.style.top = 'auto';
+                agentContent.style.transform = 'translateX(0) translateY(0)';
             }
 
             function undockPanel(animate = true) {
@@ -6365,6 +7613,7 @@
                 }
                 
                 agentContent.style.top = '';
+                agentContent.style.left = '';
                 agentContent.style.transform = 'translateX(0)';
                 agentContent.style.right = currentRight + 'px';
                 agentContent.style.bottom = currentBottom + 'px';
@@ -6444,22 +7693,21 @@
                 // Use agentDragHandle for undocking too
                 agentContent.addEventListener('mousedown', function(e) {
                     if (!isDocked) return;
-                    // Only start drag from docked state if clicking on non-input areas
-                    if (e.target.closest('.agent-input-area') || e.target.closest('.agent-chat-container') || e.target.closest('.agent-send-btn') || e.target.closest('.agent-image-btn')) {
-                        // Undock the panel without starting drag, so user can interact with content
-                        undockPanel(true);
-                        return;
-                    }
+                    // Click on docked panel (not drag) should undock it
                     startDragFromDocked(e);
                 });
                 agentContent.addEventListener('touchstart', function(e) {
                     if (!isDocked) return;
-                    if (e.target.closest('.agent-input-area') || e.target.closest('.agent-chat-container') || e.target.closest('.agent-send-btn') || e.target.closest('.agent-image-btn')) {
-                        undockPanel(true);
-                        return;
-                    }
                     startDragFromDocked(e);
                 }, { passive: false });
+
+                // Click on docked panel without dragging should open the panel
+                agentContent.addEventListener('click', function(e) {
+                    if (!isDocked) return;
+                    if (!hasMoved) {
+                        undockPanel(true);
+                    }
+                });
 
                 // Auto-correct position when panel grows (e.g. during streaming)
                 const resizeObserver = new ResizeObserver(() => {
@@ -7155,6 +8403,16 @@
             };
         })();
 
+        function _flushDebouncedCloudSave() {
+            var allData = DataManager.collectAll();
+            DataManager.saveLocal(allData);
+            DataManager.saveCloud(allData);
+        }
+
+        window.addEventListener('beforeunload', function() {
+            _flushDebouncedCloudSave();
+        });
+
         function saveAllDataDebounced() {
             const allData = DataManager.collectAll();
             DataManager.saveLocal(allData);
@@ -7278,7 +8536,12 @@
             initTheme();
             const authenticated = await AuthModule.init();
             if (authenticated) {
-                await loadDataAndSync();
+                try {
+                    await loadDataAndSync();
+                } catch (e) {
+                    console.error('数据加载失败:', e);
+                    showToast('数据加载失败，请刷新页面重试', 'error');
+                }
                 startApp();
             } else {
                 // 未登录也要加载本地数据（离线保底）
@@ -7616,6 +8879,7 @@
                 saveAllDataDebounced();
             } catch (error) {
                 console.error('保存失败:', error);
+                showToast('保存失败，请重试', 'error');
             }
         }
 
@@ -7981,10 +9245,10 @@
                 sortedSlots.forEach((slot, index) => {
                     html += `
                         <div class="time-slot">
-                            <div class="slot-time">${slot.time}</div>
+                            <div class="slot-time">${escapeHtml(slot.time)}</div>
                             <div class="slot-content">
-                                <div class="slot-activity">${slot.activity}</div>
-                                ${slot.detail ? `<div class="slot-detail">${slot.detail}</div>` : ''}
+                                <div class="slot-activity">${escapeHtml(slot.activity)}</div>
+                                ${slot.detail ? `<div class="slot-detail">${escapeHtml(slot.detail)}</div>` : ''}
                             </div>
                             ${isEditMode ? `<button class="slot-delete" onclick="deleteSlot(${index})">×</button>` : ''}
                         </div>
@@ -8005,11 +9269,11 @@
                             <button type="button" class="task-checkbox-view ${task.completed ? 'checked' : ''}" onclick="toggleTaskCompleteView(${index})">
                                 ${task.completed ? '✓' : ''}
                             </button>
-                            <div class="task-name-view">${task.name || ''}</div>
-                            <div class="task-time-view">预计: ${task.estimated ? task.estimated + '分钟' : '-'}</div>
-                            <div class="task-time-view ${task.actual ? 'actual' : ''}">实际: ${task.actual ? task.actual + '分钟' : (task.completed ? '-' : '-')}</div>
+                            <div class="task-name-view">${escapeHtml(task.name || '')}</div>
+                            <div class="task-time-view">预计: ${escapeHtml(task.estimated ? task.estimated + '分钟' : '-')}</div>
+                            <div class="task-time-view ${task.actual ? 'actual' : ''}">实际: ${escapeHtml(task.actual ? task.actual + '分钟' : (task.completed ? '-' : '-'))}</div>
                         </div>
-                        ${task.note ? `<div class="task-note-view" style="font-size: 11px; color: var(--text-muted); padding: 2px 0 2px 36px;">备注: ${task.note}</div>` : ''}
+                        ${task.note ? `<div class="task-note-view" style="font-size: 11px; color: var(--text-muted); padding: 2px 0 2px 36px;">备注: ${escapeHtml(task.note)}</div>` : ''}
                     `;
                 });
                 html += '</div>';
@@ -8053,9 +9317,9 @@
                             <span class="time-separator">—</span>
                             ${createTimeInputs('end', timeParts.end)}
                         </div>
-                        <input type="text" class="slot-activity-input" value="${slot.activity}" placeholder="活动内容">
+                        <input type="text" class="slot-activity-input" value="${escapeHtml(slot.activity)}" placeholder="活动内容">
                         <button type="button" class="slot-delete" onclick="removeSlot(this)">×</button>
-                        <input type="text" class="slot-detail-input" value="${slot.detail || ''}" placeholder="备注" style="grid-column: 2 / -1; margin-top: 4px;">
+                        <input type="text" class="slot-detail-input" value="${escapeHtml(slot.detail || '')}" placeholder="备注" style="grid-column: 2 / -1; margin-top: 4px;">
                     </div>
                 `;
             }).join('');
@@ -8064,21 +9328,21 @@
                 const hasNameAndEstimate = task.name && task.estimated;
                 return `
                     <div class="task-item ${task.completed ? 'completed' : ''} ${hasNameAndEstimate ? 'has-complete-btn' : ''}" data-index="${index}">
-                        <input type="text" class="task-name" value="${task.name || ''}" placeholder="任务名称" oninput="checkTaskCompleteBtn(this)">
+                        <input type="text" class="task-name" value="${escapeHtml(task.name || '')}" placeholder="任务名称" oninput="checkTaskCompleteBtn(this)">
                         <div class="task-estimated-wrapper">
-                            <input type="number" class="task-estimated" value="${task.estimated || ''}" placeholder="预计" min="1" oninput="checkTaskCompleteBtn(this)">
+                            <input type="number" class="task-estimated" value="${escapeHtml(task.estimated || '')}" placeholder="预计" min="1" oninput="checkTaskCompleteBtn(this)">
                             <span>分钟</span>
                         </div>
                         ${hasNameAndEstimate ?
                             (task.completed ?
                                 `<button type="button" class="task-complete-btn completed" onclick="handleTaskCompleteClick(this)">
-                                    已完成 ${task.actual ? task.actual + '分' : '✓'}
+                                    已完成 ${task.actual ? escapeHtml(task.actual + '分') : '✓'}
                                 </button>` :
                                 `<button type="button" class="task-complete-btn" onclick="handleTaskCompleteClick(this)">完成</button>`
                             ) : ''}
                         <button type="button" class="task-delete" onclick="removeTask(this)">×</button>
-                        <input type="hidden" class="task-actual" value="${task.actual || ''}">
-                        <input type="text" class="task-note" value="${task.note || ''}" placeholder="备注（选填）" style="grid-column: 1 / -1; margin-top: 4px;">
+                        <input type="hidden" class="task-actual" value="${escapeHtml(task.actual || '')}">
+                        <input type="text" class="task-note" value="${escapeHtml(task.note || '')}" placeholder="备注（选填）" style="grid-column: 1 / -1; margin-top: 4px;">
                     </div>
                 `;
             }).join('');
@@ -8088,7 +9352,7 @@
                     <div class="edit-form-main">
                         <div class="form-group">
                             <label class="form-label">主题</label>
-                            <input type="text" class="form-input" id="editTitle" value="${schedule.title || ''}" placeholder="当日主题">
+                            <input type="text" class="form-input" id="editTitle" value="${escapeHtml(schedule.title || '')}" placeholder="当日主题">
                         </div>
                         <div class="form-group">
                             <label class="form-label">时间安排</label>
@@ -8233,17 +9497,21 @@
         }
 
         function removeSlot(btn) {
-            const slot = btn.closest('.time-slot-edit');
-            slot.remove();
+            showConfirmToast('确定要删除这个时间段吗？', function() {
+                const slot = btn.closest('.time-slot-edit');
+                slot.remove();
+            });
         }
 
         function deleteSlot(index) {
-            const schedule = window.scheduleData.schedules[currentEditDate];
-            if (schedule && schedule.timeSlots) {
-                schedule.timeSlots.splice(index, 1);
-                saveScheduleDirectly(schedule);
-                renderModalBody(schedule);
-            }
+            showConfirmToast('确定要删除这个时间段吗？', function() {
+                const schedule = window.scheduleData.schedules[currentEditDate];
+                if (schedule && schedule.timeSlots) {
+                    schedule.timeSlots.splice(index, 1);
+                    saveScheduleDirectly(schedule);
+                    renderModalBody(schedule);
+                }
+            });
         }
 
         // ============ 任务相关函数 ============
@@ -8269,8 +9537,10 @@
         }
 
         function removeTask(btn) {
-            const task = btn.closest('.task-item');
-            task.remove();
+            showConfirmToast('确定要删除这个任务吗？', function() {
+                const task = btn.closest('.task-item');
+                task.remove();
+            });
         }
 
         // 检查是否显示完成按钮
@@ -8380,6 +9650,11 @@
         }
 
         async function saveSchedule() {
+            var btn = document.querySelector('#modalActions .btn:not(.btn-outline)');
+            var originalText = '';
+            if (btn) { btn.disabled = true; originalText = btn.textContent; btn.textContent = '保存中...'; }
+
+            try {
             const title = document.getElementById('editTitle').value;
 
             const slotElements = document.querySelectorAll('.time-slot-edit');
@@ -8390,16 +9665,13 @@
                 const activity = el.querySelector('.slot-activity-input').value;
                 const detail = el.querySelector('.slot-detail-input').value;
 
-                // 保存时间段：只要有时间配置就保存（不再强制要求活动内容）
                 if (timeWrapper) {
                     const time = getTimeSlotString(timeWrapper);
-                    // 如果活动内容为空，使用默认值
                     const activityText = activity.trim() || '未命名活动';
                     timeSlots.push({ time, activity: activityText, detail });
                 }
             });
 
-            // 获取任务列表
             const taskElements = document.querySelectorAll('.task-item');
             const tasks = [];
 
@@ -8433,6 +9705,9 @@
             isEditMode = false;
             openModal(currentEditDate);
             renderCalendar();
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
+            }
         }
 
         async function saveScheduleDirectly(schedule) {
@@ -8484,6 +9759,10 @@
             if (e.key === 'Escape') {
                 closeModal();
                 closeAgentModal();
+                closeBigTaskModal();
+                var atm = document.getElementById('actualTimeModal');
+                if (atm) atm.classList.remove('active');
+                closeScheduleEditor();
             }
         });
 
@@ -8503,6 +9782,33 @@
                 });
             }
 
+            var bigTaskModal = document.getElementById('bigTaskModal');
+            if (bigTaskModal) {
+                bigTaskModal.addEventListener('click', function(e) {
+                    if (e.target === bigTaskModal) {
+                        closeBigTaskModal();
+                    }
+                });
+            }
+
+            var actualTimeModal = document.getElementById('actualTimeModal');
+            if (actualTimeModal) {
+                actualTimeModal.addEventListener('click', function(e) {
+                    if (e.target === actualTimeModal) {
+                        cancelActualTime();
+                    }
+                });
+            }
+
+            var scheduleEditorModal = document.getElementById('scheduleEditorModal');
+            if (scheduleEditorModal) {
+                scheduleEditorModal.addEventListener('click', function(e) {
+                    if (e.target === scheduleEditorModal) {
+                        closeScheduleEditor();
+                    }
+                });
+            }
+
             // 初始化主题
             initTheme();
         });
@@ -8514,6 +9820,10 @@
             const avatar = document.getElementById('mosaAvatar');
             if (avatar) {
                 avatar.src = theme === 'dark' ? 'Image/image2.png' : 'Image/image1.png';
+            }
+            const mainAvatar = document.getElementById('mosaMainAvatar');
+            if (mainAvatar) {
+                mainAvatar.src = theme === 'dark' ? 'Image/image2.png' : 'Image/image1.png';
             }
         }
 
@@ -8643,11 +9953,11 @@
 
         function showApiKeyMessage(provider, message, isError = false) {
             const msgEl = document.getElementById(`${provider}-message`);
-            msgEl.innerHTML = message;
+            msgEl.textContent = message;
             msgEl.className = `api-key-message ${isError ? 'error' : 'success'}`;
             
             setTimeout(() => {
-                msgEl.innerHTML = '';
+                msgEl.textContent = '';
                 msgEl.className = 'api-key-message';
             }, 5000);
         }
@@ -8812,15 +10122,16 @@
 
         // 切换大任务栏展开/收起
         function toggleBigTasks() {
-            const bar = document.getElementById('bigTasksBar');
-            const toggle = document.getElementById('bigTasksToggle');
-            bar.classList.toggle('collapsed');
-            toggle.classList.toggle('collapsed');
+            toggleRightPanel('task');
         }
 
         // 打开大任务编辑弹窗
         function openBigTaskModal(index = null) {
             editingBigTaskIndex = index;
+            var allInputs = document.querySelectorAll('#bigTaskModal .big-task-form-input.error');
+            allInputs.forEach(function(el) { el.classList.remove('error'); });
+            var allErrors = document.querySelectorAll('#bigTaskModal .form-error-text');
+            allErrors.forEach(function(el) { el.remove(); });
             const modal = document.getElementById('bigTaskModal');
             const title = document.getElementById('bigTaskModalTitle');
             const nameInput = document.getElementById('bigTaskName');
@@ -8887,6 +10198,11 @@
 
         // 保存大任务
         async function saveBigTask() {
+            var btn = document.querySelector('.big-task-modal-actions .btn-primary');
+            var originalText = '';
+            if (btn) { btn.disabled = true; originalText = btn.textContent; btn.textContent = '保存中...'; }
+
+            try {
             const name = document.getElementById('bigTaskName').value.trim();
             const estimated = document.getElementById('bigTaskEstimated').value;
             const ddl = document.getElementById('bigTaskDdl').value;
@@ -8895,8 +10211,57 @@
             const type = document.querySelector('input[name="bigTaskType"]:checked').value;
 
             if (!name || !estimated || !ddl) {
-                alert('请填写任务名称、预计用时和截止日期');
-                return;
+                var hasError = false;
+
+                var nameInput = document.getElementById('bigTaskName');
+                if (!name) {
+                    nameInput.classList.add('error');
+                    var ng = nameInput.closest('.big-task-form-group');
+                    var ne = ng.querySelector('.form-error-text');
+                    if (!ne) { ne = document.createElement('div'); ne.className = 'form-error-text'; ng.appendChild(ne); }
+                    ne.textContent = '请填写任务名称';
+                    hasError = true;
+                } else {
+                    nameInput.classList.remove('error');
+                    var nge = nameInput.closest('.big-task-form-group');
+                    var nde = nge.querySelector('.form-error-text');
+                    if (nde) nde.remove();
+                }
+
+                var estimatedInput = document.getElementById('bigTaskEstimated');
+                if (!estimated) {
+                    estimatedInput.classList.add('error');
+                    var eg = estimatedInput.closest('.big-task-form-group');
+                    var ee = eg.querySelector('.form-error-text');
+                    if (!ee) { ee = document.createElement('div'); ee.className = 'form-error-text'; eg.appendChild(ee); }
+                    ee.textContent = '请填写预计用时';
+                    hasError = true;
+                } else {
+                    estimatedInput.classList.remove('error');
+                    var ege = estimatedInput.closest('.big-task-form-group');
+                    var ede = ege.querySelector('.form-error-text');
+                    if (ede) ede.remove();
+                }
+
+                var ddlInput = document.getElementById('bigTaskDdl');
+                if (!ddl) {
+                    ddlInput.classList.add('error');
+                    var dg = ddlInput.closest('.big-task-form-group');
+                    var de = dg.querySelector('.form-error-text');
+                    if (!de) { de = document.createElement('div'); de.className = 'form-error-text'; dg.appendChild(de); }
+                    de.textContent = '请选择截止日期';
+                    hasError = true;
+                } else {
+                    ddlInput.classList.remove('error');
+                    var dge = ddlInput.closest('.big-task-form-group');
+                    var dde = dge.querySelector('.form-error-text');
+                    if (dde) dde.remove();
+                }
+
+                if (hasError) {
+                    if (btn) { btn.disabled = false; btn.textContent = originalText; }
+                    return;
+                }
             }
 
             const task = {
@@ -8911,27 +10276,28 @@
             };
 
             if (editingBigTaskIndex !== null) {
-                // 编辑现有任务
                 task.completed = bigTasks[editingBigTaskIndex].completed;
                 task.createdAt = bigTasks[editingBigTaskIndex].createdAt;
                 bigTasks[editingBigTaskIndex] = task;
             } else {
-                // 新增任务
                 bigTasks.push(task);
             }
 
             await saveBigTasks();
             renderBigTasks();
             closeBigTaskModal();
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
+            }
         }
 
         // 删除大任务
         async function deleteBigTask(index) {
-            if (confirm('确定要删除这个大任务吗？')) {
+            showConfirmToast('确定要删除这个大任务吗？', async function() {
                 bigTasks.splice(index, 1);
                 await saveBigTasks();
                 renderBigTasks();
-            }
+            });
         }
 
         // 切换大任务完成状态
@@ -8954,7 +10320,7 @@
 
         // 渲染大任务列表
         function renderBigTasks() {
-            const container = document.getElementById('bigTasksContent');
+            const container = document.getElementById('bigTasksList');
             if (!container) return;
 
             const activeTasks = bigTasks.filter(task => !task.completed);
@@ -9009,7 +10375,7 @@
                 return `
                     <div class="big-task-card ${task.completed ? 'completed' : ''}">
                         <span class="big-task-type-badge ${typeClass}">${typeLabel}</span>
-                        <div class="big-task-name">${task.name}</div>
+                        <div class="big-task-name">${escapeHtml(task.name)}</div>
                         <div class="big-task-meta">
                             <span>${estimatedText}</span>
                             <span class="big-task-ddl ${ddlClass}">${dateInfo}</span>
@@ -9108,9 +10474,9 @@
                 html += `
                     <div class="schedule-list-item">
                         <div class="schedule-list-info">
-                            <div class="schedule-list-name">${template.name || '未命名课表'}</div>
+                            <div class="schedule-list-name">${escapeHtml(template.name || '未命名课表')}</div>
                             <div class="schedule-list-meta">
-                                起始: ${startDate} · 共 ${weeks} 周 · 每天 ${timeSlotsCount} 节课
+                                起始: ${escapeHtml(startDate)} · 共 ${weeks} 周 · 每天 ${timeSlotsCount} 节课
                             </div>
                         </div>
                         <div class="schedule-list-actions">
@@ -9175,11 +10541,11 @@
         }
         
         function deleteTemplate(index) {
-            if (confirm('确定要删除这个课表吗？')) {
+            showConfirmToast('确定要删除这个课表吗？', function() {
                 window.scheduleTemplates.splice(index, 1);
                 saveScheduleTemplates();
                 renderScheduleEditorList();
-            }
+            });
         }
         
         function renderTemplateEditor() {
@@ -9198,7 +10564,7 @@
                         <div class="schedule-meta-group">
                             <label class="schedule-meta-label">第一周周一日期</label>
                             <input type="date" class="schedule-meta-input" id="templateStartDate" 
-                                value="${template.startDate || ''}">
+                                value="${escapeHtml(template.startDate || '')}">
                         </div>
                         <div class="schedule-meta-group">
                             <label class="schedule-meta-label">总周数</label>
@@ -9343,7 +10709,7 @@
                     html += `<div class="schedule-cell ${hasCourse}">`;
                     
                     if (cellData.course) {
-                        html += `<span class="course-name">${cellData.course}</span>`;
+                        html += `<span class="course-name">${escapeHtml(cellData.course)}</span>`;
                     }
                     
                     html += '</div></td>';
@@ -9518,7 +10884,7 @@
                     course: courseName.trim(),
                     mergeSpan: cellData.mergeSpan
                 };
-                cellElement.innerHTML = `<span class="course-name">${courseName.trim()}</span>`;
+                cellElement.innerHTML = `<span class="course-name">${escapeHtml(courseName.trim())}</span>`;
                 cellElement.classList.add('has-course');
             }
             
@@ -9609,7 +10975,7 @@
         
         function mergeSelectedCells() {
             if (!isSelectionMergeable()) {
-                alert('只能合并同一列的连续单元格（纵向选择多行）');
+                showToast('只能合并同一列的连续单元格（纵向选择多行）', 'warning');
                 return;
             }
             
@@ -9713,12 +11079,22 @@
         function switchWeekType(type) {
             if (window.currentWeekType === type) return;
             
+            var _continue = function() {
+                window.currentWeekType = type;
+                window.selectedCells = [];
+                renderTemplateEditor();
+            };
+
             if (window.currentWeekType === 'odd' && type === 'even') {
                 const template = window.currentEditingTemplate;
                 if (!template.evenWeekCourses || Object.keys(template.evenWeekCourses).length === 0) {
-                    if (confirm('双周课表为空，是否将单周课表复制到双周？')) {
+                    showConfirmToast('双周课表为空，是否将单周课表复制到双周？', function() {
                         copyOddToEven();
-                    }
+                        _continue();
+                    }, function() {
+                        _continue();
+                    });
+                    return;
                 }
             }
             
@@ -9730,7 +11106,7 @@
         function copyOddToEven() {
             const template = window.currentEditingTemplate;
             template.evenWeekCourses = JSON.parse(JSON.stringify(template.oddWeekCourses || {}));
-            alert('已将单周课表复制到双周');
+            showToast('已将单周课表复制到双周', 'success');
             if (window.currentWeekType === 'even') {
                 renderScheduleTable();
             }
@@ -9765,7 +11141,7 @@
         function removeTimeSlotConfig(index) {
             const template = window.currentEditingTemplate;
             if (template.timeSlots.length <= 1) {
-                alert('至少需要保留一节课');
+                showToast('至少需要保留一节课', 'warning');
                 return;
             }
             template.timeSlots.splice(index, 1);
@@ -9784,6 +11160,11 @@
         }
         
         async function saveCurrentTemplate() {
+            var btn = document.querySelector('.schedule-toolbar-btn.primary');
+            var originalText = '';
+            if (btn && btn.textContent.indexOf('保存') !== -1) { btn.disabled = true; originalText = btn.textContent; btn.textContent = '保存中...'; }
+
+            try {
             const template = window.currentEditingTemplate;
             
             template.name = document.getElementById('templateName').value.trim() || '未命名课表';
@@ -9791,7 +11172,8 @@
             template.totalWeeks = parseInt(document.getElementById('templateTotalWeeks').value) || 16;
             
             if (!template.startDate) {
-                alert('请设置第一周周一的日期');
+                showToast('请设置第一周周一的日期', 'warning');
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
                 return;
             }
             
@@ -9803,8 +11185,11 @@
             }
             
             await saveScheduleTemplates();
-            alert('课表保存成功！');
+            showToast('课表保存成功！', 'success');
             renderScheduleEditorList();
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
+            }
         }
         
         async function saveScheduleTemplates() {
@@ -9839,6 +11224,10 @@
         }
         
         async function activateSchedule() {
+            var btn = document.querySelector('.schedule-toolbar-btn[onclick*="activateSchedule"]');
+            var originalText = '';
+            if (btn) { btn.disabled = true; originalText = btn.textContent; btn.textContent = '启用中...'; }
+
             const template = window.currentEditingTemplate;
             
             template.name = document.getElementById('templateName').value.trim() || '未命名课表';
@@ -9846,12 +11235,14 @@
             template.totalWeeks = parseInt(document.getElementById('templateTotalWeeks').value) || 16;
             
             if (!template.startDate) {
-                alert('请设置第一周周一的日期');
+                showToast('请设置第一周周一的日期', 'warning');
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
                 return;
             }
             
             if (!template.timeSlots || template.timeSlots.length === 0) {
-                alert('请设置时间槽');
+                showToast('请设置时间槽', 'warning');
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
                 return;
             }
             
@@ -9859,13 +11250,25 @@
             const evenCourses = template.evenWeekCourses || {};
             
             if (Object.keys(oddCourses).length === 0 && Object.keys(evenCourses).length === 0) {
-                alert('课表中没有课程，请先添加课程');
+                showToast('课表中没有课程，请先添加课程', 'warning');
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
                 return;
             }
             
-            if (!confirm(`确定要启用课表吗？\n\n这将根据课表设置自动创建 ${template.totalWeeks} 周的课程安排。\n起始日期：${template.startDate}\n总周数：${template.totalWeeks}`)) {
-                return;
-            }
+            var _t = template;
+            var _oc = oddCourses;
+            var _ec = evenCourses;
+            showConfirmToast('确定要启用课表吗？\n\n这将根据课表设置自动创建 ' + _t.totalWeeks + ' 周的课程安排。\n起始日期：' + _t.startDate + '\n总周数：' + _t.totalWeeks, function() {
+                (async function() {
+                    await activateScheduleConfirmed(_t, _oc, _ec);
+                })();
+            }, function() {
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
+            });
+            return;
+        }
+
+        async function activateScheduleConfirmed(template, oddCourses, evenCourses) {
             
             const startDate = new Date(template.startDate);
             const totalWeeks = template.totalWeeks;
@@ -9970,15 +11373,18 @@
                 }
                 saveAllDataDebounced();
 
-                alert(`课表已启用！\n\n共添加了 ${addedCount} 条课程安排。`);
-                
+                showToast('课表已启用！\n\n共添加了 ' + addedCount + ' 条课程安排。', 'success');
+
                 if (typeof renderCalendar === 'function') {
                     renderCalendar();
                 }
             } catch (e) {
                 console.error('启用课表失败:', e);
-                alert('启用课表失败，请重试');
+                showToast('启用课表失败，请重试', 'error');
             }
+
+            var abtn = document.querySelector('.schedule-toolbar-btn[onclick*="activateSchedule"]');
+            if (abtn) { abtn.disabled = false; abtn.textContent = '启用课表'; }
         }
         
         document.addEventListener('DOMContentLoaded', () => {
@@ -9986,7 +11392,83 @@
                 window.isSelecting = false;
             });
         });
+
+        let activePanel = null;
+
+        function toggleRightPanel(panelId) {
+            const panelMap = {
+                'task': 'taskPanelRight',
+                'schedule': 'sidebarCollapsible',
+                'plan': 'planPanelRight',
+                'aux': 'auxPanelRight'
+            };
+
+            const panelEl = document.getElementById(panelMap[panelId]);
+            if (!panelEl) return;
+
+            const isCurrentlyActive = panelEl.classList.contains('expanded') ||
+                (panelId === 'schedule' && !panelEl.classList.contains('collapsed'));
+
+            Object.values(panelMap).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('expanded');
+                }
+            });
+
+            const sidebar = document.getElementById('sidebarCollapsible');
+            if (sidebar) sidebar.classList.add('collapsed');
+
+            document.querySelectorAll('.right-panel-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            if (isCurrentlyActive) {
+                activePanel = null;
+                return;
+            }
+
+            if (panelId === 'schedule') {
+                panelEl.classList.remove('collapsed');
+            } else {
+                panelEl.classList.add('expanded');
+            }
+
+            const btn = document.querySelector('.right-panel-btn[data-panel="' + panelId + '"]');
+            if (btn) btn.classList.add('active');
+
+            activePanel = panelId;
+        }
+
+        function toggleSidebar() {
+            toggleRightPanel('schedule');
+        }
+
+        function openAgentMiniModal() {
+            window.openAgentModal();
+        }
     </script>
+
+    <div class="modal-overlay" id="reactLogModal">
+        <div class="react-log-panel">
+            <div class="react-log-header">
+                <span class="react-log-title">📋 ReAct 推理记录</span>
+                <button class="react-log-close-btn" onclick="closeReActLog()">✕</button>
+            </div>
+            <div class="react-log-content">
+                <pre id="reactLogText" class="react-log-text"></pre>
+            </div>
+            <div class="react-log-actions">
+                <button class="react-log-copy-btn" onclick="copyReActLog()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    一键复制
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 CREATE OR REPLACE FUNCTION upsert_user_data(p_user_id TEXT, p_schedule_data JSON)

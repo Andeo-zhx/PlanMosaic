@@ -1,17 +1,17 @@
 package com.example.planmosaic_android.ui.screens.vocab
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.planmosaic_android.data.remote.AiApiClient
+import com.example.planmosaic_android.AppContainer
+import com.example.planmosaic_android.PlanMosaicApplication
 import com.example.planmosaic_android.data.repository.ScheduleRepository
 import com.example.planmosaic_android.data.repository.VocabRepository
 import com.example.planmosaic_android.model.VocabBook
 import com.example.planmosaic_android.model.VocabProgress
 import com.example.planmosaic_android.model.VocabStats
 import com.example.planmosaic_android.model.VocabWord
-import com.example.planmosaic_android.util.AuthManager
-import com.example.planmosaic_android.util.DataStoreManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -78,11 +78,15 @@ sealed interface VocabEvent {
 // ============ ViewModel ============
 
 class VocabViewModel(application: Application) : AndroidViewModel(application) {
+    companion object {
+        private const val TAG = "VocabViewModel"
+    }
+
     private val _uiState = MutableStateFlow(VocabUiState())
     val uiState: StateFlow<VocabUiState> = _uiState.asStateFlow()
 
-    private val dataStoreManager = DataStoreManager.getInstance(application)
-    private val vocabRepository = VocabRepository(application, dataStoreManager)
+    private val container = AppContainer.from(getApplication<PlanMosaicApplication>())
+    private val vocabRepository = VocabRepository(application, container.dataStoreManager, container.authManager)
 
     init {
         viewModelScope.launch {
@@ -114,7 +118,7 @@ class VocabViewModel(application: Application) : AndroidViewModel(application) {
         // Watch for user switches to clear AI chat history and reload API keys
         viewModelScope.launch {
             var lastUserId: String? = null
-            AuthManager.currentUser.collect { user ->
+            container.authManager.currentUser.collect { user ->
                 val currentUserId = user?.userId
                 if (currentUserId != lastUserId) {
                     lastUserId = currentUserId
@@ -433,13 +437,13 @@ Rules:
 3. End with: {"__summary__":"已提取 N 个词条"}"""
 
                 val apiMessages = listOf(
-                    AiApiClient.textMessage("system", systemPrompt)
+                    container.aiApiClient.textMessage("system", systemPrompt)
                 ) + messages.map { (role, content) ->
-                    AiApiClient.textMessage(role, content)
+                    container.aiApiClient.textMessage(role, content)
                 }
 
                 val fullText = StringBuilder()
-                AiApiClient.chatStream(apiKey, provider, apiMessages).collect { chunk ->
+                container.aiApiClient.chatStream(apiKey, provider, apiMessages).collect { chunk ->
                     fullText.append(chunk)
                     _uiState.update { it.copy(aiStreamingText = fullText.toString()) }
                 }
@@ -455,7 +459,7 @@ Rules:
                             if (word.word.isNotBlank() && word.cn.isNotBlank()) {
                                 extractedWords.add(word)
                             }
-                        } catch (_: Exception) { }
+                        } catch (e: Exception) { Log.w(TAG, "Failed to parse vocab word JSON", e) }
                     }
                 }
 
@@ -512,20 +516,20 @@ Rules:
     // ============ Helpers ============
 
     private suspend fun getApiKey(): String {
-        val userId = AuthManager.userId ?: return ""
-        val repo = ScheduleRepository(dataStoreManager)
+        val userId = container.authManager.userId ?: return ""
+        val repo = ScheduleRepository(container.dataStoreManager, container.authManager, container.supabaseClient)
         val data = repo.loadLocalData(userId) ?: return ""
-        return when (data.settings.aiProvider) {
+        return when (data.settings.provider) {
             "qwen" -> data.apiKeys.qwen
             else -> data.apiKeys.deepseek
         }
     }
 
     private suspend fun getProvider(): String {
-        val userId = AuthManager.userId ?: return "deepseek"
-        val repo = ScheduleRepository(dataStoreManager)
+        val userId = container.authManager.userId ?: return "deepseek"
+        val repo = ScheduleRepository(container.dataStoreManager, container.authManager, container.supabaseClient)
         val data = repo.loadLocalData(userId) ?: return "deepseek"
-        return data.settings.aiProvider
+        return data.settings.provider
     }
 
     private fun <T> fisherYatesShuffle(list: List<T>): List<T> {

@@ -1,15 +1,16 @@
 package com.example.planmosaic_android.ui.screens.schedule
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.planmosaic_android.AppContainer
+import com.example.planmosaic_android.PlanMosaicApplication
 import com.example.planmosaic_android.data.repository.ScheduleRepository
 import com.example.planmosaic_android.model.AppData
 import com.example.planmosaic_android.model.DaySchedule
 import com.example.planmosaic_android.model.Task
 import com.example.planmosaic_android.model.TimeSlot
-import com.example.planmosaic_android.util.AuthManager
-import com.example.planmosaic_android.util.DataStoreManager
 import com.example.planmosaic_android.util.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -59,11 +60,16 @@ sealed interface ScheduleEvent {
 
 class ScheduleViewModel(application: Application) : AndroidViewModel(application) {
 
+    companion object {
+        private const val TAG = "ScheduleViewModel"
+    }
+
     private val _uiState = MutableStateFlow(ScheduleUiState())
     val uiState: StateFlow<ScheduleUiState> = _uiState.asStateFlow()
 
-    private val dataStoreManager = DataStoreManager.getInstance(application)
-    private val repository = ScheduleRepository(dataStoreManager)
+    private val container = AppContainer.from(getApplication<PlanMosaicApplication>())
+    private val dataStoreManager = container.dataStoreManager
+    private val repository = ScheduleRepository(container.dataStoreManager, container.authManager, container.supabaseClient)
 
     /** The full app data loaded from local/cloud */
     private var appData: AppData = AppData()
@@ -76,7 +82,7 @@ class ScheduleViewModel(application: Application) : AndroidViewModel(application
         // Watch for login state changes — re-sync when user switches
         viewModelScope.launch {
             var lastUserId: String? = null
-            AuthManager.currentUser.collect { user ->
+            container.authManager.currentUser.collect { user ->
                 val currentUserId = user?.userId
                 if (currentUserId != lastUserId) {
                     lastUserId = currentUserId
@@ -100,11 +106,12 @@ class ScheduleViewModel(application: Application) : AndroidViewModel(application
             _uiState.update { it.copy(isLoading = true) }
 
             // Try full sync if logged in, else show empty
-            val userId = AuthManager.userId
+            val userId = container.authManager.userId
             appData = if (userId != null) {
                 try {
                     repository.fullSync(userId)
-                } catch (_: Exception) {
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to load schedule data", e)
                     repository.loadLocalData(userId) ?: AppData()
                 }
             } else {
@@ -150,7 +157,7 @@ class ScheduleViewModel(application: Application) : AndroidViewModel(application
     /** Persist current appData to local + cloud */
     private fun persistData() {
         viewModelScope.launch {
-            val userId = AuthManager.userId
+            val userId = container.authManager.userId
             if (userId != null) {
                 repository.saveLocalData(userId, appData)
                 repository.saveCloudData(userId, appData)
