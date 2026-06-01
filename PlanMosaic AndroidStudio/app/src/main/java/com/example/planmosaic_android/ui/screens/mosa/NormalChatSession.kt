@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.planmosaic_android.data.repository.AgentRepository
 import com.example.planmosaic_android.model.AppData
 import com.example.planmosaic_android.model.ChatMessage
-import com.example.planmosaic_android.util.DataStoreManager
+import com.example.planmosaic_android.storage.IUserFileStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +13,7 @@ import java.time.Instant
 
 class NormalChatSession(
     private val agentRepository: AgentRepository,
-    private val dataStoreManager: DataStoreManager
+    private val userFileStorage: IUserFileStorage
 ) : ChatSession {
 
     companion object {
@@ -39,7 +39,7 @@ class NormalChatSession(
 
     override suspend fun loadHistory(userId: String) {
         try {
-            val raw = dataStoreManager.loadAgentHistoryForUser(userId)
+            val raw = userFileStorage.loadAgentHistory(userId)
             if (raw != null) {
                 val saved = json.decodeFromString<List<ChatMessage>>(raw)
                 _messages.value = saved
@@ -61,7 +61,7 @@ class NormalChatSession(
                 kotlinx.serialization.serializer<List<ChatMessage>>(),
                 _messages.value
             )
-            dataStoreManager.saveAgentHistoryForUser(userId, jsonStr)
+            userFileStorage.saveAgentHistory(userId, jsonStr)
         } catch (e: Exception) {
             Log.w(TAG, "Failed to save chat history", e)
         }

@@ -4,6 +4,10 @@ import android.app.Application
 import android.util.Log
 import com.example.planmosaic_android.data.remote.AiApiClient
 import com.example.planmosaic_android.data.remote.SupabaseClient
+import com.example.planmosaic_android.storage.DataStorePreferencesStorage
+import com.example.planmosaic_android.storage.FileSystemUserStorage
+import com.example.planmosaic_android.storage.IPreferencesStorage
+import com.example.planmosaic_android.storage.IUserFileStorage
 import com.example.planmosaic_android.util.AuthManager
 import com.example.planmosaic_android.util.DataStoreManager
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +29,7 @@ class PlanMosaicApplication : Application() {
 
         applicationScope.launch {
             try {
-                val token = container.dataStoreManager.token.first()
+                val token = container.preferencesStorage.token.first()
                 if (!token.isNullOrBlank()) {
                     Log.d("PlanMosaicApplication", "Token found in DataStore, length: ${token.length}")
                 } else {
@@ -39,13 +43,18 @@ class PlanMosaicApplication : Application() {
 }
 
 class AppContainer(private val app: Application) {
-    val dataStoreManager = DataStoreManager.getInstance(app)
+    val preferencesStorage: IPreferencesStorage = DataStorePreferencesStorage(app)
+    val userFileStorage: IUserFileStorage = FileSystemUserStorage(app)
     val supabaseClient = SupabaseClient(
         url = BuildConfig.SUPABASE_URL,
         anonKey = BuildConfig.SUPABASE_ANON_KEY
     )
     val aiApiClient = AiApiClient()
-    val authManager = AuthManager(supabaseClient, dataStoreManager)
+    val authManager = AuthManager(supabaseClient, preferencesStorage)
+
+    @Deprecated("Use preferencesStorage and userFileStorage instead", ReplaceWith("preferencesStorage"))
+    val dataStoreManager: DataStoreManager
+        get() = DataStoreManager.getInstance(app)
 
     companion object {
         fun from(app: Application): AppContainer {

@@ -72,7 +72,7 @@ fun VocabScreen(viewModel: VocabViewModel = androidx.lifecycle.viewmodel.compose
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "WordMosaic",
+                    text = "词汇学习",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground

@@ -1,33 +1,20 @@
 package com.example.planmosaic_android.util
 
 import android.content.Context
-import android.util.Base64
-import android.util.Log
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.Dispatchers
+import com.example.planmosaic_android.storage.DataStorePreferencesStorage
+import com.example.planmosaic_android.storage.FileSystemUserStorage
+import com.example.planmosaic_android.storage.IPreferencesStorage
+import com.example.planmosaic_android.storage.IUserFileStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
-import java.io.File
-import javax.crypto.Cipher
-import javax.crypto.SecretKeyFactory
-import javax.crypto.spec.GCMParameterSpec
-import javax.crypto.spec.PBEKeySpec
 
-/**
- * DataStore-based local cache, mirroring the desktop's localStorage.
- */
-class DataStoreManager private constructor(private val context: Context) {
+@Deprecated(
+    "Use IPreferencesStorage and IUserFileStorage instead",
+    ReplaceWith("preferencesStorage", "com.example.planmosaic_android.storage.IPreferencesStorage")
+)
+class DataStoreManager private constructor(context: Context) {
 
     companion object {
-        private const val TAG = "DataStoreManager"
-        private const val USER_DATA_DIR = "user_data"
-
         @Volatile
         private var INSTANCE: DataStoreManager? = null
 
@@ -36,327 +23,142 @@ class DataStoreManager private constructor(private val context: Context) {
                 INSTANCE ?: DataStoreManager(context.applicationContext).also { INSTANCE = it }
             }
         }
-
-        private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-            name = Constants.DATA_STORE_NAME
-        )
-        private val KEY_USER_DATA = stringPreferencesKey(Constants.KEY_USER_DATA)
-        private val KEY_CREDENTIALS = stringPreferencesKey(Constants.KEY_CREDENTIALS)
-        private val KEY_TOKEN = stringPreferencesKey("token")
     }
 
-    // ============ Per-Account File-Based Storage ============
+    private val preferences: IPreferencesStorage = DataStorePreferencesStorage(context)
+    private val userFiles: IUserFileStorage = FileSystemUserStorage(context)
 
-    /** Base directory for all per-user data */
-    private fun getUserDataBaseDir(): File {
-        val dir = File(context.filesDir, USER_DATA_DIR)
-        if (!dir.exists()) dir.mkdirs()
-        return dir
-    }
-
-    /** Per-user directory: user_data/{userId}/ */
-    private fun getUserDir(userId: String): File {
-        val safeUserId = sanitizeUserId(userId)
-        val dir = File(getUserDataBaseDir(), safeUserId)
-        if (!dir.exists()) dir.mkdirs()
-        return dir
-    }
-
-    /** Sanitize userId to prevent path traversal */
-    private fun sanitizeUserId(userId: String): String {
-        return userId.replace(Regex("[^a-zA-Z0-9_.-]"), "_")
-    }
-
-    /** Generic: read a per-user file */
-    private suspend fun readPerUserFile(userId: String, fileName: String): String? {
-        return withContext(Dispatchers.IO) {
-            val file = File(getUserDir(userId), fileName)
-            if (file.exists()) {
-                try { file.readText() } catch (e: Exception) {
-                    Log.e(TAG, "Error reading $fileName for $userId", e)
-                    null
-                }
-            } else null
-        }
-    }
-
-    /** Generic: write a per-user file */
-    private suspend fun writePerUserFile(userId: String, fileName: String, content: String) {
-        withContext(Dispatchers.IO) {
-            try {
-                val file = File(getUserDir(userId), fileName)
-                file.writeText(content)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error writing $fileName for $userId", e)
-            }
-        }
-    }
-
-    // --- AppData (schedule/task/settings) ---
-    // Local files are just a cache of Supabase data. No migration from legacy DataStore.
-    // Data always comes from Supabase on login, then gets cached locally.
-
-    suspend fun loadUserDataForUser(userId: String): String? {
-        return readPerUserFile(userId, "app_data.json")
-    }
+    suspend fun loadUserDataForUser(userId: String): String? =
+        userFiles.loadUserData(userId)
 
     suspend fun saveUserDataForUser(userId: String, json: String) {
-        writePerUserFile(userId, "app_data.json", json)
+        userFiles.saveUserData(userId, json)
     }
-
-    // --- Agent Chat History ---
 
     suspend fun loadAgentHistoryForUser(userId: String): String? =
-        readPerUserFile(userId, "agent_history.json")
+        userFiles.loadAgentHistory(userId)
 
     suspend fun saveAgentHistoryForUser(userId: String, json: String) {
-        writePerUserFile(userId, "agent_history.json", json)
+        userFiles.saveAgentHistory(userId, json)
     }
-
-    // --- Deep Planning Agent History ---
 
     suspend fun loadDpAgentHistoryForUser(userId: String): String? =
-        readPerUserFile(userId, "dp_agent_history.json")
+        userFiles.loadDpAgentHistory(userId)
 
     suspend fun saveDpAgentHistoryForUser(userId: String, json: String) {
-        writePerUserFile(userId, "dp_agent_history.json", json)
+        userFiles.saveDpAgentHistory(userId, json)
     }
-
-    // --- Vocab Progress ---
 
     suspend fun loadVocabProgressForUser(userId: String, bookId: String): String? =
-        readPerUserFile(userId, "vocab_progress_$bookId.json")
+        userFiles.loadVocabProgress(userId, bookId)
 
     suspend fun saveVocabProgressForUser(userId: String, bookId: String, json: String) {
-        writePerUserFile(userId, "vocab_progress_$bookId.json", json)
+        userFiles.saveVocabProgress(userId, bookId, json)
     }
-
-    // --- Vocab Custom Books ---
 
     suspend fun loadVocabCustomBooksForUser(userId: String): String? =
-        readPerUserFile(userId, "vocab_custom_books.json")
+        userFiles.loadVocabCustomBooks(userId)
 
     suspend fun saveVocabCustomBooksForUser(userId: String, json: String) {
-        writePerUserFile(userId, "vocab_custom_books.json", json)
+        userFiles.saveVocabCustomBooks(userId, json)
     }
-
-    // --- Vocab AI Chat History ---
 
     suspend fun loadVocabAiHistoryForUser(userId: String): String? =
-        readPerUserFile(userId, "vocab_ai_history.json")
+        userFiles.loadVocabAiHistory(userId)
 
     suspend fun saveVocabAiHistoryForUser(userId: String, json: String) {
-        writePerUserFile(userId, "vocab_ai_history.json", json)
+        userFiles.saveVocabAiHistory(userId, json)
     }
 
-    // ============ Legacy User Data (kept for migration) ============
-
-    val userData: Flow<String?> = context.dataStore.data.map { prefs ->
-        prefs[KEY_USER_DATA]
+    val userData: Flow<String?> = preferences.getString("user_data", "").let {
+        kotlinx.coroutines.flow.flowOf(null)
     }
 
     suspend fun saveUserData(json: String) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_USER_DATA] = json
-        }
+        preferences.saveString("user_data", json)
     }
 
-    // ============ Credentials ============
+    val credentials: Flow<DataStoreManager.Credentials?> =
+        @Suppress("DEPRECATION")
+        kotlinx.coroutines.flow.flowOf(null)
 
+    @Suppress("DEPRECATION")
     data class Credentials(val username: String, val password: String)
 
-    private val KEY_CREDENTIALS_IV = stringPreferencesKey("credentials_iv")
-
-    val credentials: Flow<Credentials?> = context.dataStore.data.map { prefs ->
-        val raw = prefs[KEY_CREDENTIALS]
-        val iv = prefs[KEY_CREDENTIALS_IV]
-        if (raw.isNullOrBlank()) null
-        else {
-            if (!iv.isNullOrBlank()) {
-                val decrypted = CryptoManager.decrypt(raw, iv)
-                if (decrypted != null) {
-                    val parts = decrypted.split(":", limit = 2)
-                    if (parts.size == 2) Credentials(parts[0], parts[1]) else null
-                } else {
-                    try {
-                        val legacyDecrypted = decryptLegacy(raw, iv)
-                        val parts = legacyDecrypted.split(":", limit = 2)
-                        if (parts.size == 2) Credentials(parts[0], parts[1]) else null
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Failed to decrypt legacy credentials", e)
-                        null
-                    }
-                }
-            } else {
-                val parts = raw.split(":", limit = 2)
-                if (parts.size == 2) Credentials(parts[0], parts[1]) else null
-            }
-        }
-    }
-
     suspend fun saveCredentials(username: String, password: String) {
-        val pair = CryptoManager.encrypt("$username:$password")
-        if (pair != null) {
-            val (encrypted, iv) = pair
-            context.dataStore.edit { prefs ->
-                prefs[KEY_CREDENTIALS] = encrypted
-                prefs[KEY_CREDENTIALS_IV] = iv
-            }
-        } else {
-            Log.w(TAG, "Failed to encrypt credentials, saving as plain fallback")
-            context.dataStore.edit { prefs ->
-                prefs[KEY_CREDENTIALS] = "$username:$password"
-            }
-        }
+        preferences.saveCredentials(username, password)
     }
 
     suspend fun clearCredentials() {
-        context.dataStore.edit { prefs ->
-            prefs.remove(KEY_CREDENTIALS)
-        }
+        preferences.clearCredentials()
     }
 
-    private fun decryptLegacy(cipherText: String, ivText: String): String {
-        val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-        val spec = PBEKeySpec(
-            "planmosaic-local".toCharArray(),
-            ByteArray(16) { 0x42 },
-            10000,
-            256
-        )
-        val key = factory.generateSecret(spec)
-        val encrypted = Base64.decode(cipherText, Base64.NO_WRAP)
-        val iv = Base64.decode(ivText, Base64.NO_WRAP)
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(128, iv))
-        return String(cipher.doFinal(encrypted), Charsets.UTF_8)
-    }
-
-    // ============ Token ============
-
-    val token: Flow<String?> = context.dataStore.data.map { prefs ->
-        prefs[KEY_TOKEN]
-    }
+    val token: Flow<String?> = preferences.token
 
     suspend fun saveToken(token: String) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_TOKEN] = token
-        }
+        preferences.saveToken(token)
     }
 
     suspend fun clearToken() {
-        context.dataStore.edit { prefs ->
-            prefs.remove(KEY_TOKEN)
-        }
+        preferences.clearToken()
     }
 
-    // ============ Theme Preference ============
-
-    private val KEY_THEME = stringPreferencesKey("theme_preference")
-
-    val themePreference: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[KEY_THEME] ?: "system"
-    }
+    val themePreference: Flow<String> = preferences.themePreference
 
     suspend fun saveThemePreference(theme: String) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_THEME] = theme
-        }
+        preferences.saveThemePreference(theme)
     }
 
-    // ============ Agent History ============
-
-    private val KEY_AGENT_HISTORY = stringPreferencesKey("agent_history")
-
-    val agentHistory: Flow<String?> = context.dataStore.data.map { prefs ->
-        prefs[KEY_AGENT_HISTORY]
+    val agentHistory: Flow<String?> = preferences.getString("agent_history", "").let {
+        kotlinx.coroutines.flow.flowOf(null)
     }
 
     suspend fun saveAgentHistory(json: String) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_AGENT_HISTORY] = json
-        }
+        preferences.saveString("agent_history", json)
     }
 
-    // ============ Deep Planning Agent History ============
-
-    private val KEY_DP_AGENT_HISTORY = stringPreferencesKey("dp_agent_history")
-
-    val dpAgentHistory: Flow<String?> = context.dataStore.data.map { prefs ->
-        prefs[KEY_DP_AGENT_HISTORY]
+    val dpAgentHistory: Flow<String?> = preferences.getString("dp_agent_history", "").let {
+        kotlinx.coroutines.flow.flowOf(null)
     }
 
     suspend fun saveDpAgentHistory(json: String) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_DP_AGENT_HISTORY] = json
-        }
+        preferences.saveString("dp_agent_history", json)
     }
 
-    // ============ Vocab: Current Book ============
-
-    private val KEY_VOCAB_CURRENT_BOOK = stringPreferencesKey("vocab_current_book")
-
-    val vocabCurrentBook: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[KEY_VOCAB_CURRENT_BOOK] ?: "college1"
-    }
+    val vocabCurrentBook: Flow<String> = preferences.vocabCurrentBook
 
     suspend fun saveVocabCurrentBook(bookId: String) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_VOCAB_CURRENT_BOOK] = bookId
-        }
+        preferences.saveVocabCurrentBook(bookId)
     }
 
-    // ============ Vocab: Per-book Progress ============
-
     suspend fun saveVocabProgress(bookId: String, json: String) {
-        context.dataStore.edit { prefs ->
-            prefs[stringPreferencesKey("vocab_progress_$bookId")] = json
-        }
+        preferences.saveString("vocab_progress_$bookId", json)
     }
 
     suspend fun loadVocabProgress(bookId: String): String? {
-        return context.dataStore.data.first()[stringPreferencesKey("vocab_progress_$bookId")]
+        return preferences.getString("vocab_progress_$bookId", "")
+            .takeIf { it.isNotEmpty() }
     }
 
-    // ============ Vocab: Custom Books (AI-generated) ============
-
-    private val KEY_VOCAB_CUSTOM_BOOKS = stringPreferencesKey("vocab_custom_books")
-
-    val vocabCustomBooks: Flow<String?> = context.dataStore.data.map { prefs ->
-        prefs[KEY_VOCAB_CUSTOM_BOOKS]
+    val vocabCustomBooks: Flow<String?> = preferences.getString("vocab_custom_books", "").let {
+        kotlinx.coroutines.flow.flowOf(null)
     }
 
     suspend fun saveVocabCustomBooks(json: String) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_VOCAB_CUSTOM_BOOKS] = json
-        }
+        preferences.saveString("vocab_custom_books", json)
     }
 
-    // ============ Sub-App Nav Visibility ============
-
-    private val KEY_SUBAPP_NAV_VISIBLE = stringPreferencesKey("subapp_nav_visible")
-
-    val subappNavVisible: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[KEY_SUBAPP_NAV_VISIBLE] ?: "{}"
-    }
-
-    suspend fun saveSubappNavVisible(json: String) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_SUBAPP_NAV_VISIBLE] = json
-        }
-    }
-
-    // ============ Vocab: AI Chat History ============
-
-    private val KEY_VOCAB_AI_HISTORY = stringPreferencesKey("vocab_ai_history")
-
-    val vocabAiHistory: Flow<String?> = context.dataStore.data.map { prefs ->
-        prefs[KEY_VOCAB_AI_HISTORY]
+    val vocabAiHistory: Flow<String?> = preferences.getString("vocab_ai_history", "").let {
+        kotlinx.coroutines.flow.flowOf(null)
     }
 
     suspend fun saveVocabAiHistory(json: String) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_VOCAB_AI_HISTORY] = json
-        }
+        preferences.saveString("vocab_ai_history", json)
+    }
+
+    val subappNavVisible: Flow<String> = preferences.subappNavVisible
+
+    suspend fun saveSubappNavVisible(json: String) {
+        preferences.saveSubappNavVisible(json)
     }
 }

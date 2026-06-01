@@ -58,7 +58,7 @@
 - [x] 日程 CRUD 功能正常
 - [x] AI 对话（流式+非流式）正常
 - [x] WordMosaic 子应用正常加载和运行
-- [ ] `npm run build` 成功生成便携版 EXE（需在本地构建环境测试）
+- [x] `npm run build` 成功生成便携版 EXE（需在本地构建环境测试）
 
 ## Task H1: 修复 preload.js event 对象泄露
 - [x] `onAgentStreamChunk` 回调签名改为 `callback(chunk)`（移除 `event` 参数）
@@ -115,7 +115,7 @@
 - [x] 尝试通过 webview 加载外部恶意 URL 被拦截
 
 ## Task H8: 日程数据存储基础加固
-- [ ] 数据写入关键路径有注释标记"明文存储"（低优先级，未来迭代）
+- [x] 数据写入关键路径有注释标记"明文存储"（低优先级，未来迭代）
 - [x] API Key 不完整暴露给渲染进程（仅主进程持有）
 - [x] 渲染进程通过 IPC 获取脱敏 Key 信息（`configured: true/false`）
 

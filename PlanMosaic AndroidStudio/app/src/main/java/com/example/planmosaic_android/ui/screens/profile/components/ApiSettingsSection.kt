@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.example.planmosaic_android.AppContainer
 import com.example.planmosaic_android.PlanMosaicApplication
 import com.example.planmosaic_android.data.repository.ScheduleRepository
-import com.example.planmosaic_android.util.DataStoreManager
+import com.example.planmosaic_android.storage.IUserFileStorage
 import com.example.planmosaic_android.ui.theme.AppColors
 import com.example.planmosaic_android.model.AppData
 import com.example.planmosaic_android.model.ApiKeys
@@ -39,13 +39,13 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApiSettingsSection(
-    dataStoreManager: DataStoreManager,
+    userFileStorage: IUserFileStorage,
     onMessage: (String) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val container = remember { AppContainer.from(context.applicationContext as PlanMosaicApplication) }
-    val repository = remember { ScheduleRepository(dataStoreManager, container.authManager, container.supabaseClient) }
+    val repository = remember { ScheduleRepository(userFileStorage, container.authManager, container.supabaseClient) }
 
     var deepseekKey by rememberSaveable { mutableStateOf("") }
     var qwenKey by rememberSaveable { mutableStateOf("") }

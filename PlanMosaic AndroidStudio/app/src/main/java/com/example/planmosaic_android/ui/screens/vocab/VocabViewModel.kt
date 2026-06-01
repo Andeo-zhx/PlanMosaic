@@ -86,7 +86,7 @@ class VocabViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: StateFlow<VocabUiState> = _uiState.asStateFlow()
 
     private val container = AppContainer.from(getApplication<PlanMosaicApplication>())
-    private val vocabRepository = VocabRepository(application, container.dataStoreManager, container.authManager)
+    private val vocabRepository = VocabRepository(application, container.userFileStorage, container.preferencesStorage, container.authManager)
 
     init {
         viewModelScope.launch {
@@ -517,7 +517,7 @@ Rules:
 
     private suspend fun getApiKey(): String {
         val userId = container.authManager.userId ?: return ""
-        val repo = ScheduleRepository(container.dataStoreManager, container.authManager, container.supabaseClient)
+        val repo = ScheduleRepository(container.userFileStorage, container.authManager, container.supabaseClient)
         val data = repo.loadLocalData(userId) ?: return ""
         return when (data.settings.provider) {
             "qwen" -> data.apiKeys.qwen
@@ -527,7 +527,7 @@ Rules:
 
     private suspend fun getProvider(): String {
         val userId = container.authManager.userId ?: return "deepseek"
-        val repo = ScheduleRepository(container.dataStoreManager, container.authManager, container.supabaseClient)
+        val repo = ScheduleRepository(container.userFileStorage, container.authManager, container.supabaseClient)
         val data = repo.loadLocalData(userId) ?: return "deepseek"
         return data.settings.provider
     }

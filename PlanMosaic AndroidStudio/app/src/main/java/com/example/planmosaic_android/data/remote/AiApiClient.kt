@@ -55,7 +55,7 @@ class AiApiClient {
 
     // Models
     private const val DEEPSEEK_MODEL = "deepseek-v4-flash"
-    private const val DEEPSEEK_REASONER_MODEL = "deepseek-reasoner"
+    private const val DEEPSEEK_REASONER_MODEL = "deepseek-v4-pro"
     private const val QWEN_MODEL = "qwen3.5-plus"
 
     // ============ Request/Response Models ============
@@ -223,7 +223,7 @@ class AiApiClient {
 
     /**
      * Streaming chat completion. Returns a Flow of content delta chunks.
-     * Used by WordMosaic AI for real-time vocabulary generation.
+     * Used by AI for real-time vocabulary generation.
      */
     fun chatStream(
         apiKey: String,

@@ -1,0 +1,29 @@
+directories:
+  output: release
+  buildResources: build
+appId: com.planmosaic.desktop
+productName: PlanMosaic
+files:
+  - filter:
+      - main.js
+      - index.html
+      - preload.js
+      - paths.js
+      - ai-agent.js
+      - ai-tools.js
+      - package.json
+      - favicon.ico
+      - Image/**/*
+win:
+  icon: favicon.ico
+  target:
+    - target: portable
+      arch:
+        - x64
+  sign: null
+portable:
+  artifactName: PlanMosaic${version}-Portable.exe
+extraResources:
+  - from: favicon.ico
+    to: favicon.ico
+electronVersion: 33.4.11

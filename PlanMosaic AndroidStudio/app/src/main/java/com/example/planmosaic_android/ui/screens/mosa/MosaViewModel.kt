@@ -83,19 +83,19 @@ class MosaViewModel(application: Application) : AndroidViewModel(application) {
 
     private val container = AppContainer.from(getApplication<PlanMosaicApplication>())
     private val scheduleRepository = ScheduleRepository(
-        container.dataStoreManager, container.authManager, container.supabaseClient
+        container.userFileStorage, container.authManager, container.supabaseClient
     )
 
     private val agentRepository = AgentRepository(container.aiApiClient)
 
     private val normalChatSession = NormalChatSession(
         agentRepository,
-        container.dataStoreManager
+        container.userFileStorage
     )
 
     private val deepPlanningSession = DeepPlanningSession(
         agentRepository,
-        container.dataStoreManager
+        container.userFileStorage
     )
 
     private var appData: AppData = AppData()

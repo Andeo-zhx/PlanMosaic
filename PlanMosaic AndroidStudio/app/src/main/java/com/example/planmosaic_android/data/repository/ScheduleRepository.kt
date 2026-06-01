@@ -4,12 +4,12 @@ import android.util.Log
 import com.example.planmosaic_android.data.remote.SupabaseClient
 import com.example.planmosaic_android.data.remote.bool
 import com.example.planmosaic_android.model.AppData
+import com.example.planmosaic_android.storage.IUserFileStorage
 import com.example.planmosaic_android.util.AuthManager
-import com.example.planmosaic_android.util.DataStoreManager
 import kotlinx.serialization.json.Json
 
 class ScheduleRepository(
-    private val dataStoreManager: DataStoreManager,
+    private val userFileStorage: IUserFileStorage,
     private val authManager: AuthManager,
     private val supabaseClient: SupabaseClient
 ) {
@@ -21,7 +21,7 @@ class ScheduleRepository(
     // ============ Local per-account file operations ============
 
     suspend fun loadLocalData(userId: String): AppData? {
-        val raw = dataStoreManager.loadUserDataForUser(userId)
+        val raw = userFileStorage.loadUserData(userId)
         if (raw.isNullOrBlank()) return null
         return try {
             json.decodeFromString<AppData>(raw)
@@ -31,7 +31,7 @@ class ScheduleRepository(
     }
 
     suspend fun saveLocalData(userId: String, data: AppData) {
-        dataStoreManager.saveUserDataForUser(userId, json.encodeToString(AppData.serializer(), data))
+        userFileStorage.saveUserData(userId, json.encodeToString(AppData.serializer(), data))
     }
 
     // ============ Cloud (Supabase RPC) operations ============

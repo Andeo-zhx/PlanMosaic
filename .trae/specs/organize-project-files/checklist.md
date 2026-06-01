@@ -1,0 +1,22 @@
+# Checklist
+
+- [x] `PlanMosaic Desktop/` 文件夹已创建，包含所有桌面端文件
+- [x] `PlanMosaic Desktop/` 下存在 `main.js`, `server.js`, `index.html`, `ai-tools.js`, `ai-agent.js`, `preload.js`, `paths.js`, `cli.js`
+- [x] `PlanMosaic Desktop/` 下存在 `package.json`, `package-lock.json`
+- [x] `PlanMosaic Desktop/` 下存在 `favicon.ico`（由 `image4.ico` 重命名而来）
+- [x] `PlanMosaic Desktop/` 下存在 `Image/` 和 `WordMosaic/` 子文件夹
+- [x] `Image/` 文件夹包含原有图片文件（image1.png, image2.png, image3.jpg, image4.png）
+- [x] `WordMosaic/` 文件夹包含原有文件（index.html, main.js, style.css, app.js 等）
+- [x] 根目录不再存在孤立的源码文件（`server.js`, `index.html`, `ai-tools.js` 等）
+- [x] `build_apk.bat` 已移入 `PlanMosaic AndroidStudio/`
+- [x] `install_apk.bat` 已移入 `PlanMosaic AndroidStudio/`
+- [x] `build_apk.bat` 内部路径已调整为 `cd /d "%~dp0"`
+- [x] `install_apk.bat` 开头添加了 `cd /d "%~dp0"` 确保路径正确
+- [x] `main.js` 中 `__dirname` 相对引用（`./paths.js`, `./ai-tools.js`, `./preload.js`, `./WordMosaic/`）无需修改即可工作
+- [x] `server.js` 中 `./ai-tools.js` 和 `./paths.js` 引用无需修改即可工作
+- [x] `cli.js` 中 `./paths.js` 引用无需修改即可工作
+- [x] `index.html` 中 `favicon.ico` 引用可正常工作
+- [x] `package.json` 中 `"main": "main.js"` 和 `"files"` 配置正确
+- [x] 根目录存在 `启动PlanMosaic.bat` 快捷脚本
+- [x] `启动PlanMosaic.bat` 可正确进入 `PlanMosaic Desktop/` 并执行 `npm start`
+- [x] 根目录的 `LICENSE` 和 `.gitignore` 保持不变

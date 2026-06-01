@@ -1,0 +1,11 @@
+- [x] `executeToolCall` 函数改为 `async function`
+- [x] `web_search_evaluate` case 已添加到 switch 语句中
+- [x] DuckDuckGo API 调用使用 Node.js `https` 模块实现
+- [x] 8 秒超时保护已实现
+- [x] 搜索结果解析逻辑正确（AbstractText + RelatedTopics）
+- [x] 返回 JSON 格式与 `server.js` 一致
+- [x] 网络错误时返回 `{ success: false, fallback: true }` 而非崩溃
+- [x] 流式路径（第 1763 行）和同步路径（第 1833 行）已改为 `async () =>` + `await executeToolCall`
+- [x] `try/catch` 能正确捕获 async 函数通过 `await` 抛出的 Promise rejection
+- [x] 工具在深度规划模式白名单中已包含
+- [x] `node --check` 语法检查通过

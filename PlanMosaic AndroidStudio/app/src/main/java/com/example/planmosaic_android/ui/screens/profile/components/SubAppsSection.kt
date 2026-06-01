@@ -2,10 +2,7 @@ package com.example.planmosaic_android.ui.screens.profile.components
 
 import androidx.compose.foundation.layout.*
 import android.util.Log
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,7 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.planmosaic_android.ui.components.GlassSurface
 import com.example.planmosaic_android.ui.theme.AppColors
-import com.example.planmosaic_android.util.DataStoreManager
+import com.example.planmosaic_android.storage.IPreferencesStorage
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
@@ -37,23 +34,15 @@ data class SubAppInfo(
     val route: String
 )
 
-private val availableSubApps = listOf(
-    SubAppInfo(
-        id = "vocab",
-        name = "WordMosaic",
-        description = "词汇学习与AI助手",
-        icon = Icons.Default.MenuBook,
-        route = "vocab"
-    )
-)
+private val availableSubApps = listOf<SubAppInfo>()
 
 @Composable
 fun SubAppsSection(
-    dataStoreManager: DataStoreManager,
+    preferencesStorage: IPreferencesStorage,
     onNavigateToSubApp: (String) -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val subappNavJson by dataStoreManager.subappNavVisible.collectAsStateWithLifecycle(initialValue = "{}")
+    val subappNavJson by preferencesStorage.subappNavVisible.collectAsStateWithLifecycle(initialValue = "{}")
 
     val visibility = remember(subappNavJson) {
         try {
@@ -95,7 +84,7 @@ fun SubAppsSection(
                             val newJson = buildJsonObject {
                                 updatedMap.forEach { (k, v) -> put(k, v) }
                             }.toString()
-                            dataStoreManager.saveSubappNavVisible(newJson)
+                            preferencesStorage.saveSubappNavVisible(newJson)
                         }
                     },
                     onPreview = { onNavigateToSubApp(app.route) },

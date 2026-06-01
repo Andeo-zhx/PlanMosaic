@@ -68,8 +68,7 @@ class ScheduleViewModel(application: Application) : AndroidViewModel(application
     val uiState: StateFlow<ScheduleUiState> = _uiState.asStateFlow()
 
     private val container = AppContainer.from(getApplication<PlanMosaicApplication>())
-    private val dataStoreManager = container.dataStoreManager
-    private val repository = ScheduleRepository(container.dataStoreManager, container.authManager, container.supabaseClient)
+    private val repository = ScheduleRepository(container.userFileStorage, container.authManager, container.supabaseClient)
 
     /** The full app data loaded from local/cloud */
     private var appData: AppData = AppData()

@@ -46,7 +46,7 @@
   - [x] SubTask C7.2: 同步升级 `electron-builder` 至兼容版本
   - [x] SubTask C7.3: 执行 `npm install` 安装
   - [x] SubTask C7.4: 逐项验证 `npm start` 启动、IPC、WordMosaic 均正常
-  - [ ] SubTask C7.5: 验证 `npm run build` 构建便携版 EXE 成功
+  - [x] SubTask C7.5: 验证 `npm run build` 构建便携版 EXE 成功
   - **验证**: 应用启动正常，日程 CRUD、AI 对话、WordMosaic 均正常
 
 ## 🔴 高风险修复（H1-H9）
@@ -97,7 +97,7 @@
   - **验证**: webview 加载外部恶意 URL 被拦截
 
 - [x] Task H8: 日程数据存储加密提示/基础加固（paths.js + main.js）
-  - [ ] SubTask H8.1: 在数据写入路径添加注释标记"明文存储——未来迭代加密"
+  - [x] SubTask H8.1: 在数据写入路径添加注释标记"明文存储——未来迭代加密"
   - [x] SubTask H8.2: 确认 API Key 存储不暴露给渲染进程（仅主进程持有，通过 IPC 按需传递脱敏 Key）
   - **验证**: 数据文件 JSON 结构不变；Key 不完整暴露给渲染进程
 

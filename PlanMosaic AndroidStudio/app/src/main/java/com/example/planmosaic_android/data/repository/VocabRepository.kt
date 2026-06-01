@@ -4,8 +4,9 @@ import android.content.Context
 import android.util.Log
 import com.example.planmosaic_android.model.VocabBook
 import com.example.planmosaic_android.model.VocabProgress
+import com.example.planmosaic_android.storage.IPreferencesStorage
+import com.example.planmosaic_android.storage.IUserFileStorage
 import com.example.planmosaic_android.util.AuthManager
-import com.example.planmosaic_android.util.DataStoreManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -13,7 +14,8 @@ import kotlinx.serialization.json.Json
 
 class VocabRepository(
     private val context: Context,
-    private val dataStoreManager: DataStoreManager,
+    private val userFileStorage: IUserFileStorage,
+    private val preferencesStorage: IPreferencesStorage,
     private val authManager: AuthManager
 ) {
     private val json = Json {
@@ -42,7 +44,7 @@ class VocabRepository(
 
     suspend fun loadCustomBooks(): List<VocabBook> {
         val userId = authManager.userId ?: return emptyList()
-        val raw = dataStoreManager.loadVocabCustomBooksForUser(userId) ?: return emptyList()
+        val raw = userFileStorage.loadVocabCustomBooks(userId) ?: return emptyList()
         return try {
             json.decodeFromString<List<VocabBook>>(raw)
         } catch (e: Exception) {
@@ -56,18 +58,18 @@ class VocabRepository(
         val idx = existing.indexOfFirst { it.id == book.id }
         if (idx >= 0) existing[idx] = book else existing.add(book)
         val userId = authManager.userId ?: return
-        dataStoreManager.saveVocabCustomBooksForUser(userId, json.encodeToString(existing))
+        userFileStorage.saveVocabCustomBooks(userId, json.encodeToString(existing))
     }
 
     suspend fun deleteCustomBook(bookId: String) {
         val existing = loadCustomBooks().filter { it.id != bookId }
         val userId = authManager.userId ?: return
-        dataStoreManager.saveVocabCustomBooksForUser(userId, json.encodeToString(existing))
+        userFileStorage.saveVocabCustomBooks(userId, json.encodeToString(existing))
     }
 
     suspend fun loadProgress(bookId: String): VocabProgress {
         val userId = authManager.userId ?: return VocabProgress()
-        val raw = dataStoreManager.loadVocabProgressForUser(userId, bookId) ?: return VocabProgress()
+        val raw = userFileStorage.loadVocabProgress(userId, bookId) ?: return VocabProgress()
         return try {
             json.decodeFromString<VocabProgress>(raw)
         } catch (e: Exception) {
@@ -78,14 +80,14 @@ class VocabRepository(
 
     suspend fun saveProgress(bookId: String, progress: VocabProgress) {
         val userId = authManager.userId ?: return
-        dataStoreManager.saveVocabProgressForUser(userId, bookId, json.encodeToString(VocabProgress.serializer(), progress))
+        userFileStorage.saveVocabProgress(userId, bookId, json.encodeToString(VocabProgress.serializer(), progress))
     }
 
     suspend fun loadCurrentBookId(): String {
-        return dataStoreManager.vocabCurrentBook.first()
+        return preferencesStorage.vocabCurrentBook.first()
     }
 
     suspend fun saveCurrentBookId(bookId: String) {
-        dataStoreManager.saveVocabCurrentBook(bookId)
+        preferencesStorage.saveVocabCurrentBook(bookId)
     }
 }

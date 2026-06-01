@@ -4,13 +4,14 @@ import android.util.Log
 import com.example.planmosaic_android.data.remote.SupabaseClient
 import com.example.planmosaic_android.data.remote.bool
 import com.example.planmosaic_android.data.remote.str
+import com.example.planmosaic_android.storage.IPreferencesStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class AuthManager(
     private val supabaseClient: SupabaseClient,
-    private val dataStoreManager: DataStoreManager
+    private val preferencesStorage: IPreferencesStorage
 ) {
 
     data class User(val userId: String, val username: String, val token: String?)
@@ -40,7 +41,7 @@ class AuthManager(
                 val user = User(userId = uid, username = username, token = token)
                 _currentUser.value = user
                 _currentToken.value = token
-                dataStoreManager.saveToken(token)
+                preferencesStorage.saveToken(token)
                 Result.success(user)
             } else {
                 val error = result.str("error").ifBlank { "登录失败" }
@@ -63,7 +64,7 @@ class AuthManager(
                 val user = User(userId = uid, username = username, token = token)
                 _currentUser.value = user
                 _currentToken.value = token
-                dataStoreManager.saveToken(token)
+                preferencesStorage.saveToken(token)
                 Result.success(user)
             } else {
                 val error = result.str("error").ifBlank { "注册失败" }
@@ -77,6 +78,6 @@ class AuthManager(
     suspend fun logout() {
         _currentUser.value = null
         _currentToken.value = null
-        dataStoreManager.clearToken()
+        preferencesStorage.clearToken()
     }
 }

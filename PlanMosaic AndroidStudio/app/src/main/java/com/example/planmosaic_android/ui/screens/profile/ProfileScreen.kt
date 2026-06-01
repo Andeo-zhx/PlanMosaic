@@ -20,7 +20,8 @@ import com.example.planmosaic_android.ui.screens.profile.components.*
 import com.example.planmosaic_android.ui.components.AgentFAB
 import com.example.planmosaic_android.ui.components.AgentSheetContent
 import com.example.planmosaic_android.ui.components.GlassSurface
-import com.example.planmosaic_android.util.DataStoreManager
+import com.example.planmosaic_android.AppContainer
+import com.example.planmosaic_android.PlanMosaicApplication
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,7 +33,9 @@ fun ProfileScreen(
     val viewModel: ProfileViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val dataStoreManager = remember { DataStoreManager.getInstance(context) }
+    val container = remember { AppContainer.from(context.applicationContext as PlanMosaicApplication) }
+    val preferencesStorage = remember { container.preferencesStorage }
+    val userFileStorage = remember { container.userFileStorage }
     val themeState = LocalThemeState.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -113,7 +116,7 @@ fun ProfileScreen(
 
                         item {
                             SubAppsSection(
-                                dataStoreManager = dataStoreManager,
+                                preferencesStorage = preferencesStorage,
                                 onNavigateToSubApp = onNavigateToSubApp
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -122,7 +125,7 @@ fun ProfileScreen(
                         if (uiState.showApiSettings) {
                             item {
                                 ApiSettingsSection(
-                                    dataStoreManager = dataStoreManager,
+                                    userFileStorage = userFileStorage,
                                     onMessage = { message ->
                                         scope.launch {
                                             snackbarHostState.showSnackbar(
