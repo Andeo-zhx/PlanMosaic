@@ -99,6 +99,8 @@ tmp/
 # 大文件和发布包（超过GitHub限制）
 *.exe
 **/*.exe
-PlanMosaic\ Desktop/release/
-!PlanMosaic\ Desktop/release/*.yml
-!PlanMosaic\ Desktop/release/*.yaml
+node_modules/electron/
+release/
+PlanMosaic Desktop/release/
+!PlanMosaic Desktop/release/*.yml
+!PlanMosaic Desktop/release/*.yaml
