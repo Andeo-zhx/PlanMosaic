@@ -1,8 +1,13 @@
 if (process.env.NODE_ENV === 'production') {
-    console.log = function() {};
+    const noop = function() {};
+    console.log = noop;
+    console.debug = noop;
+    console.info = noop;
+    console.warn = noop;
+    // Keep console.error for critical error reporting
 }
 
-const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog, safeStorage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
@@ -10,11 +15,13 @@ const http = require('http');
 const { URL } = require('url');
 const { spawn } = require('child_process');
 const pmPaths = require('./paths.js');
+const IS_TEST_MODE = process.env.PLANMOSAIC_TEST_MODE === '1';
 
-const ALLOWED_EXTERNAL_URLS = [
-    'https://platform.deepseek.com',
-    'https://dashscope.console.aliyun.com'
-];
+const ALLOWED_EXTERNAL_HOSTS = new Set([
+    'platform.deepseek.com',
+    'api.duckduckgo.com',
+    'html.duckduckgo.com'
+]);
 
 function safeOpenExternal(url) {
     try {
@@ -23,8 +30,12 @@ function safeOpenExternal(url) {
             console.warn('[Security] Blocked non-HTTPS external URL:', url);
             return;
         }
-        const allowed = ALLOWED_EXTERNAL_URLS.some(allowed => url.startsWith(allowed));
-        if (!allowed) {
+        if (parsed.username || parsed.password) {
+            console.warn('[Security] Blocked external URL with credentials:', url);
+            return;
+        }
+        const hostname = pmPaths.normalizeHostname(parsed.hostname);
+        if (!ALLOWED_EXTERNAL_HOSTS.has(hostname)) {
             console.warn('[Security] Blocked external URL not in whitelist:', url);
             return;
         }
@@ -43,27 +54,41 @@ function createDesktopShortcut() {
         const appDir = path.dirname(exePath);
         const iconPath = path.join(appDir, 'resources', 'app', 'image4.ico');
 
-        const dangerousChars = /[;|&$`\n\r]/;
-        if (dangerousChars.test(exePath) || dangerousChars.test(desktop)) {
-            console.warn('[Shortcut] Blocked: path contains dangerous characters');
-            return;
+        // Use a temporary .ps1 script file to avoid command injection via string interpolation
+        const { execFileSync } = require('child_process');
+        const os = require('os');
+        const scriptContent = [
+            '$ws = New-Object -ComObject WScript.Shell',
+            '$s = $ws.CreateShortcut($env:PM_DESKTOP_PATH)',
+            '$s.TargetPath = $env:PM_EXE_PATH',
+            '$s.WorkingDirectory = $env:PM_APP_DIR',
+            "$s.Description = 'PlanMosaic'",
+            '$s.IconLocation = $env:PM_ICON_PATH',
+            '$s.Save()'
+        ].join('\n');
+
+        const tmpScript = path.join(os.tmpdir(), 'pm-shortcut-' + Date.now() + '.ps1');
+        fs.writeFileSync(tmpScript, scriptContent, 'utf8');
+
+        try {
+            execFileSync('powershell.exe', [
+                '-ExecutionPolicy', 'Bypass',
+                '-File', tmpScript
+            ], {
+                stdio: 'ignore',
+                timeout: 10000,
+                env: {
+                    ...process.env,
+                    PM_DESKTOP_PATH: desktop,
+                    PM_EXE_PATH: exePath,
+                    PM_APP_DIR: appDir,
+                    PM_ICON_PATH: iconPath
+                }
+            });
+            console.log('[Shortcut] Desktop shortcut created with icon');
+        } finally {
+            try { fs.unlinkSync(tmpScript); } catch (_) {}
         }
-
-        const escapedExePath = exePath.replace(/'/g, "''");
-        const escapedDesktopPath = desktop.replace(/'/g, "''");
-
-        const { execSync } = require('child_process');
-        const ps = `
-            $ws = New-Object -ComObject WScript.Shell;
-            $s = $ws.CreateShortcut('${escapedDesktopPath.replace(/\\/g, '\\\\')}');
-            $s.TargetPath = '${escapedExePath.replace(/\\/g, '\\\\')}';
-            $s.WorkingDirectory = '${appDir.replace(/\\/g, '\\\\')}';
-            $s.Description = 'PlanMosaic 学业规划系统';
-            $s.IconLocation = '${iconPath.replace(/\\/g, '\\\\')}';
-            $s.Save();
-        `;
-        execSync(`powershell -Command "${ps.replace(/\n/g, ' ')}"`, { stdio: 'ignore' });
-        console.log('[Shortcut] Desktop shortcut created with icon');
     } catch (e) {
         console.error('[Shortcut] Failed to create shortcut:', e.message);
     }
@@ -81,22 +106,34 @@ function safeJsonStringify(obj, indent) {
     }, indent);
 }
 
-// 清理 reasoner 模型的 content 字段，移除混入的思考过程
-function cleanReasonerContent(content) {
-    if (!content) return content;
-    // deepseek-v4-pro 有时把思考过程混入 content，表现为：
-    // 1. 以 <think</think 或 <thinking> 开头的标签
-    // 2. 以 "好的，让我" "我来" "首先" 等推理性开头后跟步骤描述
-    // 3. 包含 "第一步" "接下来" 等明显推理标记
-    let cleaned = content;
-    // 移除 <think...</think 块
-    cleaned = cleaned.replace(/<think[^>]*>[\s\S]*?<\/think>/gi, '').trim();
-    cleaned = cleaned.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '').trim();
-    return cleaned || content;
-}
-
 // 清理字符串中的 lone surrogates，防止 .includes() 等操作抛出 RangeError
 function sanitizeStr(s) { return (s || '').replace(/[\uD800-\uDFFF]/g, ''); }
+
+// 加密 API Key 存储
+function encryptApiKey(key) {
+    if (!key || typeof key !== 'string') return key;
+    try {
+        if (safeStorage.isEncryptionAvailable()) {
+            return 'enc:' + safeStorage.encryptString(key).toString('base64');
+        }
+    } catch (e) {
+        console.warn('[Security] safeStorage encryption failed:', e.message);
+    }
+    return key;
+}
+
+function decryptApiKey(stored) {
+    if (!stored || typeof stored !== 'string') return stored;
+    try {
+        if (stored.startsWith('enc:') && safeStorage.isEncryptionAvailable()) {
+            const buffer = Buffer.from(stored.slice(4), 'base64');
+            return safeStorage.decryptString(buffer);
+        }
+    } catch (e) {
+        console.warn('[Security] safeStorage decryption failed:', e.message);
+    }
+    return stored;
+}
 
 // ============ 配置 ============
 
@@ -104,15 +141,8 @@ const appConfig = {
     deepseek: {
         key: '',
         url: 'https://api.deepseek.com/v1/chat/completions',
-        model: 'deepseek-v4-flash',
-        reasonerModel: 'deepseek-v4-pro'
+        model: 'deepseek-v4-flash'
     },
-    qwen: {
-        key: '',
-        url: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
-        model: 'qwen3.5-plus'
-    },
-    provider: 'deepseek',
     settings: {
         enableTimeout: false,
         timeoutMs: 30000,
@@ -120,23 +150,12 @@ const appConfig = {
     }
 };
 
-function getCurrentProvider() {
-    return appConfig.provider;
-}
-
-function setCurrentProvider(provider) {
-    if (provider === 'deepseek' || provider === 'qwen') {
-        appConfig.provider = provider;
-        console.log('[Config] Provider changed to:', provider);
-    }
-}
-
 function getCurrentApiUrl() {
-    return appConfig.provider === 'qwen' ? appConfig.qwen.url : appConfig.deepseek.url;
+    return appConfig.deepseek.url;
 }
 
 function getCurrentModelName() {
-    return appConfig.provider === 'qwen' ? appConfig.qwen.model : appConfig.deepseek.model;
+    return appConfig.deepseek.model;
 }
 
 function loadSettings() {
@@ -147,32 +166,21 @@ function loadSettings() {
             const config = JSON.parse(data);
 
             if (config.api?.deepseek?.key) {
-                appConfig.deepseek.key = config.api.deepseek.key;
+                appConfig.deepseek.key = decryptApiKey(config.api.deepseek.key);
             }
             if (config.api?.deepseek?.baseUrl) {
                 appConfig.deepseek.url = config.api.deepseek.baseUrl;
             }
-            var rawDsModel = config.api && config.api.deepseek && config.api.deepseek.model;
-            appConfig.deepseek.model = (typeof rawDsModel === 'string' && rawDsModel.trim() !== '') ? rawDsModel : appConfig.deepseek.model;
-            if (config.api?.deepseek?.reasonerModel) {
-                appConfig.deepseek.reasonerModel = config.api.deepseek.reasonerModel;
+            const dsModel = config.api?.deepseek?.model;
+            if (typeof dsModel === 'string' && dsModel.trim() !== '') {
+                appConfig.deepseek.model = dsModel;
             }
 
-            if (config.api?.qwen?.key) {
-                appConfig.qwen.key = config.api.qwen.key;
+            const apiTimeout = config.timeouts?.apiTimeoutMs;
+            if (typeof apiTimeout === 'number' && apiTimeout > 0) {
+                appConfig.settings.timeoutMs = apiTimeout;
             }
-            if (config.api?.qwen?.baseUrl) {
-                appConfig.qwen.url = config.api.qwen.baseUrl;
-            }
-            var rawQwModel = config.api && config.api.qwen && config.api.qwen.model;
-            appConfig.qwen.model = (typeof rawQwModel === 'string' && rawQwModel.trim() !== '') ? rawQwModel : appConfig.qwen.model;
-
-            var rawProvider = config.agent && config.agent.provider;
-            appConfig.provider = (rawProvider === 'deepseek' || rawProvider === 'qwen') ? rawProvider : appConfig.provider;
-
-            var rawTimeout = config.timeouts && config.timeouts.apiTimeoutMs;
-            appConfig.settings.timeoutMs = (typeof rawTimeout === 'number' && rawTimeout > 0) ? rawTimeout : appConfig.settings.timeoutMs;
-            console.debug('[Config] Loaded from config.json, provider:', appConfig.provider);
+            console.debug('[Config] Loaded from config.json');
         }
 
         const settingsPath = pmPaths.getSettingsPath();
@@ -193,22 +201,41 @@ function loadSettings() {
             appConfig.deepseek.key = process.env.DEEPSEEK_API_KEY;
             console.debug('[Config] Loaded DeepSeek API key from environment');
         }
-        if (!appConfig.qwen.key && process.env.DASHSCOPE_API_KEY) {
-            appConfig.qwen.key = process.env.DASHSCOPE_API_KEY;
-            console.debug('[Config] Loaded Qwen API key from environment');
-        }
 
-        if (appConfig.provider === 'deepseek') {
-            if (!appConfig.deepseek.key || appConfig.deepseek.key === 'YOUR_DEEPSEEK_API_KEY_HERE') {
-                console.warn('[Config] WARNING: DeepSeek API key not configured!');
-            }
-        } else {
-            if (!appConfig.qwen.key) {
-                console.warn('[Config] WARNING: Qwen API key not configured!');
-            }
+        if (!appConfig.deepseek.key || appConfig.deepseek.key === 'YOUR_DEEPSEEK_API_KEY_HERE') {
+            console.warn('[Config] WARNING: DeepSeek API key not configured!');
         }
     } catch (e) {
         console.error('[Config] Load error:', e);
+    }
+}
+
+function migrateRootDataToUserIfNeeded(username) {
+    if (typeof username !== 'string' || !username.trim()) return;
+    const targetDir = pmPaths.getAppDataDir(username);
+    const rootDir = pmPaths.getAppDataRootDir();
+    if (!targetDir || !rootDir || targetDir === rootDir) return;
+
+    const filesToMigrate = ['data.json', 'config.json', 'settings.json', 'agent-log.json', 'python-backend-port.json'];
+    try {
+        fs.mkdirSync(targetDir, { recursive: true });
+        for (const filename of filesToMigrate) {
+            const src = path.join(rootDir, filename);
+            const dest = path.join(targetDir, filename);
+            if (fs.existsSync(src) && !fs.existsSync(dest)) {
+                fs.copyFileSync(src, dest);
+                console.log(`[Paths] Copied root ${filename} to user dir for ${username}`);
+            }
+        }
+
+        const rootBackupDir = path.join(rootDir, 'backups');
+        const userBackupDir = path.join(targetDir, 'backups');
+        if (fs.existsSync(rootBackupDir) && !fs.existsSync(userBackupDir)) {
+            fs.cpSync(rootBackupDir, userBackupDir, { recursive: true });
+            console.log(`[Paths] Copied root backups to user dir for ${username}`);
+        }
+    } catch (error) {
+        console.warn('[Paths] Failed to copy root data into user dir:', error.message);
     }
 }
 
@@ -245,6 +272,32 @@ function getAgentLogPath() {
     return pmPaths.getAgentLogPath();
 }
 
+function tryRestoreJsonFromBackup(filename) {
+    try {
+        const backupDir = getBackupDir();
+        if (!backupDir || !fs.existsSync(backupDir)) return null;
+        const prefix = filename.split('.')[0] + '_';
+        const candidates = fs.readdirSync(backupDir)
+            .filter(name => name.startsWith(prefix) && name.endsWith('.json'))
+            .map(name => ({
+                path: path.join(backupDir, name),
+                time: fs.statSync(path.join(backupDir, name)).mtimeMs
+            }))
+            .sort((a, b) => b.time - a.time);
+
+        for (const candidate of candidates) {
+            try {
+                const restored = JSON.parse(fs.readFileSync(candidate.path, 'utf8'));
+                console.warn(`[Data] Restored ${filename} from backup: ${candidate.path}`);
+                return restored;
+            } catch (_) {}
+        }
+    } catch (error) {
+        console.warn('[Data] Failed to restore backup:', error.message);
+    }
+    return null;
+}
+
 function readScheduleData() {
     try {
         const content = fs.readFileSync(getDataFilePath(), 'utf8');
@@ -260,32 +313,75 @@ function readScheduleData() {
             } catch (backupErr) {
                 console.error('[Data] Failed to backup corrupted file:', backupErr);
             }
+            const restored = tryRestoreJsonFromBackup('data.json');
+            if (restored) {
+                try {
+                    fs.writeFileSync(srcPath, safeJsonStringify(restored, 2), 'utf8');
+                } catch (restoreErr) {
+                    console.warn('[Data] Failed to rewrite restored schedule data:', restoreErr.message);
+                }
+                return restored;
+            }
             return { startDate: '', endDate: '', schedules: {}, _corrupted: true };
         }
         return { startDate: '', endDate: '', schedules: {} };
     }
 }
 
-async function writeScheduleData(data) {
-    createBackup('data.json');
-    const targetPath = getDataFilePath();
-    const lockPath = targetPath + '.lock';
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-    let waited = 0;
-    while (fs.existsSync(lockPath) && waited < 3000) {
-        await new Promise(r => setTimeout(r, 100));
-        waited += 100;
+async function acquireFileLock(lockPath, timeoutMs = 3000, staleMs = 10000) {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeoutMs) {
+        try {
+            const fd = fs.openSync(lockPath, 'wx');
+            fs.closeSync(fd);
+            return;
+        } catch (error) {
+            if (error.code !== 'EEXIST') {
+                throw error;
+            }
+            try {
+                const stat = fs.statSync(lockPath);
+                if (Date.now() - stat.mtimeMs > staleMs) {
+                    fs.unlinkSync(lockPath);
+                    continue;
+                }
+            } catch (statError) {
+                if (statError.code === 'ENOENT') {
+                    continue;
+                }
+                throw statError;
+            }
+            await sleep(100);
+        }
     }
+    throw new Error(`Timed out acquiring file lock for ${path.basename(lockPath)}`);
+}
 
-    fs.writeFileSync(lockPath, '');
+// 原子写入文件：临时文件 + fsync + rename，并使用 .lock 文件防并发
+async function writeAtomicJson(targetPath, data) {
+    const lockPath = targetPath + '.lock';
+    const tmpPath = targetPath + '.tmp';
+    await acquireFileLock(lockPath);
     try {
-        const tmpPath = targetPath + '.tmp';
-        const content = safeJsonStringify(data, 2);
-        fs.writeFileSync(tmpPath, content, 'utf8');
+        fs.writeFileSync(tmpPath, safeJsonStringify(data, 2), 'utf8');
         const fd = fs.openSync(tmpPath, 'r+');
         fs.fsyncSync(fd);
         fs.closeSync(fd);
         fs.renameSync(tmpPath, targetPath);
+    } finally {
+        try { fs.unlinkSync(lockPath); } catch(e) {}
+    }
+}
+
+async function writeScheduleData(data) {
+    createBackup('data.json');
+    const targetPath = getDataFilePath();
+    try {
+        await writeAtomicJson(targetPath, data);
     } catch (e) {
         if (e.code === 'ENOSPC') {
             console.error('Disk full! Cannot save schedule data.');
@@ -295,8 +391,6 @@ async function writeScheduleData(data) {
             }
         }
         throw e;
-    } finally {
-        try { fs.unlinkSync(lockPath); } catch(e) {}
     }
 }
 
@@ -402,26 +496,7 @@ function readAgentHistory() {
 }
 
 async function writeAgentHistory(data) {
-    const targetPath = getAgentLogPath();
-    const lockPath = targetPath + '.lock';
-
-    let waited = 0;
-    while (fs.existsSync(lockPath) && waited < 3000) {
-        await new Promise(r => setTimeout(r, 100));
-        waited += 100;
-    }
-
-    fs.writeFileSync(lockPath, '');
-    try {
-        const tmpPath = targetPath + '.tmp';
-        fs.writeFileSync(tmpPath, safeJsonStringify(data, 2), 'utf8');
-        const fd = fs.openSync(tmpPath, 'r+');
-        fs.fsyncSync(fd);
-        fs.closeSync(fd);
-        fs.renameSync(tmpPath, targetPath);
-    } finally {
-        try { fs.unlinkSync(lockPath); } catch(e) {}
-    }
+    await writeAtomicJson(getAgentLogPath(), data);
 }
 
 // ============ 对话压缩与归档 ============
@@ -524,40 +599,136 @@ let pythonRestartCount = 0;
 let pythonTotalRestarts = 0; // per-app-session total, never resets
 let pythonIsRestarting = false;
 const PYTHON_MAX_RESTARTS = 3;
-const PYTHON_BACKEND_URL = 'http://127.0.0.1:8080';
+let PYTHON_BACKEND_HOST = '127.0.0.1';
+let PYTHON_BACKEND_PORT = 8080;
+let PYTHON_BACKEND_URL = `http://${PYTHON_BACKEND_HOST}:${PYTHON_BACKEND_PORT}`;
+
+/**
+ * 清理占用目标端口的孤立 Python 进程。
+ * 当用户曾直接 kill 掉 Electron / 崩溃退出时，可能会有上一轮的 Python
+ * 后端依然占据 8080，导致新启动的 backend.server 无法 bind。
+ * 在启动新的 Python 后端前，主动 kill 端口 8080~PORT+20 范围内
+ * 的孤立 Python 进程（仅在端口确实被占用时）。
+ */
+function cleanupOrphanPythonProcesses() {
+    if (process.platform !== 'win32') return;
+    const { execSync } = require('child_process');
+    try {
+        const out = execSync('netstat -ano -p TCP', { encoding: 'utf8', timeout: 5000 });
+        const lines = out.split(/\r?\n/);
+        const targetPorts = new Set();
+        for (const line of lines) {
+            const m = line.match(/^\s*TCP\s+127\.0\.0\.1:(\d+)\s+[\d.:]+\s+LISTENING\s+(\d+)/i);
+            if (!m) continue;
+            const port = parseInt(m[1], 10);
+            if (port >= PYTHON_BACKEND_PORT && port <= PYTHON_BACKEND_PORT + 20) {
+                targetPorts.add(parseInt(m[2], 10));
+            }
+        }
+        if (targetPorts.size === 0) return 0;
+
+        const psOut = execSync('tasklist /FI "IMAGENAME eq python.exe" /FO CSV /NH', { encoding: 'utf8', timeout: 5000 });
+        const pids = new Set();
+        for (const line of psOut.split(/\r?\n/)) {
+            const parts = line.split('","');
+            if (parts.length < 2) continue;
+            const name = parts[0].replace(/^"/, '');
+            const pidStr = parts[1].replace(/"$/, '');
+            if (name.toLowerCase() !== 'python.exe') continue;
+            const pid = parseInt(pidStr, 10);
+            if (!Number.isNaN(pid)) pids.add(pid);
+        }
+
+        let killed = 0;
+        for (const pid of targetPorts) {
+            if (!pids.has(pid)) continue;
+            try {
+                process.kill(pid, 'SIGKILL');
+                console.log(`[Python Backend] Killed orphan python pid=${pid}`);
+                killed++;
+            } catch (e) {
+                console.warn(`[Python Backend] Failed to kill orphan pid=${pid}: ${e.message}`);
+            }
+        }
+        return killed;
+    } catch (e) {
+        console.warn('[Python Backend] Orphan cleanup skipped:', e.message);
+        return 0;
+    }
+}
+
+/**
+ * 读取 Python 后端启动时写入的端口文件，获取实际绑定的端口。
+ * 如果后端因 8080 被占用而自动 fallback 到 8081+ ，主进程必须读取这个
+ * 文件并更新 PYTHON_BACKEND_URL，否则会一直连不上。
+ */
+function readBackendPortInfo() {
+    try {
+        const portPath = pmPaths.getPortInfoPath();
+        if (!portPath || !fs.existsSync(portPath)) return null;
+        const data = JSON.parse(fs.readFileSync(portPath, 'utf8'));
+        if (typeof data.port === 'number' && data.port > 0 && data.port <= 65535) {
+            return data;
+        }
+    } catch (e) {
+        console.warn('[Python Backend] Failed to read port info file:', e.message);
+    }
+    return null;
+}
 
 function startPythonBackend() {
     pythonIsRestarting = true;
+    const nextRestartAttempt = pythonRestartCount + 1;
+
+    // 启动前先清理可能残留的孤立 Python 进程（避免端口被占）
+    const killed = cleanupOrphanPythonProcesses();
+    if (killed > 0) {
+        console.log(`[Python Backend] Cleaned up ${killed} orphan python process(es) before start`);
+    }
+
     return new Promise((resolve, reject) => {
         const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
 
-        pythonProcess = spawn(pythonCmd, ['-m', 'backend.server'], {
-            cwd: path.join(__dirname, '..'),
+        const child = spawn(pythonCmd, ['-m', 'backend.server'], {
+            cwd: app.isPackaged ? path.join(__dirname, '..') : __dirname,
             stdio: ['pipe', 'pipe', 'pipe'],
-            env: { ...process.env, PYTHONUNBUFFERED: '1' }
+            env: {
+                ...process.env,
+                PYTHONUNBUFFERED: '1',
+                DEEPSEEK_API_KEY: appConfig.deepseek.key || process.env.DEEPSEEK_API_KEY || '',
+                MODEL_NAME: appConfig.deepseek.model || process.env.MODEL_NAME || '',
+                PLANMOSAIC_ACTIVE_USERNAME: pmPaths.getActiveUsername() || ''
+            }
         });
+        pythonProcess = child;
 
-        pythonProcess.stdout.on('data', (data) => {
+        child.stdout.on('data', (data) => {
             console.log(`[Python Backend] ${data.toString().trim()}`);
         });
-        pythonProcess.stderr.on('data', (data) => {
+        child.stderr.on('data', (data) => {
             console.error(`[Python Backend] ${data.toString().trim()}`);
         });
-        pythonProcess.on('error', (err) => {
+        child.on('error', (err) => {
             console.error('[Python Backend] Failed to start:', err.message);
             const win = BrowserWindow.getAllWindows()[0];
             if (win && !win.isDestroyed()) {
                 win.webContents.send('python-status', { status: 'error', message: 'AI 服务未启动，部分功能不可用' });
             }
+            if (pythonProcess === child) {
+                pythonProcess = null;
+            }
             pythonIsRestarting = false;
             reject(err);
         });
-        pythonProcess.on('exit', (code) => {
+        child.on('exit', (code) => {
             console.log(`[Python Backend] Exit code: ${code}`);
-            if (code !== 0 && pythonTotalRestarts < PYTHON_MAX_RESTARTS) {
+            if (pythonProcess === child) {
+                pythonProcess = null;
+            }
+            if (code !== 0 && pythonRestartCount < PYTHON_MAX_RESTARTS) {
                 pythonTotalRestarts++;
-                pythonRestartCount++;
-                console.log(`[Python Backend] Restarting (${pythonTotalRestarts}/${PYTHON_MAX_RESTARTS})...`);
+                pythonRestartCount = nextRestartAttempt;
+                console.log(`[Python Backend] Restarting (${pythonRestartCount}/${PYTHON_MAX_RESTARTS}), total=${pythonTotalRestarts}...`);
                 const win = BrowserWindow.getAllWindows()[0];
                 if (win && !win.isDestroyed()) {
                     win.webContents.send('python-status', { status: 'restarting' });
@@ -568,7 +739,7 @@ function startPythonBackend() {
                     }).catch(err => {
                         console.error('[Python Backend] Restart failed:', err.message);
                     });
-                }, 2000);
+                }, 2000 * Math.pow(2, pythonRestartCount - 1));
             } else if (pythonRestartCount >= PYTHON_MAX_RESTARTS) {
                 console.error('[Python Backend] Max restarts exceeded, giving up');
                 const win = BrowserWindow.getAllWindows()[0];
@@ -584,11 +755,23 @@ function startPythonBackend() {
             }
         });
 
-        // Poll for health check
+        // Poll for health check; also try to discover the actual port from
+        // the port info file so we support auto-fallback (8081, 8082, ...).
         let attempts = 0;
         const maxAttempts = 30;
         const interval = setInterval(async () => {
+            if (pythonProcess !== child) {
+                clearInterval(interval);
+                return;
+            }
             attempts++;
+            const portInfo = readBackendPortInfo();
+            if (portInfo && portInfo.port && portInfo.port !== PYTHON_BACKEND_PORT) {
+                PYTHON_BACKEND_PORT = portInfo.port;
+                PYTHON_BACKEND_HOST = portInfo.host || '127.0.0.1';
+                PYTHON_BACKEND_URL = `http://${PYTHON_BACKEND_HOST}:${PYTHON_BACKEND_PORT}`;
+                console.log(`[Python Backend] Discovered actual backend URL: ${PYTHON_BACKEND_URL}`);
+            }
             try {
                 const result = await new Promise((res) => {
                     http.get(`${PYTHON_BACKEND_URL}/health`, (resp) => {
@@ -629,6 +812,17 @@ function stopPythonBackend() {
 
 // ============ HTTP 客户端（调用 Python 后端）============
 
+function buildPythonApiHeaders(bodyStr) {
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-Control-Token': CONTROL_AUTH_TOKEN
+    };
+    if (bodyStr) {
+        headers['Content-Length'] = Buffer.byteLength(bodyStr);
+    }
+    return headers;
+}
+
 function pythonApi(method, path, body) {
     if (pythonIsRestarting) {
         return Promise.resolve({ error: '服务正在重启，请稍候' });
@@ -643,12 +837,7 @@ function pythonApi(method, path, body) {
             path: url.pathname + url.search,
             method: method,
             timeout: 30000,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
-        if (bodyStr) {
-            options.headers['Content-Length'] = Buffer.byteLength(bodyStr);
+            headers: buildPythonApiHeaders(bodyStr)
         }
 
         const req = http.request(options, (res) => {
@@ -676,19 +865,41 @@ function pythonApi(method, path, body) {
     });
 }
 
+async function syncActiveUserToPython() {
+    const username = pmPaths.getActiveUsername() || null;
+    try {
+        const res = await pythonApi('POST', '/api/active-username', { username });
+        console.log(`[ActiveUsername] Python backend synced user=${res && res.username}, configPath=${res && res.configPath}`);
+        return { success: true, response: res };
+    } catch (error) {
+        console.warn('[ActiveUsername] Failed to sync Python backend:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
 // ============ IPC Handlers ============
 
 // 设置当前活跃用户名（用于按账号隔离数据目录）
-ipcMain.handle('set-active-user', (event, username) => {
+ipcMain.handle('set-active-user', async (event, username) => {
+    if (username === null || username === undefined || username === '') {
+        pmPaths.setActiveUsername(null);
+        loadSettings();
+        await syncActiveUserToPython();
+        return { success: true };
+    }
+
     if (typeof username !== 'string' || username.trim() === '') {
         return { success: false, error: '无效的用户名' };
     }
+
     const result = pmPaths.setActiveUsername(username);
     if (result === null || result === undefined) {
         return { success: false, error: '无效的用户名' };
     }
+    migrateRootDataToUserIfNeeded(result);
     console.log(`[Paths] Active user set to: ${username || '(none)'}`);
     loadSettings();
+    await syncActiveUserToPython();
     if (event.sender && !event.sender.isDestroyed()) {
         event.sender.send('account-switched', { username });
     }
@@ -702,10 +913,31 @@ ipcMain.handle('set-active-user', (event, username) => {
 // TODO: 未来迭代在主进程中添加图片大小检查 — 若 buffer > 10MB，使用 Electron nativeImage 或 sharp 缩放至 max 4096x4096，避免传递超大图片导致 OOM
 ipcMain.handle('agent-chat', async (event, data) => {
     try {
+        await syncActiveUserToPython();
         return await pythonApi('POST', '/api/agent-chat', data);
     } catch (error) {
         console.error('[agent-chat] Error:', error);
         return { error: error.message };
+    }
+});
+
+ipcMain.handle('deep-planning-chat', async (event, data) => {
+    try {
+        await syncActiveUserToPython();
+        return await pythonApi('POST', '/api/deep-planning-chat', data);
+    } catch (error) {
+        console.error('[deep-planning-chat] Error:', error);
+        return { error: error.message };
+    }
+});
+
+ipcMain.handle('deep-planning-profile', async (event, data) => {
+    try {
+        await syncActiveUserToPython();
+        return await pythonApi('POST', '/api/deep-planning-profile', data);
+    } catch (error) {
+        console.error('[deep-planning-profile] Error:', error);
+        return { success: false, error: error.message, profileExtract: { longTermGoals: [], values: [], strengths: [], constraints: [] } };
     }
 });
 
@@ -728,10 +960,7 @@ ipcMain.handle('agent-chat-stream', async (event, data) => {
             path: url.pathname,
             method: 'POST',
             timeout: 120000,
-            headers: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(bodyStr)
-            }
+            headers: buildPythonApiHeaders(bodyStr)
         };
 
         let accumulatedContent = '';
@@ -739,9 +968,10 @@ ipcMain.handle('agent-chat-stream', async (event, data) => {
         let lastDataTime = performance.now();
         let doneSent = false;
         let resultReceived = false;
+        let streamWindow = null;
 
         const model = (data && data.model) || '';
-        const heartbeatThreshold = (model.includes('pro') || model.includes('reasoner')) ? 90000 : 45000;
+        const heartbeatThreshold = 45000;
 
         const clearHeartbeat = () => {
             if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
@@ -762,8 +992,8 @@ ipcMain.handle('agent-chat-stream', async (event, data) => {
 
         let visibilityCleanup = null;
         try {
-            const win = BrowserWindow.fromWebContents(event.sender);
-            if (win && !win.isDestroyed()) {
+            streamWindow = BrowserWindow.fromWebContents(event.sender);
+            if (streamWindow && !streamWindow.isDestroyed()) {
                 const onHide = () => {
                     if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
                 };
@@ -782,12 +1012,12 @@ ipcMain.handle('agent-chat-stream', async (event, data) => {
                         activeAgentStreamHeartbeat = heartbeatTimer;
                     }
                 };
-                win.on('hide', onHide);
-                win.on('show', onShow);
+                streamWindow.on('hide', onHide);
+                streamWindow.on('show', onShow);
                 visibilityCleanup = () => {
-                    if (win && !win.isDestroyed()) {
-                        win.removeListener('hide', onHide);
-                        win.removeListener('show', onShow);
+                    if (streamWindow && !streamWindow.isDestroyed()) {
+                        streamWindow.removeListener('hide', onHide);
+                        streamWindow.removeListener('show', onShow);
                     }
                 };
             }
@@ -836,7 +1066,14 @@ ipcMain.handle('agent-chat-stream', async (event, data) => {
                             doneSent = true;
                             activeAgentStreamReq = null;
                             event.sender.send('agent-stream-done');
-                            resolve({ response: { content: accumulatedContent, proposal: finalResponse?.proposal || null }, shouldRefresh: finalResponse?.shouldRefresh || false });
+                            resolve({
+                                response: {
+                                    content: accumulatedContent,
+                                    proposal: finalResponse?.proposal || null,
+                                    trace: finalResponse?.trace || [],
+                                },
+                                shouldRefresh: finalResponse?.shouldRefresh || false
+                            });
                             return;
                         }
                         try {
@@ -851,6 +1088,8 @@ ipcMain.handle('agent-chat-stream', async (event, data) => {
                             } else if (parsed.type === 'retry') {
                                 event.sender.send('agent-stream-chunk', parsed);
                                 accumulatedContent = '';
+                            } else if (parsed.type === 'self_check') {
+                                event.sender.send('agent-stream-self-check', parsed);
                             } else if (parsed.type === 'result') {
                                 resultReceived = true;
                                 finalResponse = parsed;
@@ -862,8 +1101,8 @@ ipcMain.handle('agent-chat-stream', async (event, data) => {
                             }
                             if (failedCount >= 5) {
                                 console.error('[Agent SSE] Too many JSON parse failures, forwarding error to renderer');
-                                if (win && !win.isDestroyed()) {
-                                    win.webContents.send('agent-stream-chunk', {
+                                if (streamWindow && !streamWindow.isDestroyed()) {
+                                    streamWindow.webContents.send('agent-stream-chunk', {
                                         type: 'error',
                                         content: 'SSE 数据解析失败，请重试',
                                         status: 'error'
@@ -881,7 +1120,14 @@ ipcMain.handle('agent-chat-stream', async (event, data) => {
                 if (!doneSent) {
                     event.sender.send('agent-stream-done');
                 }
-                resolve({ response: { content: accumulatedContent, proposal: finalResponse?.proposal || null }, shouldRefresh: finalResponse?.shouldRefresh || false });
+                resolve({
+                    response: {
+                        content: accumulatedContent,
+                        proposal: finalResponse?.proposal || null,
+                        trace: finalResponse?.trace || [],
+                    },
+                    shouldRefresh: finalResponse?.shouldRefresh || false
+                });
             });
             res.on('error', (err) => {
                 clearHeartbeat();
@@ -966,6 +1212,19 @@ ipcMain.handle('save-agent-history', async (event, data) => {
     try {
         return await pythonApi('POST', '/api/agent-save', data);
     } catch (error) {
+        const msg = (error && error.message) || '';
+        const isVersionConflict = /409|版本冲突|conflict/i.test(msg);
+        const result = { success: false, error: msg };
+        if (isVersionConflict) result.conflict = true;
+        return result;
+    }
+});
+
+ipcMain.handle('generate-react-log', async (event, data, full = false) => {
+    try {
+        const query = full ? '?full=true' : '';
+        return await pythonApi('POST', `/api/generate-react-log${query}`, data);
+    } catch (error) {
         return { success: false, error: error.message };
     }
 });
@@ -1012,87 +1271,6 @@ ipcMain.handle('get-agent-history-local', async () => {
     }
 });
 
-// ============ Agent Provider API ============
-
-// 获取当前 provider
-ipcMain.handle('get-agent-provider', async () => {
-    return {
-        provider: getCurrentProvider(),
-        model: getCurrentModelName()
-    };
-});
-
-// 设置 provider
-ipcMain.handle('set-agent-provider', async (event, provider) => {
-    if (!['deepseek', 'qwen'].includes(provider)) {
-        return { success: false, error: 'Invalid provider' };
-    }
-    try {
-        setCurrentProvider(provider);
-
-        // 更新配置文件
-        const configPath = pmPaths.getConfigPath();
-        let config = {};
-        if (fs.existsSync(configPath)) {
-            const data = fs.readFileSync(configPath, 'utf-8');
-            config = JSON.parse(data);
-        }
-        config.agent = config.agent || {};
-        config.agent.provider = provider;
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
-        console.log('[Agent] Provider set to:', provider);
-        return { success: true, provider: provider, model: getCurrentModelName() };
-    } catch (error) {
-        console.error('[Agent] Set provider error:', error);
-        return { success: false, error: error.message };
-    }
-});
-
-// 获取 DeepSeek 模型选择
-ipcMain.handle('get-deepseek-model', async () => {
-    const model = appConfig.deepseek.model || 'deepseek-v4-flash';
-    const isPro = model.includes('v4-pro') || model.includes('reasoner');
-    return { model: isPro ? 'pro' : 'flash', fullName: model };
-});
-
-// 设置 DeepSeek 模型
-ipcMain.handle('set-deepseek-model', async (event, modelType) => {
-    if (!['flash', 'pro'].includes(modelType)) {
-        return { success: false, error: 'Invalid model type. Use "flash" or "pro".' };
-    }
-    try {
-        const modelName = modelType === 'pro' ? 'deepseek-v4-pro' : 'deepseek-v4-flash';
-        appConfig.deepseek.model = modelName;
-
-        const configPath = pmPaths.getConfigPath();
-        let config = {};
-        if (fs.existsSync(configPath)) {
-            const data = fs.readFileSync(configPath, 'utf-8');
-            config = JSON.parse(data);
-        }
-        config.api = config.api || {};
-        config.api.deepseek = config.api.deepseek || {};
-        config.api.deepseek.model = modelName;
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
-        console.log('[Agent] DeepSeek model set to:', modelName);
-
-        pythonApi('POST', '/api/config', {
-            api: { deepseek: { model: modelName } }
-        }).then(() => {
-            console.log(`[Config] Backend reloaded with model: ${modelName}`);
-        }).catch(err => {
-            console.warn('[Config] Backend not available for hot-reload:', err.message);
-        });
-
-        return { success: true, model: modelName };
-    } catch (error) {
-        console.error('[Agent] Set DeepSeek model error:', error);
-        return { success: false, error: error.message };
-    }
-});
-
 // ============ API Key 管理 API ============
 
 const API_KEY_INFO = {
@@ -1100,11 +1278,6 @@ const API_KEY_INFO = {
         name: 'DeepSeek',
         getUrl: 'https://platform.deepseek.com/api_keys',
         signupUrl: 'https://platform.deepseek.com/'
-    },
-    qwen: {
-        name: 'Qwen (通义千问)',
-        getUrl: 'https://dashscope.console.aliyun.com/apiKey',
-        signupUrl: 'https://dashscope.console.aliyun.com/'
     }
 };
 
@@ -1115,19 +1288,12 @@ ipcMain.handle('get-api-keys', async () => {
             hasKey: !!appConfig.deepseek.key && appConfig.deepseek.key !== 'YOUR_DEEPSEEK_API_KEY_HERE',
             baseUrl: appConfig.deepseek.url,
             model: appConfig.deepseek.model
-        },
-        qwen: {
-            key: appConfig.qwen.key ? maskApiKey(appConfig.qwen.key) : '',
-            hasKey: !!appConfig.qwen.key,
-            baseUrl: appConfig.qwen.url,
-            model: appConfig.qwen.model
-        },
-        currentProvider: appConfig.provider
+        }
     };
 });
 
 ipcMain.handle('set-api-key', async (event, provider, key) => {
-    if (!['deepseek', 'qwen'].includes(provider)) {
+    if (provider !== 'deepseek') {
         return { success: false, error: 'Invalid provider' };
     }
     if (typeof key !== 'string' || key.trim() === '' || key.length < 20) {
@@ -1142,26 +1308,22 @@ ipcMain.handle('set-api-key', async (event, provider, key) => {
         }
 
         config.api = config.api || {};
-        config.api[provider] = config.api[provider] || {};
-        config.api[provider].key = key;
+        config.api.deepseek = config.api.deepseek || {};
+        config.api.deepseek.key = encryptApiKey(key);
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
-        if (provider === 'deepseek') {
-            appConfig.deepseek.key = key;
-        } else if (provider === 'qwen') {
-            appConfig.qwen.key = key;
-        }
+        appConfig.deepseek.key = key;
 
-        console.log(`[Config] ${provider} API key updated`);
+        console.log(`[Config] DeepSeek API key updated`);
 
         const result = { success: true };
 
         event.sender.send('api-key-configured', { provider });
 
         pythonApi('POST', '/api/config', {
-            api: { [provider]: { key } }
+            api: { deepseek: { key } }
         }).then(() => {
-            console.log(`[Config] Backend reloaded with new ${provider} API key`);
+            console.log(`[Config] Backend reloaded with new DeepSeek API key`);
         }).catch(err => {
             console.warn(`[Config] Backend not available for hot-reload (will use key on next restart):`, err.message);
             result.warning = '后端不在运行，配置将在下次启动时生效';
@@ -1185,9 +1347,9 @@ ipcMain.handle('open-api-key-url', async (event, provider) => {
 
 ipcMain.handle('validate-api-key', async (event, provider) => {
     try {
-        const apiKey = provider === 'qwen' ? appConfig.qwen.key : appConfig.deepseek.key;
-        const apiUrl = provider === 'qwen' ? appConfig.qwen.url : appConfig.deepseek.url;
-        const model = provider === 'qwen' ? appConfig.qwen.model : appConfig.deepseek.model;
+        const apiKey = appConfig.deepseek.key;
+        const apiUrl = appConfig.deepseek.url;
+        const model = appConfig.deepseek.model;
 
         if (!apiKey || apiKey === 'YOUR_DEEPSEEK_API_KEY_HERE') {
             return {
@@ -1339,10 +1501,9 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
-            webviewTag: true,
+            webviewTag: false,
+            sandbox: true,
             preload: path.join(__dirname, 'preload.js')
-            // 注意: sandbox设为false以确保preload.js正常工作
-            // 如需启用sandbox，需要修改preload.js的实现方式
         }
     });
 
@@ -1351,6 +1512,8 @@ function createWindow() {
 
     win.webContents.on('did-finish-load', () => {
         win.setTitle('PlanMosaic');
+        testWindowLoaded = true;
+        maybeEmitTestReady();
     });
 
     win.webContents.on('will-attach-webview', (event, webPreferences, params) => {
@@ -1372,8 +1535,22 @@ function createWindow() {
 // ============ CLI 控制 HTTP 服务器 ============
 
 const CONTROL_PORT = 5199;
+const CONTROL_HOST = pmPaths.normalizeLoopbackHost(process.env.PLANMOSAIC_CONTROL_HOST || '127.0.0.1');
+const CONTROL_AUTH_TOKEN = pmPaths.ensureControlToken(process.env.PLANMOSAIC_CONTROL_TOKEN);
+const CONTROL_MAX_BODY_SIZE = 1024 * 1024; // 1MB
 let controlServer = null;
 let mainWindow = null; // 模块级窗口引用，避免重复调用 BrowserWindow.getAllWindows()[0]
+let testWindowLoaded = false;
+let testControlServerReady = false;
+let testReadyEmitted = false;
+
+function maybeEmitTestReady() {
+    if (!IS_TEST_MODE || testReadyEmitted || !testWindowLoaded || !testControlServerReady) {
+        return;
+    }
+    testReadyEmitted = true;
+    console.log(`[TEST_READY] control=http://${CONTROL_HOST}:${CONTROL_PORT}`);
+}
 
 function getMainWindow() {
     if (mainWindow && !mainWindow.isDestroyed()) return mainWindow;
@@ -1381,12 +1558,54 @@ function getMainWindow() {
     return mainWindow;
 }
 
+function applyControlCors(req, res) {
+    const reqOrigin = req.headers['origin'] || '';
+    if (pmPaths.isAllowedLocalOrigin(reqOrigin)) {
+        res.setHeader('Access-Control-Allow-Origin', reqOrigin);
+        res.setHeader('Vary', 'Origin');
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Control-Token');
+}
+
+function readControlRequestBody(req, res) {
+    return new Promise((resolve, reject) => {
+        let body = '';
+        let bodySize = 0;
+        let completed = false;
+
+        req.on('data', chunk => {
+            if (completed) return;
+            bodySize += chunk.length;
+            if (bodySize > CONTROL_MAX_BODY_SIZE) {
+                completed = true;
+                res.writeHead(413);
+                res.end(JSON.stringify({ error: 'Request body too large' }));
+                req.resume();
+                resolve(null);
+                return;
+            }
+            body += chunk;
+        });
+
+        req.on('end', () => {
+            if (completed) return;
+            completed = true;
+            resolve(body);
+        });
+
+        req.on('error', err => {
+            if (completed) return;
+            completed = true;
+            reject(err);
+        });
+    });
+}
+
 function startControlServer() {
-    controlServer = http.createServer((req, res) => {
+    controlServer = http.createServer(async (req, res) => {
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:* http://localhost:*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        applyControlCors(req, res);
 
         if (req.method === 'OPTIONS') {
             res.writeHead(204);
@@ -1394,52 +1613,49 @@ function startControlServer() {
             return;
         }
 
-        let body = '';
-        let bodySize = 0;
-        const MAX_BODY_SIZE = 1024 * 1024; // 1MB limit
-        req.on('data', chunk => {
-            bodySize += chunk.length;
-            if (bodySize > MAX_BODY_SIZE) {
-                req.destroy();
-                res.writeHead(413);
-                res.end(JSON.stringify({ error: 'Request body too large' }));
+        const body = await readControlRequestBody(req, res);
+        if (body === null) return;
+
+        const start = Date.now();
+        try {
+            const url = new URL(req.url, `http://${CONTROL_HOST}:${CONTROL_PORT}`);
+
+            // Auth: validate token for non-health endpoints
+            const reqToken = req.headers['x-control-token'] || '';
+            if (url.pathname !== '/health' && reqToken !== CONTROL_AUTH_TOKEN) {
+                res.writeHead(403);
+                res.end(JSON.stringify({ error: 'Unauthorized: invalid or missing control token' }));
                 return;
             }
-            body += chunk;
-        });
-        req.on('end', () => {
-            const start = Date.now();
-            try {
-                const url = new URL(req.url, `http://127.0.0.1:${CONTROL_PORT}`);
 
-                // ========== 健康检查 ==========
-                if (req.method === 'GET' && url.pathname === '/health') {
-                    const mw = getMainWindow();
+            // ========== 健康检查 ==========
+            if (req.method === 'GET' && url.pathname === '/health') {
+                const mw = getMainWindow();
+                res.writeHead(200);
+                res.end(JSON.stringify({
+                    ready: true,
+                    backend: PYTHON_BACKEND_URL,
+                    pythonRunning: pythonProcess !== null,
+                    app: mw ? {
+                        title: mw.getTitle(),
+                        isMaximized: mw.isMaximized(),
+                        isMinimized: mw.isMinimized(),
+                        isFocused: mw.isFocused(),
+                        size: mw.getSize()
+                    } : null
+                }));
+                return;
+            }
+
+            // ========== UI 状态查询 ==========
+            if (req.method === 'GET' && url.pathname === '/ui/status') {
+                const mw = getMainWindow();
+                if (!mw) {
                     res.writeHead(200);
-                    res.end(JSON.stringify({
-                        ready: true,
-                        backend: PYTHON_BACKEND_URL,
-                        pythonRunning: pythonProcess !== null,
-                        app: mw ? {
-                            title: mw.getTitle(),
-                            isMaximized: mw.isMaximized(),
-                            isMinimized: mw.isMinimized(),
-                            isFocused: mw.isFocused(),
-                            size: mw.getSize()
-                        } : null
-                    }));
+                    res.end(JSON.stringify({ success: false, error: 'No window available' }));
                     return;
                 }
-
-                // ========== UI 状态查询 ==========
-                if (req.method === 'GET' && url.pathname === '/ui/status') {
-                    const mw = getMainWindow();
-                    if (!mw) {
-                        res.writeHead(200);
-                        res.end(JSON.stringify({ success: false, error: 'No window available' }));
-                        return;
-                    }
-                    mw.webContents.executeJavaScript(`
+                mw.webContents.executeJavaScript(`
                         (function() {
                             return {
                                 theme: document.documentElement.getAttribute('data-theme') || 'light',
@@ -1448,39 +1664,37 @@ function startControlServer() {
                                 sidebarVisible: !!document.querySelector('.sidebar:not(.hidden)')
                             };
                         })()
-                    `).then(uiState => {
-                        res.writeHead(200);
-                        res.end(JSON.stringify({
-                            success: true,
-                            data: {
-                                window: {
-                                    title: mw.getTitle(),
-                                    width: mw.getSize()[0],
-                                    height: mw.getSize()[1],
-                                    isMaximized: mw.isMaximized(),
-                                    isMinimized: mw.isMinimized(),
-                                    isFocused: mw.isFocused()
-                                },
-                                backend: {
-                                    running: pythonProcess !== null,
-                                    url: PYTHON_BACKEND_URL
-                                },
-                                config: {
-                                    provider: appConfig.provider,
-                                    deepseekModel: appConfig.deepseek.model,
-                                    hasDeepseekKey: !!appConfig.deepseek.key,
-                                    hasQwenKey: !!appConfig.qwen.key
-                                },
-                                ui: uiState
+                `).then(uiState => {
+                    res.writeHead(200);
+                    res.end(JSON.stringify({
+                        success: true,
+                        data: {
+                            window: {
+                                title: mw.getTitle(),
+                                width: mw.getSize()[0],
+                                height: mw.getSize()[1],
+                                isMaximized: mw.isMaximized(),
+                                isMinimized: mw.isMinimized(),
+                                isFocused: mw.isFocused()
                             },
-                            elapsed: Date.now() - start
-                        }));
-                    }).catch(err => {
-                        res.writeHead(200);
-                        res.end(JSON.stringify({ success: false, error: err.message }));
-                    });
-                    return;
-                }
+                            backend: {
+                                running: pythonProcess !== null,
+                                url: PYTHON_BACKEND_URL
+                            },
+                            config: {
+                                deepseekModel: appConfig.deepseek.model,
+                                hasDeepseekKey: !!appConfig.deepseek.key
+                            },
+                            ui: uiState
+                        },
+                        elapsed: Date.now() - start
+                    }));
+                }).catch(err => {
+                    res.writeHead(200);
+                    res.end(JSON.stringify({ success: false, error: err.message }));
+                });
+                return;
+            }
 
                 // ========== 窗口操作 ==========
                 if (req.method === 'POST' && url.pathname === '/ui/window') {
@@ -1599,6 +1813,11 @@ function startControlServer() {
 
                 // ========== 执行 JavaScript ==========
                 if (req.method === 'POST' && url.pathname === '/ui/exec') {
+                    if (app.isPackaged) {
+                        res.writeHead(403);
+                        res.end(JSON.stringify({ success: false, error: 'Script execution disabled in production builds', elapsed: Date.now() - start }));
+                        return;
+                    }
                     const data = JSON.parse(body);
                     const script = data.script || '';
                     const mainWindow = getMainWindow();
@@ -1683,12 +1902,16 @@ function startControlServer() {
                     const target = url.searchParams.get('target') || '';
                     const mainWindow = getMainWindow();
 
+                    // Validate selector to prevent injection
+                    const rawSelector = url.searchParams.get('selector') || 'body';
+                    const safeSelector = /^[a-zA-Z0-9#\.\-\s\[\]="':>~+*,]+$/.test(rawSelector) ? rawSelector : 'body';
+
                     const queries = {
                         'messages': 'JSON.stringify(window._conversationHistory || [])',
                         'theme': '(document.documentElement.getAttribute("data-theme") || "light")',
                         'title': 'document.title',
                         'dom': `(function() {
-                            const selector = ${JSON.stringify(url.searchParams.get('selector') || 'body')};
+                            const selector = ${JSON.stringify(safeSelector)};
                             const el = document.querySelector(selector);
                             if (!el) return null;
                             return {
@@ -1839,14 +2062,15 @@ function startControlServer() {
                         // --- 每日任务 CRUD ---
                         'task.add':              () => {
                             const ds = safeDate(params.dateStr);
-                            const txt = JSON.stringify(params.text || '');
-                            return `(function(){
+                            const txt = JSON.stringify(params.text || params.name || '');
+                            return `(async function(){
                                 var ds='${ds}',txt=${txt};
                                 if(!window.scheduleData) window.scheduleData={schedules:{}};
                                 if(!window.scheduleData.schedules[ds]) window.scheduleData.schedules[ds]={timeSlots:[],tasks:[]};
                                 if(!window.scheduleData.schedules[ds].tasks) window.scheduleData.schedules[ds].tasks=[];
-                                window.scheduleData.schedules[ds].tasks.push({text:txt,completed:false});
-                                if(typeof saveData==='function') saveData();
+                                window.scheduleData.schedules[ds].tasks.push({name:txt,estimated:'',actual:'',note:'',completed:false});
+                                if(typeof currentEditDate!=='undefined') currentEditDate=ds;
+                                if(typeof saveScheduleDirectly==='function') await saveScheduleDirectly(window.scheduleData.schedules[ds], { silentQueueNotice: true });
                                 if(typeof renderTaskPanel==='function') renderTaskPanel(ds);
                                 return {added:true,date:ds,text:txt};
                             })()`;
@@ -1854,13 +2078,14 @@ function startControlServer() {
                         'task.toggle':           () => {
                             const ds = safeDate(params.dateStr);
                             const idx = safeNum(params.index);
-                            return `(function(){
+                            return `(async function(){
                                 var ds='${ds}',idx=${idx};
                                 if(!window.scheduleData||!window.scheduleData.schedules[ds]||!window.scheduleData.schedules[ds].tasks) return {toggled:false};
                                 var tasks=window.scheduleData.schedules[ds].tasks;
                                 if(idx<0||idx>=tasks.length) return {toggled:false};
                                 tasks[idx].completed=!tasks[idx].completed;
-                                if(typeof saveData==='function') saveData();
+                                if(typeof currentEditDate!=='undefined') currentEditDate=ds;
+                                if(typeof saveScheduleDirectly==='function') await saveScheduleDirectly(window.scheduleData.schedules[ds], { silentQueueNotice: true });
                                 if(typeof renderTaskPanel==='function') renderTaskPanel(ds);
                                 return {toggled:true,date:ds,index:idx,completed:tasks[idx].completed};
                             })()`;
@@ -1868,13 +2093,14 @@ function startControlServer() {
                         'task.remove':           () => {
                             const ds = safeDate(params.dateStr);
                             const idx = safeNum(params.index);
-                            return `(function(){
+                            return `(async function(){
                                 var ds='${ds}',idx=${idx};
                                 if(!window.scheduleData||!window.scheduleData.schedules[ds]||!window.scheduleData.schedules[ds].tasks) return {removed:false};
                                 var tasks=window.scheduleData.schedules[ds].tasks;
                                 if(idx<0||idx>=tasks.length) return {removed:false};
                                 var removed=tasks.splice(idx,1)[0];
-                                if(typeof saveData==='function') saveData();
+                                if(typeof currentEditDate!=='undefined') currentEditDate=ds;
+                                if(typeof saveScheduleDirectly==='function') await saveScheduleDirectly(window.scheduleData.schedules[ds], { silentQueueNotice: true });
                                 if(typeof renderTaskPanel==='function') renderTaskPanel(ds);
                                 return {removed:true,date:ds,item:removed};
                             })()`;
@@ -1890,42 +2116,44 @@ function startControlServer() {
 
                         // --- 大任务 CRUD ---
                         'bigtask.add':           () => {
-                            const title = JSON.stringify(params.title || '');
-                            const desc = JSON.stringify(params.description || '');
-                            const deadline = safeDate(params.deadline);
+                            const title = JSON.stringify(params.title || params.name || '');
+                            const note = JSON.stringify(params.note || params.description || '');
+                            const deadline = safeDate(params.deadline || params.ddl);
                             const tp = JSON.stringify(params.type || 'short');
-                            return `(function(){
-                                var title=${title},desc=${desc},deadline='${deadline}',tp=${tp};
+                            const estimated = safeNum(params.estimated || params.minutes);
+                            const startDate = safeDate(params.startDate);
+                            return `(async function(){
+                                var title=${title},note=${note},deadline='${deadline}',tp=${tp},estimated=${estimated},startDate='${startDate}';
                                 if(!window.bigTasks) window.bigTasks=[];
-                                window.bigTasks.push({title:title,description:desc,type:tp,deadline:deadline,completed:false,createdAt:new Date().toISOString()});
-                                if(typeof saveBigTasks==='function') saveBigTasks();
+                                window.bigTasks.push({name:title,estimated:estimated||0,ddl:deadline,startDate:startDate,note:note,type:tp,completed:false,createdAt:new Date().toISOString()});
+                                if(typeof saveBigTasks==='function') await saveBigTasks({ silentQueueNotice: true });
                                 if(typeof renderBigTasks==='function') renderBigTasks();
-                                return {added:true,title:title};
+                                return {added:true,name:title};
                             })()`;
                         },
                         'bigtask.toggle':        () => {
                             const idx = safeNum(params.index);
-                            return `(function(){
+                            return `(async function(){
                                 var idx=${idx};
                                 if(!window.bigTasks||idx<0||idx>=window.bigTasks.length) return {toggled:false};
                                 window.bigTasks[idx].completed=!window.bigTasks[idx].completed;
-                                if(typeof saveBigTasks==='function') saveBigTasks();
+                                if(typeof saveBigTasks==='function') await saveBigTasks({ silentQueueNotice: true });
                                 if(typeof renderBigTasks==='function') renderBigTasks();
                                 return {toggled:true,index:idx,completed:window.bigTasks[idx].completed};
                             })()`;
                         },
                         'bigtask.remove':        () => {
                             const idx = safeNum(params.index);
-                            return `(function(){
+                            return `(async function(){
                                 var idx=${idx};
                                 if(!window.bigTasks||idx<0||idx>=window.bigTasks.length) return {removed:false};
                                 var removed=window.bigTasks.splice(idx,1)[0];
-                                if(typeof saveBigTasks==='function') saveBigTasks();
+                                if(typeof saveBigTasks==='function') await saveBigTasks({ silentQueueNotice: true });
                                 if(typeof renderBigTasks==='function') renderBigTasks();
                                 return {removed:true,item:removed};
                             })()`;
                         },
-                        'bigtask.list':          () => `(JSON.stringify(window.bigTasks||[]))`,
+                        'bigtask.list':          () => `(window.bigTasks||[])`,
 
                         // --- Deep Planning ---
                         'planning.open':         () => `(typeof window.openDeepPlanningModal==='function')&&window.openDeepPlanningModal()`,
@@ -1935,10 +2163,10 @@ function startControlServer() {
                                 var msg=${JSON.stringify(params.message||'')};
                                 if(typeof window.openDeepPlanningModal==='function') window.openDeepPlanningModal();
                                 setTimeout(function(){
-                                    var input=document.getElementById('dpMessageInput');
+                                    var input=document.getElementById('dpInput');
                                     if(input){input.value=msg;input.dispatchEvent(new Event('input',{bubbles:true}));}
                                     if(typeof window.sendDeepPlanningMessage==='function') window.sendDeepPlanningMessage();
-                                },400);
+                                },250);
                             })()`;
                         },
 
@@ -2001,10 +2229,15 @@ function startControlServer() {
                     return;
                 }
 
+                if (app.isPackaged) {
+                    res.writeHead(403);
+                    res.end(JSON.stringify({ error: 'Test endpoints disabled in production' }));
+                    return;
+                }
                 if (req.method === 'POST' && url.pathname === '/test/exec') {
                     const data = JSON.parse(body);
                     const { command, params } = data;
-                    const result = handleTestCommand(command, params);
+                    const result = await Promise.resolve(handleTestCommand(command, params));
                     res.writeHead(200);
                     res.end(JSON.stringify(result));
                     return;
@@ -2012,23 +2245,25 @@ function startControlServer() {
 
                 if (req.method === 'GET' && url.pathname === '/test/query') {
                     const target = url.searchParams.get('target') || '';
-                    const result = handleTestQuery(target);
+                    const result = await Promise.resolve(handleTestQuery(target));
                     res.writeHead(200);
                     res.end(JSON.stringify(result));
                     return;
                 }
 
-                res.writeHead(404);
-                res.end(JSON.stringify({ error: 'Unknown endpoint', path: url.pathname }));
-            } catch (e) {
-                res.writeHead(400);
-                res.end(JSON.stringify({ error: e.message, elapsed: Date.now() - start }));
-            }
-        });
+            res.writeHead(404);
+            res.end(JSON.stringify({ error: 'Unknown endpoint', path: url.pathname }));
+        } catch (e) {
+            res.writeHead(400);
+            res.end(JSON.stringify({ error: e.message, elapsed: Date.now() - start }));
+        }
     });
 
-    controlServer.listen(CONTROL_PORT, '127.0.0.1', () => {
-        console.log(`[CLI Control] Server listening on http://127.0.0.1:${CONTROL_PORT}`);
+    controlServer.listen(CONTROL_PORT, CONTROL_HOST, () => {
+        console.log(`[CLI Control] Server listening on http://${CONTROL_HOST}:${CONTROL_PORT}`);
+        process.env.PLANMOSAIC_CONTROL_TOKEN = CONTROL_AUTH_TOKEN;
+        testControlServerReady = true;
+        maybeEmitTestReady();
     });
     controlServer.timeout = 30000; // 30s request timeout
 }
@@ -2038,32 +2273,8 @@ function handleTestCommand(command, params) {
     try {
         switch (command) {
             case 'set-api-key': {
-                const provider = params.provider || 'deepseek';
                 const key = params.key || '';
-                appConfig.api = appConfig.api || {};
-                appConfig.api[provider] = appConfig.api[provider] || {};
-                appConfig.api[provider].key = key;
-                appConfig[provider].key = key;
-
-                const configPath = pmPaths.getConfigPath();
-                let config = {};
-                if (fs.existsSync(configPath)) {
-                    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-                }
-                config.api = config.api || {};
-                config.api[provider] = config.api[provider] || {};
-                config.api[provider].key = key;
-                fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
-                pythonApi('POST', '/api/config', { api: { [provider]: { key } } })
-                    .catch(() => {});
-                return { success: true, data: { provider, keyLength: key.length }, elapsed: Date.now() - start };
-            }
-
-            case 'set-deepseek-model': {
-                const modelType = params.model || 'flash';
-                const modelName = modelType === 'pro' ? 'deepseek-v4-pro' : 'deepseek-v4-flash';
-                appConfig.deepseek.model = modelName;
+                appConfig.deepseek.key = key;
 
                 const configPath = pmPaths.getConfigPath();
                 let config = {};
@@ -2072,12 +2283,12 @@ function handleTestCommand(command, params) {
                 }
                 config.api = config.api || {};
                 config.api.deepseek = config.api.deepseek || {};
-                config.api.deepseek.model = modelName;
+                config.api.deepseek.key = encryptApiKey(key);
                 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
-                pythonApi('POST', '/api/config', { api: { deepseek: { model: modelName } } })
+                pythonApi('POST', '/api/config', { api: { deepseek: { key } } })
                     .catch(() => {});
-                return { success: true, data: { model: modelName }, elapsed: Date.now() - start };
+                return { success: true, data: { keyLength: key.length }, elapsed: Date.now() - start };
             }
 
             case 'send-message': {
@@ -2128,6 +2339,106 @@ function handleTestCommand(command, params) {
                 return { success: false, error: 'No backend process', elapsed: Date.now() - start };
             }
 
+            case 'backend-request': {
+                const method = typeof params.method === 'string' ? params.method.toUpperCase() : 'GET';
+                const requestPath = typeof params.path === 'string' ? params.path : '/health';
+                return pythonApi(method, requestPath, params.body)
+                    .then((data) => ({
+                        success: true,
+                        data: {
+                            status: 200,
+                            body: data
+                        },
+                        elapsed: Date.now() - start
+                    }))
+                    .catch((error) => {
+                        const message = error && error.message ? error.message : String(error);
+                        const statusMatch = message.match(/^HTTP\s+(\d+):\s*(.*)$/);
+                        const statusCode = statusMatch ? Number(statusMatch[1]) : 500;
+                        let payload = statusMatch ? statusMatch[2] : message;
+                        try {
+                            payload = JSON.parse(payload);
+                        } catch (_) {}
+                        return {
+                            success: false,
+                            data: {
+                                status: statusCode,
+                                body: payload
+                            },
+                            error: message,
+                            elapsed: Date.now() - start
+                        };
+                    });
+            }
+
+            case 'backend-raw-request': {
+                const method = typeof params.method === 'string' ? params.method.toUpperCase() : 'GET';
+                const requestPath = typeof params.path === 'string' ? params.path : '/health';
+                const requestUrl = new URL(requestPath, PYTHON_BACKEND_URL);
+                const rawHeaders = params.headers && typeof params.headers === 'object' ? params.headers : {};
+                const bodyPayload = params.rawBody !== undefined
+                    ? String(params.rawBody)
+                    : (params.body !== undefined ? JSON.stringify(params.body) : '');
+                const headers = { ...rawHeaders };
+                if (!Object.keys(headers).some((key) => key.toLowerCase() === 'content-type')) {
+                    headers['Content-Type'] = 'application/json';
+                }
+                if (bodyPayload) {
+                    headers['Content-Length'] = Buffer.byteLength(bodyPayload);
+                }
+
+                return new Promise((resolve) => {
+                    const req = http.request({
+                        hostname: requestUrl.hostname,
+                        port: requestUrl.port,
+                        path: requestUrl.pathname + requestUrl.search,
+                        method,
+                        timeout: 30000,
+                        headers
+                    }, (resp) => {
+                        let data = '';
+                        resp.on('data', chunk => data += chunk);
+                        resp.on('end', () => {
+                            let parsed = data;
+                            try {
+                                parsed = JSON.parse(data);
+                            } catch (_) {}
+                            resolve({
+                                success: resp.statusCode >= 200 && resp.statusCode < 300,
+                                data: {
+                                    status: resp.statusCode,
+                                    body: parsed
+                                },
+                                elapsed: Date.now() - start
+                            });
+                        });
+                    });
+                    req.on('error', (error) => {
+                        resolve({
+                            success: false,
+                            error: error.message,
+                            elapsed: Date.now() - start
+                        });
+                    });
+                    req.on('timeout', () => {
+                        req.destroy(new Error('Request timeout'));
+                    });
+                    if (bodyPayload) req.write(bodyPayload);
+                    req.end();
+                });
+            }
+
+            case 'backend-oversized-request': {
+                const targetBytes = Number(params.bytes) > 0 ? Number(params.bytes) : (21 * 1024 * 1024);
+                const fillerBytes = Math.max(1, targetBytes - 32);
+                return handleTestCommand('backend-raw-request', {
+                    method: typeof params.method === 'string' ? params.method : 'POST',
+                    path: typeof params.path === 'string' ? params.path : '/api/save-schedule',
+                    headers: params.headers && typeof params.headers === 'object' ? params.headers : {},
+                    rawBody: JSON.stringify({ blob: 'x'.repeat(fillerBytes) })
+                });
+            }
+
             default:
                 return { success: false, error: `Unknown command: ${command}`, elapsed: Date.now() - start };
         }
@@ -2141,7 +2452,8 @@ function handleTestQuery(target) {
     try {
         switch (target) {
             case 'config':
-                return { success: true, data: { provider: appConfig.provider,
+                return { success: true, data: {
+                    provider: 'deepseek',
                     deepseekModel: appConfig.deepseek.model,
                     hasKey: !!appConfig.deepseek.key }, elapsed: Date.now() - start };
             case 'backend':

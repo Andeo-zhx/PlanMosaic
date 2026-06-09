@@ -18,7 +18,7 @@ module.exports = {
     run: async function(runOne) {
         await runOne('设置有效 API Key 后后端不再返回未配置', async () => {
             const testKey = process.env.TEST_DEEPSEEK_KEY || 'sk-test-key-long-enough-for-validation';
-            await testExec('set-api-key', { provider: 'deepseek', key: testKey });
+            await testExec('set-api-key', { key: testKey });
             await sleep(500);
 
             try {
@@ -58,7 +58,7 @@ module.exports = {
         });
 
         await runOne('设置占位 Key 后返回未配置提示', async () => {
-            await testExec('set-api-key', { provider: 'deepseek', key: 'YOUR_DEEPSEEK_API_KEY_HERE' });
+            await testExec('set-api-key', { key: 'YOUR_DEEPSEEK_API_KEY_HERE' });
             await sleep(500);
 
             try {
@@ -97,7 +97,7 @@ module.exports = {
 
         await runOne('config.json 写入格式为嵌套结构', async () => {
             const testKey = process.env.TEST_DEEPSEEK_KEY || 'sk-test-key-long-enough';
-            await testExec('set-api-key', { provider: 'deepseek', key: testKey });
+            await testExec('set-api-key', { key: testKey });
             await sleep(300);
 
             const configRes = await testQuery('config');

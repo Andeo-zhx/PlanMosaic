@@ -92,6 +92,24 @@ pids
 .temp/
 tmp/
 
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 调试/语法检查临时脚本（项目根目录）
+/_check_syntax*.py
+/_check_syntax*.js
+/_check_syntax*.js.js
+/_regex_test.py
+/_run_verify.py
+/test_endpoint.py
+/debug-*.md
+
+# 调试目录
+.dbg/
+.tmp-*/
+
 # 其他
 *.tgz
 .yarn-integrity

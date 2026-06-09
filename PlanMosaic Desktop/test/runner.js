@@ -5,6 +5,7 @@ const harness = require('./harness');
 
 const args = process.argv.slice(2);
 const attachMode = args.includes('--attach');
+const requestedSuite = args.find(arg => arg && !arg.startsWith('--')) || null;
 
 if (attachMode) {
     console.log('[runner] Attach mode - connecting to existing app...');
@@ -25,7 +26,13 @@ async function loadTestCases() {
 }
 
 async function main() {
-    const suites = await loadTestCases();
+    let suites = await loadTestCases();
+    if (requestedSuite) {
+        suites = suites.filter(suite => suite.name === requestedSuite);
+        if (suites.length === 0) {
+            throw new Error(`Unknown test suite: ${requestedSuite}`);
+        }
+    }
     console.log(`[runner] Loaded ${suites.length} test suites\n`);
 
     if (!attachMode) {
@@ -33,7 +40,6 @@ async function main() {
         await harness.waitForTestServer();
         await harness.waitForBackend();
     } else {
-        testServerUrl = `http://127.0.0.1:${harness.TEST_PORT}`;
         await harness.waitForTestServer();
         await harness.waitForBackend();
     }

@@ -36,6 +36,9 @@ const DATA_FILES = [
     'agent-log.json',
 ];
 
+const CONTROL_TOKEN_FILENAME = 'control-token.json';
+const CONTROL_TOKEN_PATTERN = /^[a-f0-9]{64}$/i;
+
 /**
  * 根据操作系统返回应用数据根目录的绝对路径（不含用户子目录）。
  */
@@ -62,9 +65,18 @@ let activeUsername = null;
  * @param {string|null} username - 用户名，null 表示未登录
  */
 function setActiveUsername(username) {
+    if (username === null || username === undefined || username === '') {
+        activeUsername = null;
+        return activeUsername;
+    }
     const sanitized = sanitizeUsername(username);
     if (sanitized === null) return null;
     activeUsername = sanitized;
+    return activeUsername;
+}
+
+function getActiveUsername() {
+    return activeUsername;
 }
 
 /**
@@ -239,6 +251,7 @@ function getDataFilePath(username)   { return getDataPath('data.json', username)
 function getConfigPath(username)     { return getDataPath('config.json', username); }
 function getSettingsPath(username)   { return getDataPath('settings.json', username); }
 function getAgentLogPath(username)   { return getDataPath('agent-log.json', username); }
+function getPortInfoPath(username)   { return getDataPath('python-backend-port.json', username); }
 
 function getBackupDir(username) {
     try {
@@ -301,6 +314,83 @@ function cleanOldBackups(filePrefix, username) {
     }
 }
 
+function normalizeHostname(hostname) {
+    if (typeof hostname !== 'string') return '';
+    const trimmed = hostname.trim().toLowerCase();
+    if (!trimmed) return '';
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        return trimmed.slice(1, -1);
+    }
+    return trimmed;
+}
+
+function isLoopbackHost(hostname) {
+    const normalized = normalizeHostname(hostname);
+    return normalized === '127.0.0.1' || normalized === 'localhost' || normalized === '::1';
+}
+
+function normalizeLoopbackHost(hostname, fallback = '127.0.0.1') {
+    const normalizedFallback = isLoopbackHost(fallback) ? normalizeHostname(fallback) : '127.0.0.1';
+    if (isLoopbackHost(hostname)) return normalizeHostname(hostname);
+    return normalizedFallback;
+}
+
+function isAllowedLocalOrigin(origin) {
+    if (typeof origin !== 'string' || origin.trim() === '') return false;
+    try {
+        const parsed = new URL(origin);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+        if (parsed.username || parsed.password) return false;
+        return isLoopbackHost(parsed.hostname);
+    } catch (_) {
+        return false;
+    }
+}
+
+function getControlTokenPath() {
+    fs.mkdirSync(APP_DATA_ROOT_DIR, { recursive: true });
+    return path.join(APP_DATA_ROOT_DIR, CONTROL_TOKEN_FILENAME);
+}
+
+function readControlToken() {
+    const envToken = process.env.PLANMOSAIC_CONTROL_TOKEN || '';
+    if (CONTROL_TOKEN_PATTERN.test(envToken)) return envToken;
+
+    try {
+        const tokenPath = getControlTokenPath();
+        if (!fs.existsSync(tokenPath)) return '';
+        const parsed = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+        const fileToken = typeof parsed.token === 'string' ? parsed.token.trim() : '';
+        return CONTROL_TOKEN_PATTERN.test(fileToken) ? fileToken : '';
+    } catch (e) {
+        console.warn('[Paths] Failed to read control token:', e.message);
+        return '';
+    }
+}
+
+function writeControlToken(token) {
+    const normalized = typeof token === 'string' ? token.trim() : '';
+    if (!CONTROL_TOKEN_PATTERN.test(normalized)) {
+        throw new Error('Invalid control token format');
+    }
+    const tokenPath = getControlTokenPath();
+    fs.writeFileSync(tokenPath, JSON.stringify({
+        token: normalized,
+        updatedAt: new Date().toISOString()
+    }, null, 2), 'utf8');
+    process.env.PLANMOSAIC_CONTROL_TOKEN = normalized;
+    return tokenPath;
+}
+
+function ensureControlToken(seedToken) {
+    const candidate = typeof seedToken === 'string' ? seedToken.trim() : '';
+    const token = CONTROL_TOKEN_PATTERN.test(candidate)
+        ? candidate
+        : (readControlToken() || crypto.randomBytes(32).toString('hex'));
+    writeControlToken(token);
+    return token;
+}
+
 module.exports = {
     APP_DATA_DIR: APP_DATA_ROOT_DIR,  // 向后兼容
     APP_DATA_ROOT_DIR,
@@ -310,12 +400,22 @@ module.exports = {
     migrateFromLegacyDir,
     cleanLegacyDataForPackagedApp,
     setActiveUsername,
+    getActiveUsername,
     hashUsername,
     getDataPath,
     getDataFilePath,
     getConfigPath,
     getSettingsPath,
     getAgentLogPath,
+    getPortInfoPath,
+    getControlTokenPath,
     getBackupDir,
     cleanOldBackups,
+    normalizeHostname,
+    isLoopbackHost,
+    normalizeLoopbackHost,
+    isAllowedLocalOrigin,
+    readControlToken,
+    writeControlToken,
+    ensureControlToken,
 };

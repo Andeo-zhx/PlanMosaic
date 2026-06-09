@@ -1,15 +1,18 @@
 const { spawn } = require('child_process');
 const http = require('http');
 const path = require('path');
-const fs = require('fs');
+const pmPaths = require('../paths.js');
 
 const TEST_PORT = 5199;
 const BACKEND_PORT = 8080;
 const APP_DIR = path.join(__dirname, '..');
 const TEST_TIMEOUT = 60000;
+const DEFAULT_TEST_SERVER_URL = `http://127.0.0.1:${TEST_PORT}`;
 
 let electronProcess = null;
 let testServerUrl = null;
+let backendServerUrl = null;
+let controlToken = '';
 
 function log(level, msg) {
     const ts = new Date().toISOString().split('T')[1].slice(0, 12);
@@ -23,8 +26,7 @@ function sleep(ms) {
 
 function httpRequest(method, urlPath, body) {
     return new Promise((resolve, reject) => {
-        const url = new URL(urlPath, testServerUrl || `http://127.0.0.1:${TEST_PORT}`);
-        const isBackendUrl = url.port == BACKEND_PORT;
+        const url = new URL(urlPath, testServerUrl || DEFAULT_TEST_SERVER_URL);
         const options = {
             hostname: url.hostname,
             port: url.port,
@@ -33,6 +35,10 @@ function httpRequest(method, urlPath, body) {
             timeout: 30000,
             headers: { 'Content-Type': 'application/json' }
         };
+        const isControlRequest = String(url.port) === String(TEST_PORT);
+        if (isControlRequest && controlToken && url.pathname !== '/health') {
+            options.headers['X-Control-Token'] = controlToken;
+        }
 
         const req = http.request(options, (res) => {
             let data = '';
@@ -68,17 +74,34 @@ async function testQuery(target) {
 }
 
 async function backendApi(method, urlPath, body) {
-    return httpRequest(method, `http://127.0.0.1:${BACKEND_PORT}${urlPath}`, body);
+    const result = await testExec('backend-request', {
+        method,
+        path: urlPath,
+        body
+    });
+    const status = result && result.data ? result.data.status : 500;
+    const payload = result && result.data ? result.data.body : null;
+    if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+        return { status, ...payload };
+    }
+    return { status, raw: payload };
+}
+
+function refreshControlToken() {
+    controlToken = process.env.PLANMOSAIC_CONTROL_TOKEN || pmPaths.readControlToken() || '';
+    return controlToken;
 }
 
 async function waitForTestServer(timeoutMs = 30000) {
     const start = Date.now();
-    testServerUrl = `http://127.0.0.1:${TEST_PORT}`;
+    testServerUrl = DEFAULT_TEST_SERVER_URL;
 
     while (Date.now() - start < timeoutMs) {
         try {
-            const res = await httpRequest('GET', '/test/health');
+            refreshControlToken();
+            const res = await httpRequest('GET', '/health');
             if (res.status === 200 && res.ready) {
+                backendServerUrl = typeof res.backend === 'string' && res.backend ? res.backend : backendServerUrl;
                 log('info', 'Test server ready');
                 return true;
             }
@@ -93,10 +116,28 @@ async function waitForBackend(timeoutMs = 30000) {
 
     while (Date.now() - start < timeoutMs) {
         try {
-            const res = await httpRequest('GET', `http://127.0.0.1:${BACKEND_PORT}/health`);
-            if (res.status === 200) {
-                log('info', 'Python backend ready');
-                return true;
+            let backendReportedRunning = false;
+            const controlRes = await httpRequest('GET', '/health');
+            if (controlRes.status === 200 && typeof controlRes.backend === 'string' && controlRes.backend) {
+                backendServerUrl = controlRes.backend;
+            }
+            if (controlRes.status === 200 && controlRes.pythonRunning) {
+                backendReportedRunning = true;
+            }
+            const backendRes = await testQuery('backend');
+            if (backendRes && backendRes.success && backendRes.data && backendRes.data.running) {
+                backendServerUrl = backendRes.data.url || backendServerUrl;
+                backendReportedRunning = true;
+            }
+            if (backendReportedRunning) {
+                const rawHealth = await testExec('backend-raw-request', {
+                    method: 'GET',
+                    path: '/health'
+                });
+                if (rawHealth && rawHealth.success && rawHealth.data && rawHealth.data.status === 200) {
+                    log('info', 'Python backend ready');
+                    return true;
+                }
             }
         } catch (e) {}
         await sleep(500);
@@ -107,8 +148,19 @@ async function waitForBackend(timeoutMs = 30000) {
 function startApp() {
     return new Promise((resolve, reject) => {
         log('info', 'Starting Electron app in test mode...');
+        testServerUrl = DEFAULT_TEST_SERVER_URL;
+        backendServerUrl = null;
+        controlToken = '';
+        const electronBinary = require('electron');
 
-        electronProcess = spawn('npx', ['electron', '.'], {
+        let settled = false;
+        const startupTimer = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            reject(new Error('App start timeout'));
+        }, 30000);
+
+        electronProcess = spawn(electronBinary, ['.'], {
             cwd: APP_DIR,
             stdio: ['pipe', 'pipe', 'pipe'],
             env: {
@@ -116,10 +168,13 @@ function startApp() {
                 PLANMOSAIC_TEST_MODE: '1',
                 ELECTRON_ENABLE_LOGGING: '0'
             },
-            shell: true
+            shell: false
         });
 
         electronProcess.on('error', (err) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(startupTimer);
             log('fail', `Failed to start Electron: ${err.message}`);
             reject(err);
         });
@@ -132,6 +187,9 @@ function startApp() {
         electronProcess.stdout.on('data', (data) => {
             const text = data.toString();
             if (text.includes('[TEST_READY]')) {
+                if (settled) return;
+                settled = true;
+                clearTimeout(startupTimer);
                 log('info', 'Electron test mode ready');
                 resolve();
             }
@@ -143,8 +201,6 @@ function startApp() {
                 console.log(`  [electron] ${text}`);
             }
         });
-
-        setTimeout(() => reject(new Error('App start timeout')), 30000);
     });
 }
 

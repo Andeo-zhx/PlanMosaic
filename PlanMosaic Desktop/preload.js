@@ -4,8 +4,61 @@ const ALLOWED_REMOVE_CHANNELS = [
     'agent-stream-chunk',
     'agent-stream-done',
     'agent-stream-status',
-    'agent-stream-error'
+    'agent-stream-error',
+    'agent-stream-self-check',
+    'api-key-configured',
+    'python-status',
+    'python-backend-error',
+    'disk-full-error'
 ];
+
+const listenerRegistry = new Map();
+
+function trackListener(channel, callback, wrapped) {
+    if (!listenerRegistry.has(channel)) {
+        listenerRegistry.set(channel, new Map());
+    }
+    const channelMap = listenerRegistry.get(channel);
+    if (!channelMap.has(callback)) {
+        channelMap.set(callback, new Set());
+    }
+    channelMap.get(callback).add(wrapped);
+}
+
+function removeTrackedListener(channel, callback, wrapped) {
+    if (!ALLOWED_REMOVE_CHANNELS.includes(channel)) {
+        console.warn(`[Preload] removeListener blocked for channel: ${channel}`);
+        return;
+    }
+    const channelMap = listenerRegistry.get(channel);
+    const wrappedSet = channelMap && channelMap.get(callback);
+    if (!wrappedSet || wrappedSet.size === 0) {
+        return;
+    }
+    const targets = wrapped ? [wrapped] : Array.from(wrappedSet);
+    targets.forEach((fn) => {
+        ipcRenderer.removeListener(channel, fn);
+        wrappedSet.delete(fn);
+    });
+    if (wrappedSet.size === 0) {
+        channelMap.delete(callback);
+    }
+    if (channelMap.size === 0) {
+        listenerRegistry.delete(channel);
+    }
+}
+
+function addListener(channel, callback, wrapperFactory) {
+    if (typeof callback !== 'function') {
+        return function noop() {};
+    }
+    const wrapped = wrapperFactory(callback);
+    trackListener(channel, callback, wrapped);
+    ipcRenderer.on(channel, wrapped);
+    return function unsubscribe() {
+        removeTrackedListener(channel, callback, wrapped);
+    };
+}
 
 // 向渲染进程暴露安全的IPC接口
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -27,27 +80,30 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // AI对话（流式输出）
     agentChatStream: (data) => ipcRenderer.invoke('agent-chat-stream', data),
 
+    deepPlanningChat: (data) => ipcRenderer.invoke('deep-planning-chat', data),
+    deepPlanningProfile: (data) => ipcRenderer.invoke('deep-planning-profile', data),
+    generateReactLog: (data, full) => ipcRenderer.invoke('generate-react-log', data, full),
+
     // 流式输出事件监听
-    onAgentStreamChunk: (callback) => {
-        ipcRenderer.on('agent-stream-chunk', (_event, chunk) => callback(chunk));
-    },
-    onAgentStreamDone: (callback) => {
-        ipcRenderer.on('agent-stream-done', () => callback());
-    },
-    onAgentStreamStatus: (callback) => {
-        ipcRenderer.on('agent-stream-status', (_event, status) => callback(status));
-    },
+    onAgentStreamChunk: (callback) => addListener('agent-stream-chunk', callback, (cb) => (_event, chunk) => cb(chunk)),
+    onAgentStreamDone: (callback) => addListener('agent-stream-done', callback, (cb) => () => cb()),
+    onAgentStreamStatus: (callback) => addListener('agent-stream-status', callback, (cb) => (_event, status) => cb(status)),
+    onAgentStreamError: (callback) => addListener('agent-stream-error', callback, (cb) => (_event, err) => cb(err)),
+    onAgentStreamSelfCheck: (callback) => addListener('agent-stream-self-check', callback, (cb) => (_event, payload) => cb(payload)),
     removeListener: (channel, callback) => {
-        if (!ALLOWED_REMOVE_CHANNELS.includes(channel)) {
-            console.warn(`[Preload] removeListener blocked for channel: ${channel}`);
-            return;
-        }
-        ipcRenderer.removeListener(channel, callback);
+        removeTrackedListener(channel, callback);
     },
     removeAllAgentListeners: () => {
         ipcRenderer.removeAllListeners('agent-stream-chunk');
         ipcRenderer.removeAllListeners('agent-stream-done');
         ipcRenderer.removeAllListeners('agent-stream-status');
+        ipcRenderer.removeAllListeners('agent-stream-error');
+        ipcRenderer.removeAllListeners('agent-stream-self-check');
+        listenerRegistry.delete('agent-stream-chunk');
+        listenerRegistry.delete('agent-stream-done');
+        listenerRegistry.delete('agent-stream-status');
+        listenerRegistry.delete('agent-stream-error');
+        listenerRegistry.delete('agent-stream-self-check');
     },
 
     cancelAgentStream: () => ipcRenderer.invoke('cancel-agent-stream'),
@@ -68,27 +124,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     saveScheduleDataLocal: (data) => ipcRenderer.invoke('save-schedule-data-local', data),
     getAgentHistoryLocal: () => ipcRenderer.invoke('get-agent-history-local'),
 
-    // Agent Provider API
-    getAgentProvider: () => ipcRenderer.invoke('get-agent-provider'),
-    setAgentProvider: (provider) => ipcRenderer.invoke('set-agent-provider', provider),
-
-    // DeepSeek Model API
-    getDeepSeekModel: () => ipcRenderer.invoke('get-deepseek-model'),
-    setDeepSeekModel: (model) => ipcRenderer.invoke('set-deepseek-model', model),
-
-    // Test API (仅测试模式可用)
-    testExec: (command, params) => ipcRenderer.invoke('test-exec', command, params),
-    testQuery: (target) => ipcRenderer.invoke('test-query', target),
-
     // API Key 管理 API
     getApiKeys: async () => {
         const keys = await ipcRenderer.invoke('get-api-keys');
         return Object.fromEntries(
-            Object.entries(keys).map(([provider, val]) => [provider, { configured: !!(val && val.hasKey) }])
+            Object.entries(keys).map(([provider, val]) => [provider, {
+                ...(val || {}),
+                configured: !!(val && val.hasKey)
+            }])
         );
     },
     setApiKey: (provider, key) => ipcRenderer.invoke('set-api-key', provider, key),
-    onApiKeyConfigured: (callback) => ipcRenderer.on('api-key-configured', (_e, d) => callback(d)),
+    onApiKeyConfigured: (callback) => addListener('api-key-configured', callback, (cb) => (_e, d) => cb(d)),
     openApiKeyUrl: (provider) => ipcRenderer.invoke('open-api-key-url', provider),
     validateApiKey: (provider) => ipcRenderer.invoke('validate-api-key', provider),
 
@@ -98,17 +145,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 保存 ReAct 日志文件（弹出原生保存对话框）
     saveReActFile: (data) => ipcRenderer.invoke('save-react-file', data),
 
-    onPythonStatus: (callback) => {
-        ipcRenderer.on('python-status', (_event, data) => callback(data));
-    },
+    onPythonStatus: (callback) => addListener('python-status', callback, (cb) => (_event, data) => cb(data)),
 
-    onPythonBackendError: (callback) => {
-        ipcRenderer.on('python-backend-error', (_event, data) => callback(data));
-    },
+    onPythonBackendError: (callback) => addListener('python-backend-error', callback, (cb) => (_event, data) => cb(data)),
 
-    onDiskFullError: (callback) => {
-        ipcRenderer.on('disk-full-error', (_event, data) => callback(data));
-    }
+    onDiskFullError: (callback) => addListener('disk-full-error', callback, (cb) => (_event, data) => cb(data))
 });
 
 console.log('[Preload] Electron API exposed');

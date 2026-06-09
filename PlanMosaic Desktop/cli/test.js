@@ -20,29 +20,37 @@ function runTests(testName) {
     console.log(h.dim(h.separator('─', 60)));
 
     try {
-        const { spawn } = require('child_process');
+        const { spawnSync } = require('child_process');
 
-        process.env.PLANMOSAIC_TEST_MODE = '1';
+        const env = {
+            ...process.env,
+            PLANMOSAIC_TEST_MODE: '1'
+        };
 
         const args = [runnerPath];
         if (testName) args.push(testName);
 
-        const child = spawn('node', args, {
-            cwd: testDir,
+        const result = spawnSync(process.execPath, args, {
+            cwd: path.join(__dirname, '..'),
             stdio: 'inherit',
-            env: { ...process.env }
+            env
         });
 
-        child.on('exit', (code) => {
-            if (code === 0) {
-                console.log('');
-                h.success('所有测试通过');
-            } else {
-                console.log('');
-                h.error(`测试失败 (退出码: ${code})`);
-            }
-        });
+        if (result.error) {
+            throw result.error;
+        }
+
+        const exitCode = typeof result.status === 'number' ? result.status : 1;
+        process.exitCode = exitCode;
+
+        console.log('');
+        if (exitCode === 0) {
+            h.success('所有测试通过');
+        } else {
+            h.error(`测试失败 (退出码: ${exitCode})`);
+        }
     } catch (e) {
+        process.exitCode = 1;
         h.error('运行测试失败: ' + e.message);
     }
 }

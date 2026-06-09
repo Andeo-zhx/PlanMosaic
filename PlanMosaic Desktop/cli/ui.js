@@ -1,5 +1,6 @@
 const http = require('http');
 const h = require('./helpers.js');
+const pmPaths = require('../paths.js');
 
 const CONTROL_URL = 'http://127.0.0.1:5199';
 
@@ -16,6 +17,11 @@ function apiCall(method, path, body) {
             timeout: 5000,
             headers: { 'Content-Type': 'application/json' }
         };
+        // Auth token for control server
+        const controlToken = process.env.PLANMOSAIC_CONTROL_TOKEN || pmPaths.readControlToken();
+        if (controlToken) {
+            options.headers['X-Control-Token'] = controlToken;
+        }
         if (bodyStr) {
             options.headers['Content-Length'] = Buffer.byteLength(bodyStr);
         }
@@ -78,9 +84,8 @@ function printStatus(data) {
 
     console.log('');
     console.log(h.bold('配置:'));
-    console.log(h.cyan(`  提供商:   ${data.config.provider}`));
     console.log(h.cyan(`  模型:     ${data.config.deepseekModel}`));
-    console.log(h.cyan(`  密钥:     DS:${data.config.hasDeepseekKey ? h.green('已配置') : h.dim('无')} QW:${data.config.hasQwenKey ? h.green('已配置') : h.dim('无')}`));
+    console.log(h.cyan(`  密钥:     ${data.config.hasDeepseekKey ? h.green('已配置') : h.dim('未配置')}`));
 
     if (data.ui) {
         console.log('');

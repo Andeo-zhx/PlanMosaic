@@ -1,4 +1,5 @@
 const { spawn } = require('child_process');
+const fs = require('fs');
 const http = require('http');
 const path = require('path');
 const h = require('./helpers.js');
@@ -32,7 +33,7 @@ async function startPythonBackend() {
 
     return new Promise((resolve) => {
         const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
-        const cwd = path.join(__dirname, '..', '..');
+        const cwd = path.join(__dirname, '..');
 
         processRef.current = spawn(pythonCmd, ['-m', 'backend.server'], {
             cwd: cwd,

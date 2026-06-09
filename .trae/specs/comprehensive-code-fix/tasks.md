@@ -172,6 +172,53 @@
   - [x] SubTask L4.2: 确保成功时重置计数，失败时递增
   - **验证**: 连续失败 3 次后第 4 次不再触发生成
 
+## 🆕 P0/P1/P2 联动修复（子代理 C，PlanMosaic Desktop/index.html）
+
+- [x] Task 3: 6 个弹窗接入点遮罩关闭（index.html）
+  - 在 DOMContentLoaded 块中追加 3 个新遮罩关闭监听器（courseInputModal / deepPlanningModal / reactLogModal），与已存在的 settingsOverlay / bigTaskModal / actualTimeModal / scheduleEditorModal 风格一致；用 `typeof window[close] === 'function'` 守护函数存在
+  - **完成说明**: 9965-10018 行新增 `extraOverlayModals` 数组，遍历绑定 `e.target === el` 关闭逻辑；保留原 M-F/M-G 已有遮罩关闭逻辑不动
+  - **验证**: DevTools 中点击对应弹窗外层遮罩可关闭；3 个不存在的 cancelCourseInput 等函数会安全跳过
+
+- [x] Task 4: B03 saveApiKey 防抖 + loading（index.html）
+  - `async function saveApiKey(provider)` 顶部加 `window._isSavingKey` 守卫，按钮 disabled + 文案改 "保存中..."，finally 还原
+  - **完成说明**: 10175-10217 行新增外层 try/finally 包装；通过 `document.querySelector` 查找触发按钮；保留原 `safeStorage` 加密、长度校验、`electronAPI.setApiKey` 调用链不变
+  - **验证**: 快速多次点击保存按钮仅触发 1 次 `setApiKey`；按钮显示"保存中..."状态后恢复"保存"
+
+- [x] Task 6: openBigTaskModal 重复打开防护（index.html）
+  - 函数顶部加 `modal.classList.contains('active')` 检查，若已激活则直接返回
+  - **完成说明**: 10281-10284 行新增 `var _btModal` 缓存 + active 检查；后续 `const modal` 复用同一引用避免重复查询
+  - **验证**: 已打开大任务弹窗时再次触发 openBigTaskModal 不会重置表单/重复渲染
+
+- [x] Task 7: 侧边栏滚动位置保留（index.html）
+  - `toggleRightPanel(panelId)` 中针对 `'schedule'` 面板在折叠前保存 `timeSidebarContent.scrollTop`，展开后用 setTimeout 350ms 恢复（配合 CSS 0.3s 动画）
+  - **完成说明**: 11572-11584 行新增滚动位置保存/恢复逻辑；通过 `window._sidebarScrollTop` 跨调用存储
+  - **验证**: 折叠日程侧栏后再次展开，滚动位置保持
+
+- [x] Task 8（CSS 部分）: 发送按钮 spinner CSS（index.html）
+  - 新增 `.spin` 工具类 + `@keyframes spin`
+  - **完成说明**: 1313-1322 行在 `@keyframes rotate` 之后追加 `.spin { animation: spin 0.8s linear infinite; ... }` 和 `@keyframes spin`
+  - **验证**: 任何元素加 `class="spin"` 即呈现 0.8s 线性旋转
+
+- [x] Task 12（HTML 部分）: 输入框 maxlength（index.html）
+  - Agent 主输入框 `<textarea id="agentMainInput">` 加 `maxlength="8000"`
+  - **完成说明**: 6963 行新增 `maxlength="8000"` 属性
+  - **验证**: DevTools 检查该 textarea 元素的 maxLength 属性为 8000
+
+- [x] Task 13: clear-conversations 二次确认（index.html）
+  - `clearConversations` 实际定义在 `ai-agent.js`（不在 index.html），按"不修改其他文件"约束，采用 IIFE 包装方式在 index.html 拦截 `window.clearConversations` 注入 `confirm()` 二次确认
+  - **完成说明**: 11688-11697 行新增 `(function wrapClearConversations() {...})()` 包装器；通过 `window._clearConvWrapped` 标记防止重复包装
+  - **验证**: 调用 `clearConversations()` 时先弹出原生 confirm 对话框；取消则不执行
+
+- [x] Task 14: M-H ReAct 弹窗 Escape 关闭（index.html）
+  - ReAct 弹窗不在 `_modalStack` 中，先在 Escape 处理器顶部加独立检查；同时在 switch 中加 `case 'reactLog'` / `case 'reactLogModal'` 兼容未来栈登记
+  - **完成说明**: 9892-9899 行新增 `reactLogModal.style.display` 检查提前 closeReActLog 并 return；9929-9932 行 switch 中加两 case
+  - **验证**: 打开 ReAct 日志弹窗后按 Escape 关闭
+
+- [x] Task 15: 全局 focus-visible 焦点态（index.html）
+  - CSS 顶部新增 `*:focus-visible` 描边样式
+  - **完成说明**: 609-621 行新增 focus-visible 样式块；使用 `var(--accent-primary, #5B9EFF)` 带 fallback；button/input/textarea/select/a 单独 `outline-offset: 1px`
+  - **验证**: Tab 键聚焦元素时显示 2px 蓝色描边；鼠标点击不显示（focus-visible 特性）
+
 # Task Dependencies
 
 - **C1-C6, H1-H2, H4-H5, H7-H9, M1-M3, M5-M8, L1-L4** 可并行执行（无相互依赖，操作不同文件或不同代码区域）

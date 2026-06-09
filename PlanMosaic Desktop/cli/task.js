@@ -1,6 +1,22 @@
 const h = require('./helpers.js');
 const { notifyUI } = require('./bridge.js');
 
+function normalizeTask(task) {
+    if (!task || typeof task !== 'object') return { name: '', estimated: '', actual: '', note: '', completed: false };
+    return {
+        name: String(task.name || task.text || '').trim(),
+        estimated: task.estimated === undefined || task.estimated === null ? '' : String(task.estimated),
+        actual: task.actual === undefined || task.actual === null ? '' : String(task.actual),
+        note: String(task.note || ''),
+        completed: !!task.completed
+    };
+}
+
+function normalizeTaskList(tasks) {
+    if (!Array.isArray(tasks)) return [];
+    return tasks.map(normalizeTask).filter(task => task.name);
+}
+
 function addTask(args) {
     // task add 2025-06-01 "完成数学作业"
     const dateStr = args[0];
@@ -24,7 +40,8 @@ function addTask(args) {
     if (!data.schedules[dateStr]) data.schedules[dateStr] = { timeSlots: [], tasks: [] };
     if (!data.schedules[dateStr].tasks) data.schedules[dateStr].tasks = [];
 
-    data.schedules[dateStr].tasks.push({ text, completed: false });
+    data.schedules[dateStr].tasks = normalizeTaskList(data.schedules[dateStr].tasks);
+    data.schedules[dateStr].tasks.push({ name: text, estimated: '', actual: '', note: '', completed: false });
 
     if (!h.saveData(data)) return;
 
@@ -54,7 +71,7 @@ function toggleTask(args) {
         return;
     }
 
-    const tasks = data.schedules[dateStr].tasks;
+    const tasks = data.schedules[dateStr].tasks = normalizeTaskList(data.schedules[dateStr].tasks);
     const index = parseInt(indexStr) - 1;
 
     if (index < 0 || index >= tasks.length) {
@@ -66,10 +83,10 @@ function toggleTask(args) {
     const status = tasks[index].completed ? '已完成' : '未完成';
 
     h.saveData(data);
-    h.success(`任务 [${indexStr}] "${tasks[index].text}" → ${status}`);
+    h.success(`任务 [${indexStr}] "${tasks[index].name}" → ${status}`);
 
     notifyUI('data.refreshAll');
-    notifyUI('toast.success', { message: `CLI: 任务 "${tasks[index].text}" ${status}` });
+    notifyUI('toast.success', { message: `CLI: 任务 "${tasks[index].name}" ${status}` });
 }
 
 function removeTask(args) {
@@ -93,7 +110,7 @@ function removeTask(args) {
         return;
     }
 
-    const tasks = data.schedules[dateStr].tasks;
+    const tasks = data.schedules[dateStr].tasks = normalizeTaskList(data.schedules[dateStr].tasks);
     const index = parseInt(indexStr) - 1;
 
     if (index < 0 || index >= tasks.length) {
@@ -107,10 +124,10 @@ function removeTask(args) {
     }
 
     h.saveData(data);
-    h.success(`任务已删除: "${removed.text}"`);
+    h.success(`任务已删除: "${removed.name}"`);
 
     notifyUI('data.refreshAll');
-    notifyUI('toast.success', { message: `CLI: 删除任务 "${removed.text}"` });
+    notifyUI('toast.success', { message: `CLI: 删除任务 "${removed.name}"` });
 }
 
 function listTasks(args) {
@@ -149,7 +166,7 @@ function listTasks(args) {
     let totalDone = 0;
 
     dates.forEach(d => {
-        const tasks = data.schedules[d].tasks || [];
+        const tasks = normalizeTaskList(data.schedules[d].tasks || []);
         if (tasks.length === 0) return;
 
         const done = tasks.filter(t => t.completed).length;
@@ -164,7 +181,7 @@ function listTasks(args) {
 
         tasks.forEach((task, i) => {
             const check = task.completed ? h.green('✓') : h.dim('○');
-            const text = task.completed ? h.dim(task.text) : task.text;
+            const text = task.completed ? h.dim(task.name) : task.name;
             console.log(`  ${check} ${h.green(String(i + 1).padStart(2))}  ${text}`);
         });
     });
@@ -192,7 +209,7 @@ function doneTask(args) {
         return;
     }
 
-    const tasks = data.schedules[dateStr].tasks;
+    const tasks = data.schedules[dateStr].tasks = normalizeTaskList(data.schedules[dateStr].tasks);
     const index = parseInt(indexStr) - 1;
 
     if (index < 0 || index >= tasks.length) {
@@ -207,10 +224,10 @@ function doneTask(args) {
 
     tasks[index].completed = true;
     h.saveData(data);
-    h.success(`任务完成: "${tasks[index].text}"`);
+    h.success(`任务完成: "${tasks[index].name}"`);
 
     notifyUI('data.refreshAll');
-    notifyUI('toast.success', { message: `CLI: 完成任务 "${tasks[index].text}"` });
+    notifyUI('toast.success', { message: `CLI: 完成任务 "${tasks[index].name}"` });
 }
 
 function run(args) {

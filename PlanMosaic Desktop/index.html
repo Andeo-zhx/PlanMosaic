@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.deepseek.com https://dashscope.aliyuncs.com https://*.supabase.co; img-src 'self' data: https://fonts.gstatic.com https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' 'nonce-planmosaic-inline'; connect-src 'self' http://localhost:8080 https://api.deepseek.com https://dashscope.aliyuncs.com https://*.supabase.co; img-src 'self' data: blob: https://fonts.gstatic.com https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self'">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlanMosaic</title>
@@ -10,10 +10,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
     <!-- TODO: 未来迭代将该文件中的内联JS拆分为独立的.js模块，提升可维护性 -->
-    <script>
+    <script nonce="planmosaic-inline">
         // TODO i18n: 中文硬编码字符串标记 — 未来迭代需集中管理
         window._allTimers = [];
         window._modalStack = [];
+        window.__pmInlineNonce = 'planmosaic-inline';
         (function() {
             var _origSetTimeout = window.setTimeout;
             var _origSetInterval = window.setInterval;
@@ -38,6 +39,158 @@
             window._allTimers = [];
         }
 
+        var LEGACY_INLINE_EVENT_ATTRS = ['onclick', 'onchange', 'oninput', 'onkeydown', 'onmouseover', 'onmouseout'];
+
+        function splitLegacyArgs(argString) {
+            var args = [];
+            var current = '';
+            var quote = null;
+            var depth = 0;
+            for (var i = 0; i < argString.length; i++) {
+                var ch = argString[i];
+                if (quote) {
+                    current += ch;
+                    if (ch === quote && argString[i - 1] !== '\\') quote = null;
+                    continue;
+                }
+                if (ch === '"' || ch === '\'') {
+                    quote = ch;
+                    current += ch;
+                    continue;
+                }
+                if (ch === '(' || ch === '[' || ch === '{') {
+                    depth++;
+                    current += ch;
+                    continue;
+                }
+                if (ch === ')' || ch === ']' || ch === '}') {
+                    depth = Math.max(0, depth - 1);
+                    current += ch;
+                    continue;
+                }
+                if (ch === ',' && depth === 0) {
+                    args.push(current.trim());
+                    current = '';
+                    continue;
+                }
+                current += ch;
+            }
+            if (current.trim() !== '') args.push(current.trim());
+            return args;
+        }
+
+        function resolveLegacyValue(token, context) {
+            var value = (token || '').trim();
+            if (value === '') return undefined;
+            if (value === 'event') return context.event;
+            if (value === 'this') return context.element;
+            if (value === 'true') return true;
+            if (value === 'false') return false;
+            if (value === 'null') return null;
+            if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
+            if ((value[0] === '\'' && value[value.length - 1] === '\'') || (value[0] === '"' && value[value.length - 1] === '"')) {
+                return value
+                    .slice(1, -1)
+                    .replace(/\\'/g, '\'')
+                    .replace(/\\"/g, '"')
+                    .replace(/\\\\/g, '\\');
+            }
+            return value;
+        }
+
+        function resolveLegacyTarget(path) {
+            var normalized = String(path || '').trim().replace(/^window\./, '');
+            if (!normalized) return null;
+            var current = window;
+            var parts = normalized.split('.');
+            for (var i = 0; i < parts.length; i++) {
+                current = current ? current[parts[i]] : null;
+            }
+            return current;
+        }
+
+        function applyLegacyStyleHandler(code, element) {
+            var trimmed = String(code || '').trim();
+            if (trimmed === "this.style.borderColor='var(--accent)'; this.style.color='var(--accent)'") {
+                element.style.borderColor = 'var(--accent)';
+                element.style.color = 'var(--accent)';
+                return true;
+            }
+            if (trimmed === "if(!this.classList.contains('uploading')){this.style.borderColor='var(--border-subtle)'; this.style.color='var(--text-primary)'}") {
+                if (!element.classList.contains('uploading')) {
+                    element.style.borderColor = 'var(--border-subtle)';
+                    element.style.color = 'var(--text-primary)';
+                }
+                return true;
+            }
+            return false;
+        }
+
+        function invokeLegacyHandler(code, element, event) {
+            if (applyLegacyStyleHandler(code, element)) return true;
+            var trimmed = String(code || '').trim().replace(/;$/, '');
+            var callMatch = trimmed.match(/^([A-Za-z_$][\w$.]*)\(([\s\S]*)\)$/);
+            if (!callMatch) return false;
+            var fn = resolveLegacyTarget(callMatch[1]);
+            if (typeof fn !== 'function') return false;
+            var args = splitLegacyArgs(callMatch[2]).map(function(token) {
+                return resolveLegacyValue(token, { event: event, element: element });
+            });
+            fn.apply(window, args);
+            return true;
+        }
+
+        function markLegacyBinding(el, attr) {
+            el.dataset['pmBound' + attr.slice(2)] = '1';
+        }
+
+        function hasLegacyBinding(el, attr) {
+            return el.dataset['pmBound' + attr.slice(2)] === '1';
+        }
+
+        function bindLegacyInlineHandler(el, attr) {
+            if (!el || !el.hasAttribute(attr) || hasLegacyBinding(el, attr)) return;
+            var handlerCode = el.getAttribute(attr);
+            var eventName = attr.slice(2);
+            el.addEventListener(eventName, function(event) {
+                if (!invokeLegacyHandler(handlerCode, el, event)) {
+                    console.warn('[LegacyInline] Unsupported handler:', attr, handlerCode);
+                }
+            });
+            markLegacyBinding(el, attr);
+            el.removeAttribute(attr);
+        }
+
+        function bindLegacyInlineHandlers(root) {
+            if (!root || !root.querySelectorAll) return;
+            var selector = LEGACY_INLINE_EVENT_ATTRS.map(function(attr) { return '[' + attr + ']'; }).join(',');
+            if (root.matches && root.matches(selector)) {
+                for (var i = 0; i < LEGACY_INLINE_EVENT_ATTRS.length; i++) bindLegacyInlineHandler(root, LEGACY_INLINE_EVENT_ATTRS[i]);
+            }
+            var nodes = root.querySelectorAll(selector);
+            for (var n = 0; n < nodes.length; n++) {
+                for (var j = 0; j < LEGACY_INLINE_EVENT_ATTRS.length; j++) {
+                    bindLegacyInlineHandler(nodes[n], LEGACY_INLINE_EVENT_ATTRS[j]);
+                }
+            }
+        }
+
+        function initLegacyInlineBridge() {
+            if (!document.body) return;
+            bindLegacyInlineHandlers(document.body);
+            var observer = new MutationObserver(function(mutations) {
+                for (var i = 0; i < mutations.length; i++) {
+                    var addedNodes = mutations[i].addedNodes || [];
+                    for (var j = 0; j < addedNodes.length; j++) {
+                        if (addedNodes[j] && addedNodes[j].nodeType === 1) {
+                            bindLegacyInlineHandlers(addedNodes[j]);
+                        }
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
+
         // 在CSS解析之前立即设置主题，避免浅色→深色的闪烁
         (function() {
             try {
@@ -45,6 +198,11 @@
                 document.documentElement.setAttribute('data-theme', theme);
             } catch(e) { console.warn('主题初始化失败:', e); }
         })();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initLegacyInlineBridge);
+        } else {
+            initLegacyInlineBridge();
+        }
 
         function showToast(message, type, duration) {
             type = type || 'info';
@@ -68,14 +226,35 @@
         }
         function showConfirmToast(message, onOk, onCancel) {
             var overlay = document.createElement('div');
+            var dialog = document.createElement('div');
+            var msg = document.createElement('div');
+            var buttons = document.createElement('div');
+            var cancelBtn = document.createElement('button');
+            var okBtn = document.createElement('button');
             overlay.className = 'confirm-overlay';
-            overlay.innerHTML = '<div class="confirm-dialog"><div class="confirm-msg">' + message.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div><div class="confirm-buttons"><button class="confirm-btn confirm-btn-cancel">取消</button><button class="confirm-btn confirm-btn-ok">确认</button></div></div>';
+
+            dialog.className = 'confirm-dialog';
+            msg.className = 'confirm-msg';
+            msg.textContent = message;
+            buttons.className = 'confirm-buttons';
+            cancelBtn.className = 'confirm-btn confirm-btn-cancel';
+            cancelBtn.type = 'button';
+            cancelBtn.textContent = '取消';
+            okBtn.className = 'confirm-btn confirm-btn-ok';
+            okBtn.type = 'button';
+            okBtn.textContent = '确认';
+
+            buttons.appendChild(cancelBtn);
+            buttons.appendChild(okBtn);
+            dialog.appendChild(msg);
+            dialog.appendChild(buttons);
+            overlay.appendChild(dialog);
             document.body.appendChild(overlay);
-            overlay.querySelector('.confirm-btn-cancel').onclick = function() {
+            cancelBtn.onclick = function() {
                 document.body.removeChild(overlay);
                 if (onCancel) onCancel();
             };
-            overlay.querySelector('.confirm-btn-ok').onclick = function() {
+            okBtn.onclick = function() {
                 document.body.removeChild(overlay);
                 if (onOk) onOk();
             };
@@ -90,37 +269,72 @@
         function sanitizeHtml(html) {
             if (!html || typeof html !== 'string') return '';
 
-            var safe = escapeHtml(html);
+            var allowedTags = {
+                'b': [], 'i': [], 'strong': [], 'em': [], 'p': [], 'br': [],
+                'ul': [], 'ol': [], 'li': [], 'code': [], 'pre': [],
+                'h1': [], 'h2': [], 'h3': [], 'h4': [], 'h5': [], 'h6': [],
+                'a': ['href', 'title', 'target'], 'table': [], 'tr': [],
+                'td': ['colspan', 'rowspan'], 'th': ['colspan', 'rowspan'],
+                'thead': [], 'tbody': [], 'blockquote': [], 'hr': [],
+                'img': ['src', 'alt', 'width', 'height'], 'span': ['class'], 'div': ['class']
+            };
 
-            var safeTags = ['b', 'i', 'strong', 'em', 'p', 'br', 'ul', 'ol', 'li',
-                'code', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                'a', 'table', 'tr', 'td', 'th', 'thead', 'tbody',
-                'blockquote', 'hr', 'img', 'span', 'div'];
+            var safe = '';
+            var pos = 0;
+            while (pos < html.length) {
+                if (html[pos] === '<') {
+                    var tagMatch = html.substring(pos).match(/^(<\/?)([a-zA-Z][a-zA-Z0-9]*)((?:\s+[^>]*?)?)(\/?>)/);
+                    if (tagMatch) {
+                        var isClosing = tagMatch[1] === '</';
+                        var tagName = tagMatch[2].toLowerCase();
+                        var attrStr = tagMatch[3];
 
-            for (var i = 0; i < safeTags.length; i++) {
-                var tag = safeTags[i];
-                safe = safe.replace(new RegExp('&lt;/' + tag + '&gt;', 'gi'), '</' + tag + '>');
-            }
-
-            for (var i = 0; i < safeTags.length; i++) {
-                var tag = safeTags[i];
-                safe = safe.replace(new RegExp('&lt;' + tag + '(\\s[^&]*?)?/?&gt;', 'gi'),
-                    function (match, attrs) {
-                        if (attrs) {
-                            attrs = attrs.replace(/&quot;/g, '"')
-                                .replace(/&#039;/g, '\''')
-                                .replace(/&amp;/g, '&');
+                        if (allowedTags.hasOwnProperty(tagName)) {
+                            if (isClosing) {
+                                safe += '</' + tagName + '>';
+                            } else {
+                                var allowedAttrs = allowedTags[tagName];
+                                var cleanAttrs = '';
+                                if (allowedAttrs.length > 0 && attrStr) {
+                                    var attrRe = /\s+([a-zA-Z][a-zA-Z0-9\-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*)))?/g;
+                                    var am;
+                                    while ((am = attrRe.exec(attrStr)) !== null) {
+                                        var aName = am[1].toLowerCase();
+                                        var aVal = am[2] !== undefined ? am[2] : (am[3] !== undefined ? am[3] : (am[4] !== undefined ? am[4] : ''));
+                                        if (allowedAttrs.indexOf(aName) === -1) continue;
+                                        if (aName === 'href' || aName === 'src') {
+                                            if (/^\s*(javascript|data|vbscript)\s*:/i.test(aVal)) continue;
+                                        }
+                                        cleanAttrs += ' ' + aName + '="' + aVal.replace(/"/g, '&quot;') + '"';
+                                    }
+                                }
+                                safe += '<' + tagName + cleanAttrs + '>';
+                            }
+                        } else {
+                            safe += '&lt;';
                         }
-                        return '<' + tag + (attrs || '') + '>';
-                    });
+                        pos += tagMatch[0].length;
+                    } else {
+                        safe += '&lt;';
+                        pos++;
+                    }
+                } else if (html[pos] === '>') {
+                    safe += '&gt;';
+                    pos++;
+                } else if (html[pos] === '&') {
+                    var entMatch = html.substring(pos).match(/^&(#?[a-zA-Z0-9]+);/);
+                    if (entMatch) {
+                        safe += entMatch[0];
+                        pos += entMatch[0].length;
+                    } else {
+                        safe += '&amp;';
+                        pos++;
+                    }
+                } else {
+                    safe += html[pos];
+                    pos++;
+                }
             }
-
-            safe = safe.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-                .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
-                .replace(/\bon\w+\s*=\s*["'][^"']*["']/gi, '')
-                .replace(/\bon\w+\s*=\s*[^\s>]*/gi, '');
-
             return safe;
         }
     </script>
@@ -571,6 +785,20 @@
             transition: none !important;
         }
 
+        /* 全局焦点态（键盘可达性），使用 focus-visible 仅在键盘聚焦时显示 */
+        *:focus-visible {
+            outline: 2px solid var(--accent-primary, #5B9EFF);
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+        button:focus-visible,
+        input:focus-visible,
+        textarea:focus-visible,
+        select:focus-visible,
+        a:focus-visible {
+            outline-offset: 1px;
+        }
+
         .python-status-banner {
             position: fixed;
             top: 0;
@@ -954,6 +1182,156 @@
             color: var(--text-primary);
         }
 
+        /* 隐私账户勾选项（注册表单内） */
+        .auth-privacy-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            margin-top: -4px;
+        }
+        .auth-privacy-option:hover {
+            border-color: var(--border-dark);
+        }
+        .auth-privacy-option input[type="checkbox"] {
+            margin-top: 3px;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-primary);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .auth-privacy-option-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-family: var(--font-body);
+        }
+        .auth-privacy-option-title {
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .auth-privacy-option-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* 隐私模式开关（设置面板） */
+        .privacy-mode-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+        }
+        .privacy-mode-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+        }
+        .privacy-mode-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .privacy-mode-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-pill);
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            font-weight: 400;
+        }
+        .privacy-mode-badge.active {
+            background: var(--accent-subtle, rgba(76, 175, 80, 0.12));
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+        .privacy-mode-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .privacy-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .privacy-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .privacy-switch-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: var(--border-color, #d6d3cc);
+            border-radius: 24px;
+            transition: background-color 0.25s ease;
+        }
+        .privacy-switch-slider::before {
+            content: "";
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            top: 3px;
+            background-color: #fff;
+            border-radius: 50%;
+            transition: transform 0.25s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .privacy-switch input:checked + .privacy-switch-slider {
+            background-color: var(--accent-primary);
+        }
+        .privacy-switch input:checked + .privacy-switch-slider::before {
+            transform: translateX(20px);
+        }
+        .privacy-switch input:disabled + .privacy-switch-slider {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .privacy-mode-warning {
+            margin-top: 10px;
+            padding: 10px 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            border-left: 3px solid var(--accent-primary);
+            border-radius: var(--radius-xs);
+            line-height: 1.5;
+        }
+        .privacy-mode-banner {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--accent-primary);
+            padding: 6px 10px;
+            background: var(--accent-subtle, rgba(76, 175, 80, 0.08));
+            border-radius: var(--radius-sm);
+        }
+
         .auth-offline {
             display: flex;
             flex-direction: column;
@@ -1136,7 +1514,7 @@
             -webkit-backdrop-filter: blur(8px);
             color: var(--text-secondary);
             cursor: pointer;
-            border-radius: var(--radius-md);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1275,6 +1653,17 @@
             to { transform: rotate(360deg); }
         }
 
+        /* 通用旋转动画（用于发送按钮 loading） */
+        .spin {
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         .brand {
             font-size: 26px;
             font-weight: 400;
@@ -1366,6 +1755,23 @@
         .btn:focus-visible {
             outline: none;
             box-shadow: var(--ring-focus), 0 0 0 5px rgba(138, 125, 114, 0.06);
+        }
+
+        .btn:disabled,
+        .btn[disabled] {
+            cursor: not-allowed;
+            opacity: 0.5;
+            pointer-events: none;
+            background: var(--btn-bg-primary);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn:disabled:hover,
+        .btn[disabled]:hover {
+            background: var(--btn-bg-primary);
+            transform: none;
+            box-shadow: none;
         }
 
         [data-theme="dark"] .btn {
@@ -4007,6 +4413,61 @@
             display: none;
         }
 
+        /* ========== 自检徽章 (Self-Check Badge) ========== */
+        .self-check-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid transparent;
+            background: rgba(0, 0, 0, 0.04);
+            transition: background 0.15s ease;
+        }
+        .self-check-badge:hover { background: rgba(0, 0, 0, 0.08); }
+        .self-check-badge.state-pass { background: rgba(46, 160, 67, 0.12); color: #1f7a32; border-color: rgba(46, 160, 67, 0.3); }
+        .self-check-badge.state-fail { background: rgba(255, 191, 0, 0.16); color: #a85b00; border-color: rgba(255, 143, 0, 0.4); }
+        .self-check-badge.state-skip { background: rgba(120, 120, 120, 0.1); color: #6a6a6a; border-color: rgba(120, 120, 120, 0.25); }
+        .self-check-badge.state-loading { background: rgba(120, 120, 120, 0.06); color: #888; }
+        [data-theme="dark"] .self-check-badge.state-pass { background: rgba(46, 160, 67, 0.18); color: #7be39a; }
+        [data-theme="dark"] .self-check-badge.state-fail { background: rgba(255, 191, 0, 0.18); color: #ffc66e; }
+        [data-theme="dark"] .self-check-badge.state-skip { background: rgba(180, 180, 180, 0.12); color: #b0b0b0; }
+        .self-check-icon { font-size: 12px; }
+        .self-check-toggle { font-size: 8px; margin-left: 2px; transition: transform 0.15s ease; }
+        .self-check-badge:not(.expanded) .self-check-toggle { transform: rotate(-90deg); }
+        .self-check-detail {
+            display: none;
+            list-style: none;
+            margin: 6px 0 0 0;
+            padding: 8px 10px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 8px;
+            font-size: 11px;
+            flex-basis: 100%;
+        }
+        .self-check-badge.expanded { flex-wrap: wrap; }
+        .self-check-badge.expanded .self-check-detail { display: block; }
+        [data-theme="dark"] .self-check-detail { background: rgba(255, 255, 255, 0.04); }
+        .self-check-item {
+            padding: 4px 0;
+            display: grid;
+            grid-template-columns: 16px 1fr;
+            column-gap: 6px;
+            row-gap: 2px;
+            align-items: baseline;
+        }
+        .self-check-item-icon { color: #2ea043; font-weight: 700; }
+        .self-check-fail .self-check-item-icon { color: #d1242f; }
+        .self-check-item-key { font-weight: 600; }
+        .self-check-item-expected, .self-check-item-actual { grid-column: 2; color: #555; font-family: ui-monospace, monospace; font-size: 10px; }
+        [data-theme="dark"] .self-check-item-expected, [data-theme="dark"] .self-check-item-actual { color: #aaa; }
+        .self-check-item-reason { grid-column: 2; color: #d1242f; font-size: 10px; margin-top: 2px; }
+        .self-check-empty { color: #888; font-style: italic; }
+
         /* ========== 新提案样式 ========== */
 
         .proposal-container {
@@ -4368,24 +4829,25 @@
             flex-wrap: wrap;
         }
 
-        .agent-react-btn-wrapper {
-            display: flex;
-            justify-content: flex-end;
-            padding: 4px 8px 0 8px;
-        }
         .agent-react-btn {
-            background: none;
-            border: none;
-            color: var(--color-text-subtle, #888);
-            font-size: 11px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            font-size: 13px;
             cursor: pointer;
-            padding: 2px 8px;
+            padding: 10px 16px;
             border-radius: 10px;
             transition: all 0.2s;
         }
         .agent-react-btn:hover {
-            color: var(--color-primary, #6366f1);
-            background: var(--color-bg-hover, rgba(99, 102, 241, 0.08));
+            color: var(--accent);
+            border-color: var(--accent);
+            background: var(--bg-hover);
         }
 
         .react-log-panel {
@@ -4442,6 +4904,15 @@
             border-radius: 10px;
             margin: 0;
             user-select: text;
+        }
+        /* ReAct 转录中的自检段样式（纯文本，无须额外 HTML 元素） */
+        .react-log-text:has(.react-self-check),
+        .react-log-content .react-self-check {
+            color: #1f7a32;
+        }
+        [data-theme="dark"] .react-log-text:has(.react-self-check),
+        [data-theme="dark"] .react-log-content .react-self-check {
+            color: #7be39a;
         }
         .react-log-actions {
             display: flex;
@@ -4871,7 +5342,7 @@
 
         .schedule-meta-config {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 16px;
             margin-bottom: 20px;
         }
@@ -4901,6 +5372,16 @@
             outline: none;
             border-color: var(--border-dark);
             box-shadow: 0 0 0 2px var(--accent-subtle);
+        }
+
+        .schedule-meta-group.wide {
+            grid-column: 1 / -1;
+        }
+
+        .schedule-date-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .schedule-table-container {
@@ -4977,6 +5458,46 @@
         .schedule-cell.has-course {
             background: var(--success-bg);
             opacity: 0.8;
+        }
+
+        .schedule-cell-content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .course-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.3;
+            max-width: 100%;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word;
+        }
+
+        .course-meta {
+            max-width: 100%;
+            font-size: 10px;
+            color: var(--text-secondary);
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .schedule-editor-hint {
+            margin-bottom: 12px;
+            font-size: 11px;
+            color: var(--text-muted);
         }
 
         .inline-edit-input {
@@ -5149,6 +5670,10 @@
         @media (max-width: 768px) {
             .schedule-meta-config {
                 grid-template-columns: 1fr;
+            }
+
+            .schedule-date-actions {
+                flex-direction: column;
             }
 
             .schedule-editor-content {
@@ -5815,6 +6340,64 @@
             letter-spacing: 0.3px;
         }
 
+        /* ============ 附功能 重点子功能按钮 ============ */
+        .aux-func-btn-featured {
+            grid-column: 1 / -1;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--gradient-surface-warm);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            text-align: left;
+        }
+
+        .aux-func-btn-featured:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-surface-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+        }
+
+        .aux-func-icon-featured {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-primary);
+            color: var(--accent-primary);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .aux-func-btn-featured:hover .aux-func-icon-featured {
+            color: var(--accent-primary);
+            background: var(--bg-secondary);
+        }
+
+        .aux-func-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .aux-func-desc {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            line-height: 1.4;
+            letter-spacing: 0.2px;
+        }
+
+        .aux-func-btn-featured .aux-func-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .aux-func-btn-featured.schedule-entry {
+            background: linear-gradient(135deg, rgba(118, 88, 60, 0.12), rgba(118, 88, 60, 0.04));
+        }
+
         /* ============ 右侧可折叠侧边栏 ============ */
         .sidebar-collapsible {
             display: flex;
@@ -5963,6 +6546,30 @@
             color: var(--text-hero);
         }
 
+        .time-sidebar-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .time-sidebar-action {
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: var(--radius-pill);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .time-sidebar-action:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--bg-hover);
+        }
+
         .time-sidebar-date {
             font-size: 13px;
             color: var(--text-primary);
@@ -6094,6 +6701,78 @@
 
         .time-block.very-narrow .time-block-time {
             font-size: 8px;
+        }
+
+        .time-block-detail {
+            font-size: 10px;
+            line-height: 1.2;
+            opacity: 0.82;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .course-input-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: min(480px, 82vw);
+        }
+
+        .course-input-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            text-align: center;
+            margin-top: -4px;
+        }
+
+        .course-input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .course-input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .course-input-field.full {
+            grid-column: 1 / -1;
+        }
+
+        .course-input-field label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: left;
+        }
+
+        .course-input-textarea {
+            min-height: 84px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: var(--radius-sm);
+            resize: vertical;
+            font-size: 13px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .course-input-textarea:focus {
+            outline: none;
+            border-color: var(--border-dark);
+            box-shadow: 0 0 0 2px var(--accent-subtle);
+        }
+
+        @media (max-width: 768px) {
+            .course-input-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* 当前时间线 */
@@ -6827,6 +7506,14 @@
                            placeholder="再次输入密码" autocomplete="new-password">
                 </div>
 
+                <label class="auth-privacy-option" for="authRegPrivacy">
+                    <input type="checkbox" id="authRegPrivacy" onchange="onPrivacyAccountToggle(this.checked)">
+                    <span class="auth-privacy-option-text">
+                        <span class="auth-privacy-option-title">创建隐私账户</span>
+                        <span class="auth-privacy-option-desc">账户默认开启隐私模式，所有数据仅存本地，不会上传到云端，且无法使用云端登录。</span>
+                    </span>
+                </label>
+
                 <div class="auth-error" id="authRegError"></div>
 
                 <button class="auth-btn-primary" id="authRegBtn" onclick="handleRegister()">
@@ -6868,11 +7555,10 @@
     <div class="container">
         <header>
             <div class="header-left">
-                <button class="icon-btn rotating" onclick="openSettingsModal()" title="设置" style="display:flex;align-items:center;gap:6px;">
+                <button class="icon-btn rotating" onclick="openSettingsModal()" title="设置">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
                         <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"/>
                     </svg>
-                    <span style="font-size:12px;color:var(--text-secondary);font-family:var(--font-body);">设置</span>
                 </button>
             </div>
             <div class="brand">PlanMosaic</div>
@@ -6914,6 +7600,7 @@
                             id="agentMainInput"
                             placeholder="和 Mosa 聊聊你的日程安排吧...  输入 / 可快速查看指令"
                             rows="1"
+                            maxlength="8000"
                             onkeydown="handleAgentKeyPress(event)"
                         ></textarea>
                         <button class="agent-main-send-btn" id="agentMainSendBtn" onclick="sendAgentMessage()">
@@ -6936,25 +7623,6 @@
                         <line x1="8" y1="17" x2="12" y2="17"/>
                     </svg>
                     <span class="right-panel-btn-label">任务栏</span>
-                </button>
-                <button class="right-panel-btn" data-panel="schedule" onclick="toggleRightPanel('schedule')" title="日程">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-                        <rect x="3" y="4" width="18" height="18" rx="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                        <rect x="7" y="13" width="3" height="3" rx="0.5"/>
-                        <rect x="14" y="13" width="3" height="3" rx="0.5"/>
-                    </svg>
-                    <span class="right-panel-btn-label">日程</span>
-                </button>
-                <button class="right-panel-btn" data-panel="plan" onclick="toggleRightPanel('plan')" title="规划">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                        <path d="M2 12h20"/>
-                    </svg>
-                    <span class="right-panel-btn-label">规划</span>
                 </button>
                 <button class="right-panel-btn" data-panel="aux" onclick="toggleRightPanel('aux')" title="附功能">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
@@ -6996,28 +7664,6 @@
                 </div>
             </div>
 
-            <div class="right-panel" id="planPanelRight">
-                <div class="right-panel-header">
-                    <span class="right-panel-title">深度规划</span>
-                    <button class="right-panel-close" onclick="toggleRightPanel('plan')">&times;</button>
-                </div>
-                <div class="right-panel-body" id="planPanelBody">
-                    <div class="plan-entry-card" onclick="window.openDeepPlanningModal()">
-                        <div class="plan-entry-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="32" height="32">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                                <path d="M2 12h20"/>
-                            </svg>
-                        </div>
-                        <div class="plan-entry-text">
-                            <div class="plan-entry-name">打开深度规划</div>
-                            <div class="plan-entry-desc">基于日程数据智能生成长期规划方案</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="right-panel right-panel-aux" id="auxPanelRight">
                 <div class="right-panel-header">
                     <span class="right-panel-title">附功能</span>
@@ -7025,6 +7671,37 @@
                 </div>
                 <div class="right-panel-body" id="auxPanelBody">
                     <div class="aux-btn-grid">
+                        <button class="aux-func-btn aux-func-btn-featured" onclick="window.openDeepPlanningModal()" title="深度规划">
+                            <div class="aux-func-icon aux-func-icon-featured">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                    <path d="M2 12h20"/>
+                                </svg>
+                            </div>
+                            <div class="aux-func-text">
+                                <div class="aux-func-label">深度规划</div>
+                                <div class="aux-func-desc">基于日程智能生成长期方案</div>
+                            </div>
+                        </button>
+                        <button class="aux-func-btn aux-func-btn-featured schedule-entry" onclick="openScheduleEditor()" title="清晰课表">
+                            <div class="aux-func-icon aux-func-icon-featured">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+                                    <rect x="3" y="4" width="18" height="17" rx="2"></rect>
+                                    <path d="M8 2v4"></path>
+                                    <path d="M16 2v4"></path>
+                                    <path d="M3 10h18"></path>
+                                    <path d="M8 14h3"></path>
+                                    <path d="M13 14h3"></path>
+                                    <path d="M8 18h3"></path>
+                                    <path d="M13 18h3"></path>
+                                </svg>
+                            </div>
+                            <div class="aux-func-text">
+                                <div class="aux-func-label">清晰课表</div>
+                                <div class="aux-func-desc">按 1-13 节与单双周批量录入课程</div>
+                            </div>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -7060,7 +7737,10 @@
                     <div class="sidebar-group">
                         <div class="time-sidebar" id="timeSidebar">
                             <div class="time-sidebar-header">
-                                <span class="time-sidebar-title">日程安排</span>
+                                <div class="time-sidebar-title-row">
+                                    <span class="time-sidebar-title">日程安排</span>
+                                    <button class="time-sidebar-action" onclick="openScheduleEditor()">清晰课表</button>
+                                </div>
                                 <span class="time-sidebar-date" id="timeSidebarDate">--</span>
                             </div>
                             <div class="time-sidebar-content" id="timeSidebarContent"></div>
@@ -7098,7 +7778,7 @@
             </div>
             <div class="big-task-form-group">
                 <label class="big-task-form-label">任务名称 <span style="color:#cf222e;">*</span></label>
-                <input type="text" class="big-task-form-input" id="bigTaskName" placeholder="请输入任务名称">
+                <input type="text" class="big-task-form-input" id="bigTaskName" placeholder="请输入任务名称" required>
             </div>
             <div class="big-task-form-group">
                 <label class="big-task-form-label" id="bigTaskEstimatedLabel">预计用时（分钟） <span style="color:#cf222e;">*</span></label>
@@ -7169,46 +7849,6 @@
                     </div>
                 </div>
                 
-                <div class="settings-section" style="margin-top: 24px;">
-                    <div class="settings-label">AI 服务商</div>
-                    <div class="theme-options">
-                        <label class="theme-option">
-                            <input type="radio" name="ai-provider" value="deepseek" checked onchange="changeAIProvider('deepseek')">
-                            <span class="theme-preview">
-                                <span class="theme-circle ai-model" style="background: linear-gradient(135deg, #4a90d9 0%, #6366f1 100%);">D</span>
-                            </span>
-                            <span class="theme-name">DeepSeek</span>
-                        </label>
-                        <label class="theme-option">
-                            <input type="radio" name="ai-provider" value="qwen" onchange="changeAIProvider('qwen')">
-                            <span class="theme-preview">
-                                <span class="theme-circle ai-model" style="background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);">Q</span>
-                            </span>
-                            <span class="theme-name">Qwen 3.5</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="settings-section" style="margin-top: 24px;">
-                    <div class="settings-label">DeepSeek 模型</div>
-                    <div class="theme-options">
-                        <label class="theme-option">
-                            <input type="radio" name="deepseek-model" value="flash" checked onchange="changeDeepSeekModel('flash')">
-                            <span class="theme-preview">
-                                <span class="theme-circle ai-model" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">⚡</span>
-                            </span>
-                            <span class="theme-name">V4 Flash<span style="display:block;font-size:10px;color:var(--text-disabled);margin-top:1px;">快速响应</span></span>
-                        </label>
-                        <label class="theme-option">
-                            <input type="radio" name="deepseek-model" value="pro" onchange="changeDeepSeekModel('pro')">
-                            <span class="theme-preview">
-                                <span class="theme-circle ai-model" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">🧠</span>
-                            </span>
-                            <span class="theme-name">V4 Pro<span style="display:block;font-size:10px;color:var(--text-disabled);margin-top:1px;">深度推理</span></span>
-                        </label>
-                    </div>
-                </div>
-                
                 <!-- API Key 管理区域 -->
                 <div class="settings-section" id="apiKeySection" style="margin-top: 24px;">
                     <div class="settings-label">API Key 管理</div>
@@ -7235,47 +7875,24 @@
                         </div>
                         <div class="api-key-message" id="deepseek-message"></div>
                     </div>
-                    
-                    <!-- Qwen API Key -->
-                    <div class="api-key-section" style="margin-top: 16px;">
-                        <div class="api-key-header">
-                            <span class="api-key-provider">Qwen (通义千问)</span>
-                            <span class="api-key-status" id="qwen-status">未配置</span>
-                        </div>
-                        <div class="api-key-input-group">
-                            <input type="password" class="api-key-input" id="qwen-key-input" placeholder="输入 Qwen API Key">
-                            <button class="api-key-toggle" onclick="toggleKeyVisibility('qwen')">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="api-key-actions">
-                            <button class="api-key-btn save" onclick="saveApiKey('qwen')">保存</button>
-                            <button class="api-key-btn test" onclick="testApiKey('qwen')">验证</button>
-                            <button class="api-key-btn link" onclick="openApiKeyUrl('qwen')">获取 Key</button>
-                        </div>
-                        <div class="api-key-message" id="qwen-message"></div>
-                    </div>
                 </div>
 
                 <!-- 账户管理 -->
-                <div class="settings-section" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+                <div class="settings-section" id="accountSection" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
                     <div class="settings-label">账户</div>
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div>
                             <div style="font-size: 13px; color: var(--text-primary);" id="settingsUsername">--</div>
-                            <div style="font-size: 11px; color: var(--text-disabled); margin-top: 2px;">已登录</div>
+                            <div style="font-size: 11px; color: var(--text-disabled); margin-top: 2px;" id="settingsAccountStatus">已登录</div>
                         </div>
-                        <button class="auth-btn-secondary" onclick="handleLogout()" style="padding: 6px 16px; font-size: 12px;">
+                        <button class="auth-btn-secondary" id="settingsLogoutBtn" onclick="handleLogout()" style="padding: 6px 16px; font-size: 12px;">
                             退出登录
                         </button>
                     </div>
                 </div>
 
                 <!-- 数据同步 -->
-                <div class="settings-section" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+                <div class="settings-section" id="dataSyncSection" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
                     <div class="settings-label">数据同步</div>
                     <div style="margin-top: 8px;">
                         <button id="manualUploadBtn" onclick="manualUpload()" style="
@@ -7303,6 +7920,46 @@
                         </button>
                         <div id="uploadStatus" style="font-size: 11px; color: var(--text-disabled); margin-top: 6px; text-align: center; min-height: 16px;"></div>
                     </div>
+                </div>
+
+                <!-- 隐私模式 -->
+                <div class="settings-section" id="privacyModeSection" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+                    <div class="settings-label">隐私模式</div>
+                    <div class="privacy-mode-row">
+                        <div class="privacy-mode-info">
+                            <div class="privacy-mode-title">
+                                <span>启用隐私模式</span>
+                                <span class="privacy-mode-badge" id="privacyModeBadge">关闭</span>
+                            </div>
+                            <div class="privacy-mode-desc" id="privacyModeDesc">
+                                开启后所有数据仅保存在本地，不会上传到云端数据库。登录功能将不可用。
+                            </div>
+                        </div>
+                        <label class="privacy-switch" title="切换隐私模式">
+                            <input type="checkbox" id="privacyModeToggle">
+                            <span class="privacy-switch-slider"></span>
+                        </label>
+                    </div>
+                    <div class="privacy-mode-warning" id="privacyModeWarning" style="display: none;">
+                        隐私模式已开启。手动上传、登录/登出按钮已禁用。退出隐私模式前请确保本地数据已妥善保存。
+                    </div>
+                    <div id="resetPrivacyAccountRow" style="margin-top: 10px; display: none;">
+                        <button class="auth-btn-secondary" id="resetPrivacyAccountBtn" onclick="onResetPrivacyAccount()"
+                                style="padding: 6px 12px; font-size: 12px; width: 100%;">
+                            重置当前隐私账户
+                        </button>
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5;">
+                            隐私账户无法直接关闭隐私模式。如需切换到云端账户，请先重置当前隐私账户。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section" id="reactExportSection" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
+                    <div class="settings-label">导出</div>
+                    <button class="agent-react-btn" onclick="exportReActLogDirect('txt', this)" title="将当前对话直接导出为 ReAct TXT 文件">
+                        <span>📋</span>
+                        <span>导出 ReAct 对话记录</span>
+                    </button>
                 </div>
 
                 <!-- Mosaïque 署名 -->
@@ -7349,6 +8006,7 @@
                         id="agentInput"
                         placeholder="I'm Mosa, What's on your mind?..."
                         rows="1"
+                        required
                         onkeydown="handleAgentKeyPress(event)"
                     ></textarea>
                     <button class="agent-send-btn" id="agentSendBtn" onclick="sendAgentMessage()">
@@ -7356,11 +8014,6 @@
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                             <polyline points="12 5 19 12 12 19"></polyline>
                         </svg>
-                    </button>
-                </div>
-                <div class="agent-react-btn-wrapper">
-                    <button class="agent-react-btn" onclick="generateReActLog()" title="将本次对话翻译为ReAct格式记录">
-                        <span>📋 生成ReAct记录</span>
                     </button>
                 </div>
                 <div class="agent-image-preview" id="agentImagePreview"></div>
@@ -7382,7 +8035,7 @@
             </div>
             <div class="dp-chat-container" id="dpChatContainer"></div>
             <div class="dp-input-area">
-                <textarea class="dp-input" id="dpInput" placeholder="描述你的长期理想和目标..."></textarea>
+                <textarea class="dp-input" id="dpInput" placeholder="描述你的长期理想和目标..." required></textarea>
                 <button class="dp-send-btn" onclick="window.sendDeepPlanningMessage()">发送</button>
             </div>
         </div>
@@ -7394,7 +8047,7 @@
     <div class="actual-time-modal" id="actualTimeModal">
         <div class="actual-time-content">
             <div class="actual-time-label">请输入实际用时（分钟）</div>
-            <input type="number" class="actual-time-input" id="actualTimeInput" placeholder="例如: 90" min="0" step="1">
+            <input type="number" class="actual-time-input" id="actualTimeInput" placeholder="例如: 90" min="1" step="1" required>
             <div class="actual-time-actions">
                 <button class="btn-cancel" onclick="cancelActualTime()">取消</button>
                 <button class="btn-confirm" onclick="confirmActualTime()">确认</button>
@@ -7417,8 +8070,28 @@
     <!-- Course Input Modal -->
     <div class="actual-time-modal" id="courseInputModal">
         <div class="actual-time-content">
-            <div class="actual-time-label" id="courseInputTitle">请输入课程名称</div>
-            <input type="text" class="actual-time-input" id="courseNameInput" placeholder="例如: 高等数学">
+            <div class="course-input-form">
+                <div class="actual-time-label" id="courseInputTitle">录入课程详情</div>
+                <div class="course-input-subtitle" id="courseInputSubtitle">周一 · 第1节 · 单周</div>
+                <div class="course-input-grid">
+                    <div class="course-input-field full">
+                        <label for="courseNameInput">课程名称</label>
+                        <input type="text" class="actual-time-input" id="courseNameInput" placeholder="例如: 高等数学" required>
+                    </div>
+                    <div class="course-input-field">
+                        <label for="courseTeacherInput">任课教师</label>
+                        <input type="text" class="actual-time-input" id="courseTeacherInput" placeholder="例如: 张老师">
+                    </div>
+                    <div class="course-input-field">
+                        <label for="courseLocationInput">上课地点</label>
+                        <input type="text" class="actual-time-input" id="courseLocationInput" placeholder="例如: 教一-203">
+                    </div>
+                    <div class="course-input-field full">
+                        <label for="courseNoteInput">备注</label>
+                        <textarea class="course-input-textarea" id="courseNoteInput" placeholder="例如: 带教材、实验周调课等"></textarea>
+                    </div>
+                </div>
+            </div>
             <div class="actual-time-actions">
                 <button class="btn-cancel" onclick="cancelCourseInput()">取消</button>
                 <button class="btn-confirm" onclick="confirmCourseInput()">确认</button>
@@ -7427,7 +8100,7 @@
     </div>
 
     <script src="ai-agent.js"></script>
-    <script>
+    <script nonce="planmosaic-inline">
         // ============================================
         // Deep Planning Modal Functions
         // ============================================
@@ -7831,7 +8504,7 @@
             window.isAgentPanelDocked = () => isDocked;
         })();
     </script>
-    <script>
+    <script nonce="planmosaic-inline">
         // ============ Supabase 配置（直接 fetch，无 SDK 依赖） ============
     const SUPABASE_URL = 'https://nxbnognnkifiiitvbupq.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54Ym5vZ25ua2lmaWlpdHZidXBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTkzMDAsImV4cCI6MjA4OTczNTMwMH0.ATSkFMfkPF5O7w-q8mEkBVuatN9NKsJTNgQadwqJuUM';
@@ -7857,6 +8530,183 @@
     }
 
     window.currentUser = null;
+    window.privacyMode = false;          // 隐私模式总开关（设置面板控制）
+    window.isPrivacyAccount = false;      // 是否为隐私账户（注册时开启后无法关闭）
+
+        // ============ 隐私模式模块 ============
+        // 状态存储键：
+        //   mosaique-privacy-mode     : '1' 启用
+        //   mosaique-privacy-account  : { username, createdAt } 隐私账户
+        const PrivacyMode = {
+            MODE_KEY: 'mosaique-privacy-mode',
+            ACCOUNT_KEY: 'mosaique-privacy-account',
+
+            isEnabled() {
+                return window.privacyMode === true;
+            },
+
+            isPrivacyAccount() {
+                return window.isPrivacyAccount === true;
+            },
+
+            getPrivacyAccount() {
+                try {
+                    const raw = localStorage.getItem(this.ACCOUNT_KEY);
+                    if (!raw) return null;
+                    const obj = JSON.parse(raw);
+                    return obj && obj.username ? obj : null;
+                } catch (e) { return null; }
+            },
+
+            // 初始化：在应用启动时调用，根据存储的状态恢复
+            init() {
+                const account = this.getPrivacyAccount();
+                if (account) {
+                    window.isPrivacyAccount = true;
+                    window.privacyMode = true;
+                    window.currentUser = {
+                        userId: 'privacy_' + account.username,
+                        username: account.username,
+                        isPrivacy: true
+                    };
+                    window._currentUsername = account.username;
+                } else {
+                    window.privacyMode = localStorage.getItem(this.MODE_KEY) === '1';
+                }
+            },
+
+            enable() {
+                window.privacyMode = true;
+                localStorage.setItem(this.MODE_KEY, '1');
+                this._notifyAuthOverlay();
+                this._updateSettingsUI();
+            },
+
+            // 关闭隐私模式：仅当用户不是隐私账户时允许
+            disable() {
+                if (this.isPrivacyAccount()) {
+                    showToast('隐私账户不支持关闭隐私模式', 'warning');
+                    return false;
+                }
+                window.privacyMode = false;
+                localStorage.removeItem(this.MODE_KEY);
+                this._notifyAuthOverlay();
+                this._updateSettingsUI();
+                return true;
+            },
+
+            // 注册为隐私账户（一次性操作，注册成功后调用）
+            createPrivacyAccount(username) {
+                const record = {
+                    username: username,
+                    createdAt: new Date().toISOString()
+                };
+                try {
+                    localStorage.setItem(this.ACCOUNT_KEY, JSON.stringify(record));
+                } catch (e) {
+                    console.warn('[PrivacyMode] Failed to persist privacy account:', e);
+                }
+                window.isPrivacyAccount = true;
+                window.privacyMode = true;
+                window.currentUser = {
+                    userId: 'privacy_' + username,
+                    username: username,
+                    isPrivacy: true
+                };
+                window._currentUsername = username;
+                localStorage.setItem(this.MODE_KEY, '1');
+            },
+
+            // 删除隐私账户（用于退出登录 / 切换账户）
+            clearPrivacyAccount() {
+                localStorage.removeItem(this.ACCOUNT_KEY);
+                window.isPrivacyAccount = false;
+            },
+
+            // 同步设置面板 UI（开关、徽章、警告、相关区块）
+            _updateSettingsUI() {
+                const toggle = document.getElementById('privacyModeToggle');
+                const badge = document.getElementById('privacyModeBadge');
+                const desc = document.getElementById('privacyModeDesc');
+                const warning = document.getElementById('privacyModeWarning');
+                const logoutBtn = document.getElementById('settingsLogoutBtn');
+                const accountStatus = document.getElementById('settingsAccountStatus');
+                const dataSyncSection = document.getElementById('dataSyncSection');
+
+                if (!toggle) return;
+                const enabled = this.isEnabled();
+                const privacyAccount = this.isPrivacyAccount();
+
+                // 关键：先解除 disabled 再设置 checked，
+                // 避免 disabled 状态下设置 checked 后无变化
+                toggle.disabled = false;
+                toggle.checked = !!enabled;
+                if (privacyAccount) {
+                    // 隐私账户：开关锁定为开启
+                    toggle.disabled = true;
+                    toggle.checked = true;
+                }
+
+                if (badge) {
+                    badge.textContent = enabled ? '已开启' : '关闭';
+                    badge.classList.toggle('active', enabled);
+                }
+                if (desc) {
+                    if (privacyAccount) {
+                        desc.textContent = '当前为隐私账户，数据仅存于本机，无法关闭。';
+                    } else {
+                        desc.textContent = '开启后所有数据仅保存在本地，不会上传到云端数据库。登录功能将不可用。';
+                    }
+                }
+                if (warning) {
+                    warning.style.display = enabled ? 'block' : 'none';
+                }
+                if (dataSyncSection) {
+                    dataSyncSection.style.display = enabled ? 'none' : '';
+                }
+                if (accountStatus) {
+                    accountStatus.textContent = enabled
+                        ? (privacyAccount ? '隐私账户（本地）' : '隐私模式')
+                        : '已登录';
+                }
+                if (logoutBtn) {
+                    // 隐私账户：显示「登出隐私账户」按钮（保留登出能力）
+                    // 仅隐私模式（非账户）：隐藏登出按钮
+                    if (privacyAccount) {
+                        logoutBtn.style.display = '';
+                        logoutBtn.textContent = '登出隐私账户';
+                    } else if (enabled) {
+                        logoutBtn.style.display = 'none';
+                    } else {
+                        logoutBtn.style.display = '';
+                        logoutBtn.textContent = '退出登录';
+                    }
+                }
+            },
+
+            // 切换登录遮罩（如果当前是隐私模式且未登录，则不显示登录）
+            _notifyAuthOverlay() {
+                const overlay = document.getElementById('authOverlay');
+                if (!overlay) return;
+                if (this.isEnabled() && this.isPrivacyAccount()) {
+                    // 隐私账户：永远不显示登录遮罩
+                    overlay.style.display = 'none';
+                }
+            },
+
+            // 强制重置（开发者/调试用）：清除所有隐私模式与隐私账户状态
+            resetAll() {
+                localStorage.removeItem(this.MODE_KEY);
+                localStorage.removeItem(this.ACCOUNT_KEY);
+                window.privacyMode = false;
+                window.isPrivacyAccount = false;
+                window.currentUser = null;
+                this._updateSettingsUI();
+            }
+        };
+
+        // 注册到 window 以便其他模块访问
+        window.PrivacyMode = PrivacyMode;
 
         // ============ 数据管理层（localStorage 为主，云端同步） ============
         const LOCAL_DATA_KEY = 'mosaique-user-data';
@@ -7869,21 +8719,85 @@
             scheduleTemplates: [],
             // 用户设置
             settings: {
-                theme: 'light',          // 'light' | 'dark'
-                aiProvider: 'deepseek'    // 'deepseek' | 'qwen'
+                theme: 'light'          // 'light' | 'dark'
             },
             // 用户画像（AI 从聊天中提取）
             userProfile: ''
         };
 
+        function normalizeTaskModel(task) {
+            if (!task) return null;
+            if (typeof task === 'string') {
+                return { name: task, estimated: '', actual: '', note: '', completed: false, timeEstimation: null };
+            }
+            const name = String(task.name || task.text || task.title || '').trim();
+            const rawTimeEstimation = task.timeEstimation && typeof task.timeEstimation === 'object'
+                ? task.timeEstimation
+                : (task.time_estimation && typeof task.time_estimation === 'object' ? task.time_estimation : null);
+            return {
+                name: name,
+                estimated: task.estimated === undefined || task.estimated === null ? '' : String(task.estimated),
+                actual: task.actual === undefined || task.actual === null ? '' : String(task.actual),
+                note: String(task.note || task.description || ''),
+                completed: !!task.completed,
+                timeEstimation: rawTimeEstimation ? JSON.parse(JSON.stringify(rawTimeEstimation)) : null
+            };
+        }
+
+        function normalizeBigTaskModel(task) {
+            if (!task) return null;
+            const estimatedRaw = task.estimated !== undefined ? task.estimated : (task.minutes !== undefined ? task.minutes : '');
+            const estimatedNum = parseInt(estimatedRaw, 10);
+            return {
+                name: String(task.name || task.title || task.text || '').trim(),
+                estimated: Number.isFinite(estimatedNum) ? estimatedNum : 0,
+                ddl: String(task.ddl || task.deadline || ''),
+                startDate: String(task.startDate || ''),
+                note: String(task.note || task.description || ''),
+                type: task.type === 'long' ? 'long' : 'short',
+                completed: !!task.completed,
+                createdAt: task.createdAt || new Date().toISOString(),
+                completedAt: task.completedAt || ''
+            };
+        }
+
+        function normalizePlanMosaicData(rawData) {
+            const source = rawData && typeof rawData === 'object' ? rawData : EMPTY_DATA;
+            const data = JSON.parse(JSON.stringify(source));
+            const schedules = data.schedules && typeof data.schedules === 'object' ? data.schedules : {};
+            Object.keys(schedules).forEach(function(dateKey) {
+                const schedule = schedules[dateKey] && typeof schedules[dateKey] === 'object' ? schedules[dateKey] : {};
+                schedule.timeSlots = Array.isArray(schedule.timeSlots) ? schedule.timeSlots : [];
+                schedule.tasks = (Array.isArray(schedule.tasks) ? schedule.tasks : [])
+                    .map(normalizeTaskModel)
+                    .filter(function(task) { return task && task.name; });
+                schedule.title = String(schedule.title || '');
+                schedule.highlights = String(schedule.highlights || '');
+                schedule.milestone = String(schedule.milestone || '');
+                schedules[dateKey] = schedule;
+            });
+            data.schedules = schedules;
+            data.bigTasks = (Array.isArray(data.bigTasks) ? data.bigTasks : [])
+                .map(normalizeBigTaskModel)
+                .filter(function(task) { return task && task.name; });
+            data.bigTaskHistory = (Array.isArray(data.bigTaskHistory) ? data.bigTaskHistory : [])
+                .map(normalizeBigTaskModel)
+                .filter(function(task) { return task && task.name; });
+            data.scheduleTemplates = Array.isArray(data.scheduleTemplates) ? data.scheduleTemplates : [];
+            data.settings = data.settings && typeof data.settings === 'object' ? data.settings : {};
+            data.userProfile = typeof data.userProfile === 'string' ? data.userProfile : '';
+            return data;
+        }
+
+        window.normalizePlanMosaicData = normalizePlanMosaicData;
+
         const DataManager = {
             // 收集当前所有用户数据（用于保存/上传）
             collectAll() {
-                const data = JSON.parse(JSON.stringify(window.scheduleData || EMPTY_DATA));
+                const data = normalizePlanMosaicData(window.scheduleData || EMPTY_DATA);
                 // 收集设置
                 data.settings = {
-                    theme: document.documentElement.getAttribute('data-theme') || 'light',
-                    aiProvider: localStorage.getItem('mosaique-ai-provider') || 'deepseek'
+                    theme: document.documentElement.getAttribute('data-theme') || 'light'
                 };
                 // 收集用户画像
                 if (window._mosaUserProfile !== undefined) {
@@ -7905,6 +8819,7 @@
                     }
                     data = JSON.parse(JSON.stringify(EMPTY_DATA));
                 }
+                data = normalizePlanMosaicData(data);
                 // 日程数据
                 window.scheduleData = {
                     startDate: data.startDate || '',
@@ -7930,12 +8845,6 @@
                     const radios = document.querySelectorAll('input[name="theme"]');
                     radios.forEach(r => { r.checked = r.value === data.settings.theme; });
                 }
-                // 恢复 AI Provider
-                if (data.settings && data.settings.aiProvider) {
-                    localStorage.setItem('mosaique-ai-provider', data.settings.aiProvider);
-                    const radios = document.querySelectorAll('input[name="ai-provider"]');
-                    radios.forEach(r => { r.checked = r.value === data.settings.aiProvider; });
-                }
             },
 
             // 从 localStorage 读取数据
@@ -7948,6 +8857,20 @@
                     }
                 } catch (e) {
                     console.warn('[Data] Failed to load localStorage:', e);
+                }
+                return null;
+            },
+
+            async loadElectronLocal() {
+                if (!window.electronAPI?.getScheduleDataLocal) return null;
+                try {
+                    const data = await window.electronAPI.getScheduleDataLocal();
+                    if (data && typeof data === 'object' && data.schedules) {
+                        console.log('[Data] Loaded from Electron local file:', Object.keys(data.schedules).length, 'schedules');
+                        return data;
+                    }
+                } catch (e) {
+                    console.warn('[Data] Failed to load Electron local file:', e);
                 }
                 return null;
             },
@@ -7978,6 +8901,11 @@
 
             // 从云端加载
             async loadCloud() {
+                // 隐私模式：跳过云端读取
+                if (window.privacyMode === true) {
+                    console.log('[Data] Privacy mode enabled, skipping cloud load');
+                    return null;
+                }
                 if (!window.currentUser) return null;
                 try {
                     const data = await supabaseRPC('get_user_data', {
@@ -7995,6 +8923,11 @@
 
             // 上传到云端（即时，用于手动上传）
             async saveCloud(data) {
+                // 隐私模式：跳过云端写入
+                if (window.privacyMode === true) {
+                    console.log('[Data] Privacy mode enabled, skipping cloud save');
+                    return false;
+                }
                 if (!window.currentUser) return false;
                 try {
                     await supabaseRPC('upsert_user_data', {
@@ -8072,9 +9005,39 @@
                 const overlay = document.getElementById('authOverlay');
                 if (!overlay) return false;
 
+                // 隐私账户：跳过云端自动登录，直接以本地身份进入
+                if (window.isPrivacyAccount === true && window.PrivacyMode) {
+                    const account = window.PrivacyMode.getPrivacyAccount();
+                    if (account) {
+                        // 通知主进程切换到该用户的数据目录
+                        if (window.electronAPI?.setActiveUser) {
+                            try {
+                                await window.electronAPI.setActiveUser(account.username);
+                            } catch (e) {
+                                console.warn('[Auth] Privacy auto setActiveUser failed:', e && e.message);
+                            }
+                        }
+                        window._currentUsername = account.username;
+                        if (typeof window.resetAllState === 'function') {
+                            await window.resetAllState(account.username);
+                        }
+                        clearAllAccountCaches();
+                        // 隐私账户：直接隐藏登录遮罩，永远不显示
+                        overlay.style.display = 'none';
+                        return true;
+                    }
+                }
+
                 // 尝试自动登录
                 const saved = this.getSavedCredentials();
                 if (saved) {
+                    // 隐私模式开启（非账户）时：跳过云端自动登录
+                    if (window.privacyMode === true) {
+                        // 仅当存在隐私账户时跳过；否则仍允许本地数据展示
+                        overlay.style.display = 'block';
+                        this.setupKeyboardHandlers();
+                        return false;
+                    }
                     const result = await this.attemptLogin(saved.username, saved.password);
                     if (result.success) {
                         // 通知主进程切换到该用户的数据目录
@@ -8154,15 +9117,61 @@
 
             saveCredentials(username, password) {
                 try {
-                    localStorage.setItem(this.CREDENTIALS_KEY, JSON.stringify({ username, password }));
+                    // Encrypt password with device-bound key derived from username + machine info
+                    const encrypted = this._encryptCredential(password);
+                    localStorage.setItem(this.CREDENTIALS_KEY, JSON.stringify({ username, ep: encrypted }));
                 } catch (e) { console.warn('[Auth] Could not save credentials:', e); }
             },
 
             getSavedCredentials() {
                 try {
                     const raw = localStorage.getItem(this.CREDENTIALS_KEY);
-                    return raw ? JSON.parse(raw) : null;
+                    if (!raw) return null;
+                    const data = JSON.parse(raw);
+                    // Support migration: if ep (encrypted password) exists, decrypt; otherwise use plaintext (legacy)
+                    if (data.ep) {
+                        const password = this._decryptCredential(data.ep);
+                        return { username: data.username, password };
+                    }
+                    return data;
                 } catch { return null; }
+            },
+
+            _encryptCredential(plaintext) {
+                // Simple XOR-based obfuscation with a device key
+                // This is not cryptographically strong but prevents casual plaintext reading
+                const deviceKey = this._getDeviceKey();
+                const encoded = new TextEncoder().encode(plaintext);
+                const keyBytes = new TextEncoder().encode(deviceKey);
+                const result = new Uint8Array(encoded.length);
+                for (let i = 0; i < encoded.length; i++) {
+                    result[i] = encoded[i] ^ keyBytes[i % keyBytes.length];
+                }
+                return btoa(String.fromCharCode(...result));
+            },
+
+            _decryptCredential(encrypted) {
+                try {
+                    const deviceKey = this._getDeviceKey();
+                    const keyBytes = new TextEncoder().encode(deviceKey);
+                    const data = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0));
+                    const result = new Uint8Array(data.length);
+                    for (let i = 0; i < data.length; i++) {
+                        result[i] = data[i] ^ keyBytes[i % keyBytes.length];
+                    }
+                    return new TextDecoder().decode(result);
+                } catch { return ''; }
+            },
+
+            _getDeviceKey() {
+                // Device-bound key from various browser fingerprint sources
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillText('PlanMosaic', 2, 2);
+                const canvasData = canvas.toDataURL().slice(-32);
+                return 'PM-' + canvasData + '-' + screen.width + 'x' + screen.height;
             },
 
             clearSavedCredentials() {
@@ -8310,6 +9319,7 @@
             const username = document.getElementById('authRegUsername').value.trim();
             const password = document.getElementById('authRegPassword').value;
             const confirm = document.getElementById('authRegConfirm').value;
+            const isPrivacy = document.getElementById('authRegPrivacy')?.checked === true;
             if (!username || username.length < 3) { AuthModule.showError('authRegError', '用户名至少需要3个字符'); return; }
             if (username.length > 32) { AuthModule.showError('authRegError', '用户名最多32个字符'); return; }
             if (password.length < 6) { AuthModule.showError('authRegError', '密码至少需要6个字符'); return; }
@@ -8319,39 +9329,119 @@
             btn.classList.add('loading');
             btn.disabled = true;
 
-            const result = await AuthModule.attemptRegister(username, password);
-
-            btn.classList.remove('loading');
-            btn.disabled = false;
-
-            if (result.success) {
-                // 通知主进程切换到该用户的数据目录
-                if (window.electronAPI?.setActiveUser) {
-                    await window.electronAPI.setActiveUser(username);
+            try {
+                if (isPrivacy) {
+                    // 隐私账户：完全跳过云端注册
+                    await completePrivacyRegistration(username, password);
+                    return;
                 }
+
+                const result = await AuthModule.attemptRegister(username, password);
+
+                btn.classList.remove('loading');
+                btn.disabled = false;
+
+                if (result.success) {
+                    // 通知主进程切换到该用户的数据目录
+                    if (window.electronAPI?.setActiveUser) {
+                        await window.electronAPI.setActiveUser(username);
+                    }
+                    window._currentUsername = username;
+                    if (typeof window.resetAllState === 'function') {
+                        await window.resetAllState(username);
+                    }
+                    // 清除旧用户的localStorage数据，确保数据隔离
+                    clearAllAccountCaches();
+                    AuthModule.saveCredentials(username, password);
+                    AuthModule.hideAuthOverlay();
+                    await loadDataAndSync();
+                    startApp();
+                } else if (isNetworkError(result)) {
+                    showOfflineNotice();
+                } else {
+                    AuthModule.showError('authRegError', result.error);
+                    const form = document.getElementById('authRegisterForm');
+                    form.style.animation = 'none';
+                    form.offsetHeight;
+                    form.style.animation = 'authShake 0.4s ease';
+                }
+            } catch (err) {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                AuthModule.showError('authRegError', err && err.message ? err.message : '注册失败，请重试');
+            }
+        }
+
+        // 完成隐私账户注册（完全本地化）
+        async function completePrivacyRegistration(username, password) {
+            const btn = document.getElementById('authRegBtn');
+            try {
+                // 通知主进程切换到该用户的数据目录（本地数据）
+                if (window.electronAPI?.setActiveUser) {
+                    try {
+                        await window.electronAPI.setActiveUser(username);
+                    } catch (e) {
+                        console.warn('[PrivacyRegister] setActiveUser failed:', e && e.message);
+                    }
+                }
+                // 创建隐私账户记录并启用隐私模式
+                if (window.PrivacyMode) {
+                    window.PrivacyMode.createPrivacyAccount(username);
+                } else {
+                    window.privacyMode = true;
+                    window.isPrivacyAccount = true;
+                }
+                // 加密保存凭据到本地（不发送到云端）
+                AuthModule.saveCredentials(username, password);
                 window._currentUsername = username;
                 if (typeof window.resetAllState === 'function') {
                     await window.resetAllState(username);
                 }
-                // 清除旧用户的localStorage数据，确保数据隔离
                 clearAllAccountCaches();
-                AuthModule.saveCredentials(username, password);
                 AuthModule.hideAuthOverlay();
+                showToast('隐私账户已创建，数据将仅保存在本机', 'success');
                 await loadDataAndSync();
                 startApp();
-            } else if (isNetworkError(result)) {
-                showOfflineNotice();
-            } else {
-                AuthModule.showError('authRegError', result.error);
-                const form = document.getElementById('authRegisterForm');
-                form.style.animation = 'none';
-                form.offsetHeight;
-                form.style.animation = 'authShake 0.4s ease';
+            } finally {
+                if (btn) {
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                }
             }
         }
 
         function handleLogout() {
             closeSettingsModal();
+            const isPrivacyAcc = window.PrivacyMode && window.PrivacyMode.isPrivacyAccount();
+            const isPrivacyMode = window.privacyMode === true;
+
+            if (isPrivacyAcc) {
+                // 隐私账户登出：本地数据保留在磁盘，再次进入应用时可直接登录
+                showConfirmToast(
+                    '登出隐私账户？\n\n你的本地数据将保留在磁盘上（不删除）。再次进入应用时，可使用相同用户名重新登录此账户。',
+                    function() {
+                        performPrivacyAccountLogout();
+                    }
+                );
+                return;
+            }
+
+            if (isPrivacyMode) {
+                // 仅隐私模式（开关打开、非隐私账户）：先关闭隐私模式再登出
+                showConfirmToast(
+                    '当前已开启隐私模式，关闭隐私模式后才能登出。是否继续？',
+                    function() {
+                        if (window.PrivacyMode) window.PrivacyMode.disable();
+                        performNormalLogout();
+                    }
+                );
+                return;
+            }
+
+            performNormalLogout();
+        }
+
+        function performNormalLogout() {
             AuthModule.logout();
             // 清空界面
             window.scheduleData = null;
@@ -8359,10 +9449,161 @@
             window.scheduleTemplates = [];
         }
 
+        function performPrivacyAccountLogout() {
+            // 通知主进程清除活跃用户（不会删除磁盘上的数据）
+            if (window.electronAPI?.setActiveUser) {
+                try { window.electronAPI.setActiveUser(null); } catch (e) {}
+            }
+            // 清除保存的凭据
+            try { AuthModule.clearSavedCredentials(); } catch (e) {}
+            // 清除隐私账户记录（保留磁盘数据，不清空本地缓存中的用户数据）
+            if (window.PrivacyMode) {
+                window.PrivacyMode.clearPrivacyAccount();
+                // 同时关闭隐私模式开关
+                window.PrivacyMode.disable();
+            }
+            window.currentUser = null;
+            window._currentUsername = null;
+            // 清空界面
+            window.scheduleData = null;
+            window.bigTasks = [];
+            window.scheduleTemplates = [];
+            // 显示登录遮罩
+            const overlay = document.getElementById('authOverlay');
+            if (overlay) {
+                overlay.style.display = 'block';
+                overlay.classList.remove('hiding');
+                const usernameField = document.getElementById('authLoginUsername');
+                const passwordField = document.getElementById('authLoginPassword');
+                if (usernameField) usernameField.value = '';
+                if (passwordField) passwordField.value = '';
+            }
+            showToast('已登出隐私账户', 'success');
+        }
+
         function attemptAuthInit() {
             const offlineEl = document.getElementById('authOffline');
             if (offlineEl) offlineEl.style.display = 'none';
             showLoginForm();
+        }
+
+        // ============ 隐私模式 UI 处理 ============
+
+        // 设置面板中的隐私模式开关回调
+        function onPrivacyModeToggle(checked) {
+            if (!window.PrivacyMode) return;
+            if (window.PrivacyMode.isPrivacyAccount()) {
+                // 隐私账户：开关应处于禁用状态，强制保持开启
+                showToast('当前为隐私账户，无法关闭隐私模式', 'warning');
+                const toggle = document.getElementById('privacyModeToggle');
+                if (toggle) toggle.checked = true;
+                return;
+            }
+            if (checked) {
+                // 用户想要启用
+                showConfirmToast(
+                    '开启隐私模式后，所有数据将仅保存在本地，不会上传到云端。登录功能将不可用，确定要开启吗？',
+                    function() {
+                        window.PrivacyMode.enable();
+                        showToast('隐私模式已开启', 'success');
+                    },
+                    function() {
+                        // 用户取消，恢复开关状态
+                        const toggle = document.getElementById('privacyModeToggle');
+                        if (toggle) toggle.checked = false;
+                    }
+                );
+            } else {
+                // 用户想要关闭
+                showConfirmToast(
+                    '关闭隐私模式后，你可以重新登录云端账户。是否继续？',
+                    function() {
+                        // 关闭前确保状态被正确清理
+                        const ok = window.PrivacyMode.disable();
+                        if (ok) {
+                            showToast('隐私模式已关闭', 'success');
+                        } else {
+                            // 关闭失败时确保 UI 状态一致
+                            showToast('关闭失败，请重试', 'error');
+                            const toggle = document.getElementById('privacyModeToggle');
+                            if (toggle) toggle.checked = true;
+                        }
+                    },
+                    function() {
+                        // 用户取消，恢复开关状态
+                        const toggle = document.getElementById('privacyModeToggle');
+                        if (toggle) toggle.checked = true;
+                    }
+                );
+            }
+        }
+
+        // 隐私账户重置：清除本地隐私账户记录
+        function onResetPrivacyAccount() {
+            if (!window.PrivacyMode) return;
+            if (!window.PrivacyMode.isPrivacyAccount()) {
+                showToast('当前不是隐私账户，无需重置', 'info');
+                return;
+            }
+            showConfirmToast(
+                '确定要重置当前的隐私账户吗？\n\n这将清除本地隐私账户记录，关闭隐私模式，并需要重新登录。',
+                function() {
+                    // 通知主进程清除活跃用户
+                    if (window.electronAPI?.setActiveUser) {
+                        try { window.electronAPI.setActiveUser(null); } catch (e) {}
+                    }
+                    // 清除所有账户的 localStorage 缓存
+                    try { clearAllAccountCaches(); } catch (e) {}
+                    // 清除保存的凭据
+                    try { AuthModule.clearSavedCredentials(); } catch (e) {}
+                    // 重置隐私模式
+                    window.PrivacyMode.resetAll();
+                    window.currentUser = null;
+                    showToast('已重置隐私账户', 'success');
+                    // 关闭设置并重新显示登录遮罩
+                    closeSettingsModal();
+                    const overlay = document.getElementById('authOverlay');
+                    if (overlay) overlay.style.display = 'block';
+                },
+                function() {}
+            );
+        }
+
+        // 注册表单中的隐私账户勾选回调
+        function onPrivacyAccountToggle(checked) {
+            const btn = document.getElementById('authRegBtn');
+            if (btn) {
+                btn.textContent = checked ? '创建隐私账户' : '注册';
+            }
+        }
+
+        // 绑定隐私模式开关的备用 click 监听（在 openSettingsModal 中调用）
+        // 用 addEventListener 替代内联 onchange，确保响应可靠
+        function bindPrivacyModeEvents() {
+            const toggle = document.getElementById('privacyModeToggle');
+            if (!toggle) return;
+            // 防止重复绑定
+            if (toggle._privacyBound) return;
+            toggle._privacyBound = true;
+            // 显式监听 change 事件
+            toggle.addEventListener('change', function(e) {
+                onPrivacyModeToggle(e.target.checked);
+            });
+            // 备用：点击整行也能触发切换
+            const row = toggle.closest('.privacy-mode-row');
+            if (row && !row._rowBound) {
+                row._rowBound = true;
+                row.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'INPUT') return; // input 已处理
+                    const linkBtn = e.target.closest('button');
+                    if (linkBtn) return; // 按钮不处理
+                    if (window.PrivacyMode && window.PrivacyMode.isPrivacyAccount()) return;
+                    if (toggle.disabled) return;
+                    toggle.checked = !toggle.checked;
+                    // 手动触发 change 事件
+                    toggle.dispatchEvent(new Event('change'));
+                });
+            }
         }
 
         // ============ 应用初始化函数 ============
@@ -8394,6 +9635,14 @@
         window.addEventListener('beforeunload', function() {
             _flushDebouncedCloudSave();
             _cleanupAllTimers();
+            if (typeof cursorRafId !== 'undefined' && cursorRafId) {
+                cancelAnimationFrame(cursorRafId);
+                cursorRafId = null;
+            }
+            if (typeof currentTimeUpdaterInterval !== 'undefined' && currentTimeUpdaterInterval) {
+                clearInterval(currentTimeUpdaterInterval);
+                currentTimeUpdaterInterval = null;
+            }
         });
 
         function saveAllDataDebounced() {
@@ -8407,6 +9656,13 @@
             const btn = document.getElementById('manualUploadBtn');
             const status = document.getElementById('uploadStatus');
             if (!btn || !status) return;
+
+            if (window.privacyMode === true) {
+                status.textContent = '隐私模式已开启，云端上传已禁用';
+                status.style.color = 'var(--text-error, #e74c3c)';
+                showToast('隐私模式已开启，云端上传已禁用', 'warning');
+                return;
+            }
 
             if (!window.currentUser) {
                 status.textContent = '请先登录后再上传';
@@ -8461,7 +9717,18 @@
                 console.log('[Init] Loaded from localStorage:', Object.keys(localData.schedules).length, 'schedules');
             }
 
-            // 2. 如果本地没有数据，尝试从 data.json 迁移
+            // 2. Electron 环境优先从当前账号的本地数据文件恢复
+            if (!localData) {
+                const electronLocalData = await DataManager.loadElectronLocal();
+                if (electronLocalData) {
+                    localData = electronLocalData;
+                    DataManager.saveLocal(electronLocalData);
+                    DataManager.restoreAll(electronLocalData);
+                    console.log('[Init] Restored from Electron local file');
+                }
+            }
+
+            // 3. 如果本地没有数据，尝试从 data.json 迁移
             if (!localData) {
                 const fileData = await DataManager.loadFromFile();
                 if (fileData) {
@@ -8472,13 +9739,13 @@
                 }
             }
 
-            // 3. 如果本地还是没有数据，使用空数据
+            // 4. 如果本地还是没有数据，使用空数据
             if (!localData) {
                 DataManager.restoreAll(null);
                 console.log('[Init] Starting with empty data');
             }
 
-            // 4. 尝试从云端加载并合并（后台执行，不阻塞 UI）
+            // 5. 尝试从云端加载并合并（后台执行，不阻塞 UI）
             const cloudData = await DataManager.loadCloud();
             if (cloudData) {
                 if (!localData) {
@@ -8517,6 +9784,10 @@
 
         async function initApp() {
             initTheme();
+            // 先恢复隐私模式/隐私账户状态（在认证流程之前）
+            if (window.PrivacyMode && typeof window.PrivacyMode.init === 'function') {
+                window.PrivacyMode.init();
+            }
             const authenticated = await AuthModule.init();
             if (authenticated) {
                 try {
@@ -8593,6 +9864,62 @@
         window.bigTasks = []; // 大任务列表
         let editingBigTaskIndex = null; // 当前编辑的大任务索引
         let isWeekView = true; // 默认周视图模式
+        let _schedulePersistQueue = Promise.resolve();
+        let _schedulePersistPending = 0;
+        let _schedulePersistActive = false;
+        window._isSaving = false;
+
+        function updateScheduleSavingState() {
+            window._isSaving = _schedulePersistActive || _schedulePersistPending > 0;
+        }
+
+        async function persistScheduleData(options) {
+            options = options || {};
+            const queued = _schedulePersistActive || _schedulePersistPending > 0;
+            if (queued && !options.silentQueueNotice && typeof showToast === 'function') {
+                showToast('已有保存正在进行，本次修改已加入队列', 'info', 2200);
+            }
+            _schedulePersistPending++;
+            updateScheduleSavingState();
+            const runSave = async function() {
+                _schedulePersistActive = true;
+                updateScheduleSavingState();
+                try {
+                    const payload = DataManager.collectAll();
+                    const isElectron = typeof window.electronAPI !== 'undefined';
+                    if (isElectron) {
+                        const result = await window.electronAPI.saveScheduleData(payload);
+                        if (result && result.success === false) {
+                            return { success: false, error: result.error || '保存失败', queued: queued };
+                        }
+                    } else {
+                        const response = await fetch('/api/save-schedule', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await response.json().catch(function() { return { success: response.ok }; });
+                        if (!response.ok || (result && result.success === false)) {
+                            return { success: false, error: (result && result.error) || ('HTTP ' + response.status), queued: queued };
+                        }
+                    }
+                    window.scheduleData = normalizePlanMosaicData(payload);
+                    window.bigTasks = window.scheduleData.bigTasks;
+                    window.scheduleTemplates = window.scheduleData.scheduleTemplates;
+                    saveAllDataDebounced();
+                    return { success: true, queued: queued };
+                } catch (error) {
+                    return { success: false, error: error && error.message ? error.message : '保存失败', queued: queued };
+                } finally {
+                    _schedulePersistPending = Math.max(0, _schedulePersistPending - 1);
+                    _schedulePersistActive = false;
+                    updateScheduleSavingState();
+                }
+            };
+            const queuedTask = _schedulePersistQueue.catch(function() {}).then(runSave);
+            _schedulePersistQueue = queuedTask.then(function() {}, function() {});
+            return queuedTask;
+        }
 
         // Textarea 自适应高度
         function autoResizeTextarea(element) {
@@ -8701,12 +10028,17 @@
                     return `${h}:${m}`;
                 };
 
-                block.innerHTML = `
-                    <div class="time-block-content">
-                        <span class="time-block-time">${formatTime(startTime)}</span>
-                        <span class="time-block-name">${slot.activity || '未命名'}</span>
-                    </div>
-                `;
+                const blockContent = document.createElement('div');
+                const timeLabel = document.createElement('span');
+                const nameLabel = document.createElement('span');
+                blockContent.className = 'time-block-content';
+                timeLabel.className = 'time-block-time';
+                timeLabel.textContent = formatTime(startTime);
+                nameLabel.className = 'time-block-name';
+                nameLabel.textContent = slot.activity || '未命名';
+                blockContent.appendChild(timeLabel);
+                blockContent.appendChild(nameLabel);
+                block.appendChild(blockContent);
 
                 timeline.appendChild(block);
             });
@@ -8718,9 +10050,12 @@
                 const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
                 const timeLine = document.createElement('div');
+                const currentTimeLabel = document.createElement('span');
                 timeLine.className = 'current-time-line';
                 timeLine.style.top = `${currentMinutes * 25 / 60}px`;
-                timeLine.innerHTML = `<span class="current-time-label">${currentTimeStr}</span>`;
+                currentTimeLabel.className = 'current-time-label';
+                currentTimeLabel.textContent = currentTimeStr;
+                timeLine.appendChild(currentTimeLabel);
                 timeline.appendChild(timeLine);
             }
 
@@ -8858,7 +10193,10 @@
         // 保存数据到服务器
         async function saveData() {
             try {
-                saveAllDataDebounced();
+                const result = await persistScheduleData({ silentQueueNotice: true });
+                if (!result.success) {
+                    throw new Error(result.error || '保存失败');
+                }
             } catch (error) {
                 console.error('保存失败:', error);
                 showToast('保存失败，请重试', 'error');
@@ -9770,8 +11108,16 @@
 
             const taskElements = document.querySelectorAll('.task-item');
             const tasks = [];
+            const existingSchedule = window.scheduleData && window.scheduleData.schedules
+                ? window.scheduleData.schedules[currentEditDate]
+                : null;
+            const existingTasks = existingSchedule && Array.isArray(existingSchedule.tasks)
+                ? existingSchedule.tasks
+                : [];
 
             taskElements.forEach(el => {
+                const taskIndex = parseInt(el.dataset.index || '-1', 10);
+                const existingTask = Number.isInteger(taskIndex) && taskIndex >= 0 ? existingTasks[taskIndex] : null;
                 const name = el.querySelector('.task-name').value.trim();
                 const estimated = el.querySelector('.task-estimated').value.trim();
                 const actual = el.querySelector('.task-actual').value.trim();
@@ -9784,7 +11130,10 @@
                         estimated,
                         actual,
                         note,
-                        completed: isCompleted
+                        completed: isCompleted,
+                        timeEstimation: existingTask && existingTask.timeEstimation
+                            ? JSON.parse(JSON.stringify(existingTask.timeEstimation))
+                            : null
                     });
                 }
             });
@@ -9797,7 +11146,8 @@
                 tasks
             };
 
-            await saveScheduleDirectly(newSchedule);
+            const saveResult = await saveScheduleDirectly(newSchedule);
+            if (!saveResult.success) return;
             isEditMode = false;
             openModal(currentEditDate);
             renderCalendar();
@@ -9811,33 +11161,27 @@
             }
         }
 
-        async function saveScheduleDirectly(schedule) {
-            if (window._isSaving) return;
-            window._isSaving = true;
+        async function saveScheduleDirectly(schedule, options) {
             try {
-            if (!window.scheduleData.schedules) {
-                window.scheduleData.schedules = {};
-            }
-            window.scheduleData.schedules[currentEditDate] = schedule;
-
-            try {
-                const isElectron = typeof window.electronAPI !== 'undefined';
-                if (isElectron) {
-                    await window.electronAPI.saveScheduleData(window.scheduleData);
-                } else {
-                    await fetch('/api/save-schedule', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(window.scheduleData)
-                    });
+                if (!window.scheduleData) {
+                    window.scheduleData = JSON.parse(JSON.stringify(EMPTY_DATA));
                 }
+                if (!window.scheduleData.schedules) {
+                    window.scheduleData.schedules = {};
+                }
+                window.scheduleData.schedules[currentEditDate] = normalizePlanMosaicData({
+                    schedules: { current: schedule }
+                }).schedules.current;
+                const result = await persistScheduleData(options);
+                if (!result.success) {
+                    console.error('保存失败:', result.error);
+                    showToast('保存失败，请检查网络连接', 'error');
+                }
+                return result;
             } catch (e) {
                 console.error('保存失败:', e);
                 showToast('保存失败，请检查网络连接', 'error');
-            }
-            saveAllDataDebounced();
-            } finally {
-                window._isSaving = false;
+                return { success: false, error: e.message || '保存失败' };
             }
         }
 
@@ -9867,6 +11211,14 @@
         document.addEventListener('keydown', (e) => {
             if (e.isComposing) return;
             if (e.key === 'Escape') {
+                // ReAct 弹窗不在 _modalStack 中，单独处理
+                var reactLogModal = document.getElementById('reactLogModal');
+                if (reactLogModal && reactLogModal.style.display !== 'none' && reactLogModal.style.display !== '') {
+                    if (typeof closeReActLog === 'function') {
+                        closeReActLog();
+                        return;
+                    }
+                }
                 var stack = window._modalStack;
                 if (stack.length === 0) return;
                 var top = stack[stack.length - 1];
@@ -9895,6 +11247,13 @@
                         break;
                     case 'scheduleEditor':
                         closeScheduleEditor();
+                        break;
+                    case 'courseInput':
+                        if (typeof cancelCourseInput === 'function') cancelCourseInput();
+                        break;
+                    case 'reactLog':
+                    case 'reactLogModal':
+                        if (typeof closeReActLog === 'function') closeReActLog();
                         break;
                     }
             }
@@ -9951,6 +11310,74 @@
                     }
                 });
             }
+
+            // 补充3个弹窗遮罩关闭：courseInputModal / deepPlanningModal / reactLogModal
+            // 修复：courseInputModal 缺失的 close 函数（v2 修复）— 必须先定义，下面 forEach 才会注册遮罩关闭
+            if (typeof window.cancelCourseInput !== 'function') {
+                window.cancelCourseInput = function () {
+                    var el = document.getElementById('courseInputModal');
+                    if (el) el.classList.remove('active');
+                    var title = document.getElementById('courseInputTitle');
+                    var subtitle = document.getElementById('courseInputSubtitle');
+                    var courseNameInput = document.getElementById('courseNameInput');
+                    var teacherInput = document.getElementById('courseTeacherInput');
+                    var locationInput = document.getElementById('courseLocationInput');
+                    var noteInput = document.getElementById('courseNoteInput');
+                    if (title) title.textContent = '录入课程详情';
+                    if (subtitle) subtitle.textContent = '';
+                    if (courseNameInput) courseNameInput.value = '';
+                    if (teacherInput) teacherInput.value = '';
+                    if (locationInput) locationInput.value = '';
+                    if (noteInput) noteInput.value = '';
+                    window._pendingCourseCallback = null;
+                    if (window._modalStack) {
+                        window._modalStack = window._modalStack.filter(function (t) { return t !== 'courseInput'; });
+                    }
+                };
+            }
+            if (typeof window.confirmCourseInput !== 'function') {
+                window.confirmCourseInput = function () {
+                    var courseNameInput = document.getElementById('courseNameInput');
+                    var teacherInput = document.getElementById('courseTeacherInput');
+                    var locationInput = document.getElementById('courseLocationInput');
+                    var noteInput = document.getElementById('courseNoteInput');
+                    var payload = {
+                        course: courseNameInput ? courseNameInput.value.trim() : '',
+                        teacher: teacherInput ? teacherInput.value.trim() : '',
+                        location: locationInput ? locationInput.value.trim() : '',
+                        note: noteInput ? noteInput.value.trim() : ''
+                    };
+                    if (!payload.course) {
+                        if (typeof showToast === 'function') showToast('请输入课程名称', 'warning');
+                        return;
+                    }
+                    if (typeof window._pendingCourseCallback === 'function') {
+                        window._pendingCourseCallback(payload);
+                        window._pendingCourseCallback = null;
+                    }
+                    if (typeof window.cancelCourseInput === 'function') {
+                        window.cancelCourseInput();
+                    }
+                };
+            }
+
+            var extraOverlayModals = [
+                { overlay: 'courseInputModal', close: 'cancelCourseInput' },
+                { overlay: 'deepPlanningModal', close: 'closeDeepPlanningModal' },
+                { overlay: 'reactLogModal', close: 'closeReActLog' }
+            ];
+            extraOverlayModals.forEach(function (cfg) {
+                var el = document.getElementById(cfg.overlay);
+                if (el && typeof window[cfg.close] === 'function') {
+                    el.addEventListener('click', function (e) {
+                        if (e.target === el) {
+                            window[cfg.close]();
+                        }
+                    });
+                }
+            });
+
+            // 修复：courseInputModal 缺失的 close 函数（v2 修复）— 保留兼容（已上移）
 
             // 初始化主题
             initTheme();
@@ -10017,14 +11444,33 @@
 
             window._modalStack.push('settings');
 
-            loadAIProviderSetting();
-            loadDeepSeekModelSetting();
             loadApiKeysSettings();
 
             // 更新用户名显示
             const usernameEl = document.getElementById('settingsUsername');
-            if (usernameEl && window.currentUser) {
-                usernameEl.textContent = window.currentUser.username;
+            if (usernameEl) {
+                if (window.isPrivacyAccount && window.isPrivacyAccount()) {
+                    const acc = window.PrivacyMode && window.PrivacyMode.getPrivacyAccount();
+                    usernameEl.textContent = acc ? acc.username : '本地隐私账户';
+                } else if (window.currentUser) {
+                    usernameEl.textContent = window.currentUser.username;
+                }
+            }
+
+            // 同步隐私模式 UI
+            if (window.PrivacyMode && typeof window.PrivacyMode._updateSettingsUI === 'function') {
+                window.PrivacyMode._updateSettingsUI();
+            }
+
+            // 绑定隐私模式开关的备用 click 监听（确保事件可靠）
+            if (typeof bindPrivacyModeEvents === 'function') {
+                bindPrivacyModeEvents();
+            }
+
+            // 显示/隐藏隐私账户重置按钮
+            const resetRow = document.getElementById('resetPrivacyAccountRow');
+            if (resetRow) {
+                resetRow.style.display = (window.PrivacyMode && window.PrivacyMode.isPrivacyAccount()) ? '' : 'none';
             }
 
             // 确保UI模式单选按钮状态与当前模式同步
@@ -10047,7 +11493,6 @@
             const isElectron = typeof window.electronAPI !== 'undefined';
             if (!isElectron) {
                 updateApiKeyStatus('deepseek', false, 'Web 模式不支持');
-                updateApiKeyStatus('qwen', false, 'Web 模式不支持');
                 return;
             }
 
@@ -10057,7 +11502,6 @@
 
                 // 从 localStorage 读取完整 key（collectAll/restoreAll 的数据源）
                 const deepseekKey = localStorage.getItem('mosaique-deepseek-key') || '';
-                const qwenKey = localStorage.getItem('mosaique-qwen-key') || '';
 
                 if (deepseekKey) {
                     const input = document.getElementById('deepseek-key-input');
@@ -10074,22 +11518,6 @@
                     input.dataset.originalKey = keys.deepseek.key || '';
                     }
                     updateApiKeyStatus('deepseek', true);
-                }
-
-                if (qwenKey) {
-                    const input = document.getElementById('qwen-key-input');
-                    if (input) {
-                    input.value = qwenKey;
-                    input.dataset.originalKey = qwenKey;
-                    }
-                    updateApiKeyStatus('qwen', keys.qwen?.hasKey || !!qwenKey);
-                } else if (keys.qwen?.hasKey) {
-                    const input = document.getElementById('qwen-key-input');
-                    if (input) {
-                    input.value = keys.qwen.key || '';
-                    input.dataset.originalKey = keys.qwen.key || '';
-                    }
-                    updateApiKeyStatus('qwen', true);
                 }
             } catch (e) {
                 console.error('[Settings] Load API keys error:', e);
@@ -10128,6 +11556,13 @@
         }
 
         async function saveApiKey(provider) {
+            if (window._isSavingKey) return;
+            window._isSavingKey = true;
+            const providerGroup = document.getElementById(`${provider}-key-input`)?.closest('.api-key-group');
+            const btn = providerGroup ? providerGroup.querySelector('.api-key-btn.save') : null;
+            const originalText = btn ? btn.textContent : '';
+            if (btn) { btn.disabled = true; btn.textContent = '保存中...'; }
+            try {
             const isElectron = typeof window.electronAPI !== 'undefined';
             if (!isElectron) {
                 showApiKeyMessage(provider, 'Web 模式不支持保存 API Key', true);
@@ -10158,6 +11593,10 @@
                 }
             } catch (e) {
                 showApiKeyMessage(provider, `保存失败: ${e.message}`, true);
+            }
+            } finally {
+                window._isSavingKey = false;
+                if (btn) { btn.disabled = false; btn.textContent = originalText || '保存'; }
             }
         }
 
@@ -10209,124 +11648,9 @@
                 await window.electronAPI.openApiKeyUrl(provider);
             } else {
                 const urls = {
-                    deepseek: 'https://platform.deepseek.com/api_keys',
-                    qwen: 'https://dashscope.console.aliyun.com/apiKey'
+                    deepseek: 'https://platform.deepseek.com/api_keys'
                 };
                 window.open(urls[provider], '_blank');
-            }
-        }
-
-        // ============ AI Provider 设置 ============
-
-        // 加载 AI Provider 设置
-        async function loadAIProviderSetting() {
-            try {
-                const isElectron = typeof window.electronAPI !== 'undefined';
-                let provider = 'deepseek';
-
-                if (isElectron) {
-                    const result = await window.electronAPI.getAgentProvider();
-                    provider = result.provider || 'deepseek';
-                } else {
-                    // 从 localStorage 读取
-                    provider = localStorage.getItem('mosaique-ai-provider') || 'deepseek';
-                }
-
-                // 更新 radio 按钮
-                const radios = document.querySelectorAll('input[name="ai-provider"]');
-                radios.forEach(radio => {
-                    radio.checked = radio.value === provider;
-                });
-
-                console.log('[Settings] Loaded AI provider:', provider);
-            } catch (e) {
-                console.error('[Settings] Load AI provider error:', e);
-            }
-        }
-
-        // 切换 AI Provider
-        async function changeAIProvider(provider) {
-            try {
-                const isElectron = typeof window.electronAPI !== 'undefined';
-
-                if (isElectron) {
-                    const result = await window.electronAPI.setAgentProvider(provider);
-                    if (result.success) {
-                        console.log('[Settings] AI provider changed to:', provider, result.model);
-                    } else {
-                        console.error('[Settings] Failed to change AI provider:', result.error);
-                        // 恢复原选择
-                        loadAIProviderSetting();
-                        return;
-                    }
-                } else {
-                    // Web 模式：保存到 localStorage
-                    localStorage.setItem('mosaique-ai-provider', provider);
-                    console.log('[Settings] AI provider changed to:', provider);
-                }
-
-                // 显示提示
-                const providerName = provider === 'qwen' ? 'Qwen 3.5' : 'DeepSeek';
-                console.log(`[Settings] 已切换到 ${providerName} 模型`);
-
-                // 同步到统一数据层
-                saveAllDataDebounced();
-
-            } catch (e) {
-                console.error('[Settings] Change AI provider error:', e);
-                // 恢复原选择
-                loadAIProviderSetting();
-            }
-        }
-
-        // ============ DeepSeek 模型选择 ============
-
-        async function loadDeepSeekModelSetting() {
-            try {
-                const isElectron = typeof window.electronAPI !== 'undefined';
-                let model = 'flash';
-
-                if (isElectron) {
-                    const result = await window.electronAPI.getDeepSeekModel();
-                    model = result.model || 'flash';
-                } else {
-                    model = localStorage.getItem('mosaique-deepseek-model') || 'flash';
-                }
-
-                const radios = document.querySelectorAll('input[name="deepseek-model"]');
-                radios.forEach(radio => {
-                    radio.checked = radio.value === model;
-                });
-
-                console.log('[Settings] Loaded DeepSeek model:', model);
-            } catch (e) {
-                console.error('[Settings] Load DeepSeek model error:', e);
-            }
-        }
-
-        async function changeDeepSeekModel(model) {
-            try {
-                const isElectron = typeof window.electronAPI !== 'undefined';
-
-                if (isElectron) {
-                    const result = await window.electronAPI.setDeepSeekModel(model);
-                    if (result.success) {
-                        console.log('[Settings] DeepSeek model changed to:', result.model);
-                    } else {
-                        console.error('[Settings] Failed to change DeepSeek model:', result.error);
-                        loadDeepSeekModelSetting();
-                    }
-                } else {
-                    localStorage.setItem('mosaique-deepseek-model', model);
-                    console.log('[Settings] DeepSeek model changed to:', model);
-                }
-
-                const modelName = model === 'pro' ? 'V4 Pro（深度推理）' : 'V4 Flash（快速响应）';
-                console.log(`[Settings] 已切换到 DeepSeek ${modelName}`);
-
-            } catch (e) {
-                console.error('[Settings] Change DeepSeek model error:', e);
-                loadDeepSeekModelSetting();
             }
         }
 
@@ -10339,12 +11663,15 @@
 
         // 打开大任务编辑弹窗
         function openBigTaskModal(index = null) {
+            // 重复打开防护：modal 已处于 active 状态时直接返回
+            var _btModal = document.getElementById('bigTaskModal');
+            if (_btModal && _btModal.classList.contains('active')) return;
             editingBigTaskIndex = index;
             var allInputs = document.querySelectorAll('#bigTaskModal .big-task-form-input.error');
             allInputs.forEach(function(el) { el.classList.remove('error'); });
             var allErrors = document.querySelectorAll('#bigTaskModal .form-error-text');
             allErrors.forEach(function(el) { el.remove(); });
-            const modal = document.getElementById('bigTaskModal');
+            const modal = _btModal || document.getElementById('bigTaskModal');
             const title = document.getElementById('bigTaskModalTitle');
             const nameInput = document.getElementById('bigTaskName');
             if (!modal || !title || !nameInput) return;
@@ -10507,7 +11834,8 @@
                 bigTasks.push(task);
             }
 
-            await saveBigTasks();
+            const saveResult = await saveBigTasks();
+            if (!saveResult.success) return;
             renderBigTasks();
             closeBigTaskModal();
             } finally {
@@ -10601,10 +11929,10 @@
                         <span class="big-task-type-badge ${typeClass}">${typeLabel}</span>
                         <div class="big-task-name">${escapeHtml(task.name)}</div>
                         <div class="big-task-meta">
-                            <span>${estimatedText}</span>
-                            <span class="big-task-ddl ${ddlClass}">${dateInfo}</span>
+                            <span>${escapeHtml(estimatedText)}</span>
+                            <span class="big-task-ddl ${ddlClass}">${escapeHtml(dateInfo)}</span>
                         </div>
-                        ${task.note ? `<div class="big-task-note" style="font-size: 10px; color: var(--text-muted); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${task.note}</div>` : ''}
+                        ${task.note ? `<div class="big-task-note" style="font-size: 10px; color: var(--text-muted); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(task.note)}</div>` : ''}
                         <div class="big-task-progress">
                             <div class="big-task-progress-bar" style="width: ${progress}%"></div>
                         </div>
@@ -10625,37 +11953,28 @@
         }
 
         // 保存大任务到数据文件
-        async function saveBigTasks() {
-            if (window._isSaving) return;
+        async function saveBigTasks(options) {
             var retries = 0;
             while (window._isDataWriting && retries < 3) {
                 await new Promise(r => setTimeout(r, 500));
                 retries++;
             }
-            window._isSaving = true;
             try {
-            if (!window.scheduleData) {
-                window.scheduleData = {};
-            }
-            window.scheduleData.bigTasks = bigTasks;
-
-            try {
-                const isElectron = typeof window.electronAPI !== 'undefined';
-                if (isElectron) {
-                    await window.electronAPI.saveScheduleData(window.scheduleData);
-                } else {
-                    await fetch('/api/save-schedule', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(window.scheduleData)
-                    });
+                if (!window.scheduleData) {
+                    window.scheduleData = JSON.parse(JSON.stringify(EMPTY_DATA));
                 }
+                window.scheduleData.bigTasks = (bigTasks || []).map(normalizeBigTaskModel).filter(function(task) { return task && task.name; });
+                window.bigTasks = window.scheduleData.bigTasks;
+                const result = await persistScheduleData(options);
+                if (!result.success) {
+                    console.error('保存大任务失败:', result.error);
+                    showToast('保存大任务失败，请重试', 'error');
+                }
+                return result;
             } catch (e) {
                 console.error('保存大任务失败:', e);
-            }
-            saveAllDataDebounced();
-            } finally {
-                window._isSaving = false;
+                showToast('保存大任务失败，请重试', 'error');
+                return { success: false, error: e.message || '保存大任务失败' };
             }
         }
 
@@ -10683,42 +12002,293 @@
             window._modalStack = window._modalStack.filter(function(t) { return t !== 'scheduleEditor'; });
             window.currentEditingTemplate = null;
             window.selectedCells = [];
+            window._pendingCourseCallback = null;
+            const nameInput = document.getElementById('templateName');
+            const startInput = document.getElementById('templateStartDate');
+            const endInput = document.getElementById('templateEndDate');
+            if (nameInput) nameInput.value = '';
+            if (startInput) startInput.value = '';
+            if (endInput) endInput.value = '';
         }
         
+        // 星期映射：0-6 (0=周一, 6=周日) → 中文简称
+        const AGENT_WEEKDAY_NAMES = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+        // 把 'YYYY-MM-DD' 转成 Date（本地时区，避开 ISO 跨天问题）
+        function _parseAgentDateStr(dateStr) {
+            if (!dateStr || typeof dateStr !== 'string') return null;
+            const m = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+            if (!m) {
+                const d = new Date(dateStr);
+                return isNaN(d.getTime()) ? null : d;
+            }
+            return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+        }
+
+        // 把 HH:MM 转成分钟数
+        function _agentTimeToMinutes(t) {
+            if (typeof t !== 'string') return NaN;
+            const parts = t.split(':');
+            if (parts.length < 2) return NaN;
+            const h = parseInt(parts[0], 10);
+            const mi = parseInt(parts[1], 10);
+            if (isNaN(h) || isNaN(mi)) return NaN;
+            return h * 60 + mi;
+        }
+
+        // 收集 Agent 写入的课程（来自 schedules 里的 course 类型 timeSlots）
+        function collectAgentCourseEntries() {
+            const out = [];
+            const schedules = (window.scheduleData && window.scheduleData.schedules) || {};
+            Object.keys(schedules).forEach(function(dateStr) {
+                const sched = schedules[dateStr];
+                if (!sched || !Array.isArray(sched.timeSlots)) return;
+                const date = _parseAgentDateStr(dateStr);
+                if (!date) return;
+                const weekday = date.getDay() === 0 ? 6 : date.getDay() - 1; // 0=周一, 6=周日
+                sched.timeSlots.forEach(function(slot, idx) {
+                    if (!slot || !slot.time) return;
+                    if (slot.type && slot.type !== 'course') return; // 只汇总课程
+                    const [startTime, endTime] = String(slot.time).split('-');
+                    out.push({
+                        date: dateStr,
+                        weekday: weekday,
+                        time: slot.time,
+                        startTime: startTime || '',
+                        endTime: endTime || '',
+                        activity: slot.activity || slot.course || '未命名课程',
+                        teacher: slot.teacher || '',
+                        location: slot.location || '',
+                        note: slot.note || '',
+                        type: slot.type || 'course',
+                        slotIndex: idx
+                    });
+                });
+            });
+            // 按日期 + 开始时间排序
+            out.sort(function(a, b) {
+                if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+                return _agentTimeToMinutes(a.startTime) - _agentTimeToMinutes(b.startTime);
+            });
+            return out;
+        }
+
+        // 收集所有模板的覆盖集合：{ `${weekday}|${timeRange}`: true }
+        function collectTemplateCoverageSet() {
+            const set = {};
+            const templates = Array.isArray(window.scheduleTemplates) ? window.scheduleTemplates : [];
+            templates.forEach(function(tpl) {
+                const slots = Array.isArray(tpl.timeSlots) ? tpl.timeSlots : [];
+                const oddCourses = tpl.oddWeekCourses || {};
+                const evenCourses = tpl.evenWeekCourses || {};
+                const seen = {};
+                // 用 (rowIndex, dayIndex) 反查 (startTime, endTime)
+                Object.keys(oddCourses).concat(Object.keys(evenCourses)).forEach(function(cellKey) {
+                    const parts = cellKey.split('-');
+                    if (parts.length < 2) return;
+                    const rowIndex = parseInt(parts[0], 10);
+                    const dayIndex = parseInt(parts[1], 10);
+                    if (isNaN(rowIndex) || isNaN(dayIndex)) return;
+                    const slot = slots[rowIndex];
+                    if (!slot || !slot.startTime || !slot.endTime) return;
+                    const key = rowIndex + '_' + dayIndex;
+                    if (seen[key]) return;
+                    seen[key] = true;
+                    const tr = slot.startTime + '-' + slot.endTime;
+                    set[dayIndex + '|' + tr] = true;
+                });
+            });
+            return set;
+        }
+
+        // 渲染 Agent 课程汇总/差集分组
+        function renderAgentCourseSection(entries, options) {
+            const opts = options || {};
+            const title = opts.title || 'Agent 课表汇总';
+            if (!entries || entries.length === 0) {
+                return `
+                    <div class="schedule-section">
+                        <div class="schedule-section-title">${escapeHtml(title)}</div>
+                        <div class="empty-state">
+                            <p class="empty-state-text">${escapeHtml(opts.emptyText || '暂无相关课程')}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 按日期分组
+            const groups = {};
+            entries.forEach(function(item) {
+                if (!groups[item.date]) groups[item.date] = [];
+                groups[item.date].push(item);
+            });
+            const dateKeys = Object.keys(groups).sort();
+
+            let html = `
+                <div class="schedule-section">
+                    <div class="schedule-section-title">${escapeHtml(title)} <span style="font-weight:400;color:var(--text-tertiary);text-transform:none;letter-spacing:0;">（共 ${entries.length} 条）</span></div>
+                    <div class="schedule-list">
+            `;
+            dateKeys.forEach(function(dateKey) {
+                const items = groups[dateKey];
+                const firstItem = items[0];
+                const wdName = (firstItem.weekday >= 0 && firstItem.weekday < AGENT_WEEKDAY_NAMES.length)
+                    ? AGENT_WEEKDAY_NAMES[firstItem.weekday] : '';
+                const itemsHtml = items.map(function(item) {
+                    const meta = [];
+                    if (item.time) meta.push(escapeHtml(item.time));
+                    if (item.location) meta.push(escapeHtml(item.location));
+                    if (item.teacher) meta.push(escapeHtml(item.teacher));
+                    return `
+                        <div class="schedule-list-item" style="padding-left:12px;">
+                            <div class="schedule-list-info">
+                                <div class="schedule-list-name">${escapeHtml(item.activity || '未命名课程')}</div>
+                                <div class="schedule-list-meta">${meta.join(' · ')}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                html += `
+                    <div class="schedule-list-item">
+                        <div class="schedule-list-info">
+                            <div class="schedule-list-name">${escapeHtml(dateKey)} ${wdName ? '· ' + escapeHtml(wdName) : ''}</div>
+                            <div class="schedule-list-meta">${items.length} 节</div>
+                        </div>
+                    </div>
+                    ${itemsHtml}
+                `;
+            });
+            html += `</div>`;
+            if (opts.showConvertButton) {
+                html += `<button class="schedule-toolbar-btn" onclick="convertAgentCoursesToTemplate()">📥 将 Agent 课表转为模板</button>`;
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        // 把 Agent 已写入的课程反推成一份草稿模板
+        function convertAgentCoursesToTemplate() {
+            const entries = collectAgentCourseEntries();
+            if (entries.length === 0) {
+                showToast('当前没有任何 Agent 写入的课程', 'warning');
+                return;
+            }
+
+            // 收集所有不重复的 time range → 排序
+            const slotMap = {}; // timeRange -> {startTime, endTime}
+            const slotOrder = [];
+            entries.forEach(function(item) {
+                if (!item.time) return;
+                if (slotMap[item.time]) return;
+                slotMap[item.time] = { startTime: item.startTime, endTime: item.endTime };
+                slotOrder.push(item.time);
+            });
+            slotOrder.sort(function(a, b) {
+                return _agentTimeToMinutes(a.split('-')[0]) - _agentTimeToMinutes(b.split('-')[0]);
+            });
+            const timeSlots = slotOrder.map(function(tr, idx) {
+                return { label: '第' + (idx + 1) + '节', startTime: slotMap[tr].startTime, endTime: slotMap[tr].endTime };
+            });
+            // 行索引 → timeRange 反查
+            const timeToRow = {};
+            slotOrder.forEach(function(tr, idx) { timeToRow[tr] = idx; });
+
+            // 日期范围
+            const dateKeys = [];
+            const seenDate = {};
+            entries.forEach(function(item) {
+                if (seenDate[item.date]) return;
+                seenDate[item.date] = true;
+                dateKeys.push(item.date);
+            });
+            dateKeys.sort();
+            const startDate = dateKeys[0];
+            const endDate = dateKeys[dateKeys.length - 1];
+
+            // 找出所有出现过的 (date, time) → 落到 oddWeekCourses / evenWeekCourses
+            const oddCourses = {};
+            // 按日期的"第几周"做单双周归类（以 startDate 为第一周周一）
+            const startDateObj = _parseAgentDateStr(startDate);
+            entries.forEach(function(item) {
+                const d = _parseAgentDateStr(item.date);
+                if (!d || !startDateObj) return;
+                const diffDays = Math.round((d - startDateObj) / (1000 * 60 * 60 * 24));
+                const weekIndex = Math.floor(diffDays / 7) + 1; // 1-based
+                // 第一周算单周
+                const isOdd = weekIndex % 2 === 1;
+                const rowIndex = timeToRow[item.time];
+                if (rowIndex === undefined) return;
+                const key = rowIndex + '-' + item.weekday;
+                if (isOdd) {
+                    if (!oddCourses[key]) {
+                        oddCourses[key] = {
+                            course: item.activity,
+                            teacher: item.teacher || '',
+                            location: item.location || '',
+                            note: item.note || ''
+                        };
+                    }
+                }
+                // 双周暂不写入，避免覆盖用户已编辑的内容
+            });
+
+            const template = {
+                id: Date.now(),
+                name: 'Agent 课表草稿 ' + startDate,
+                startDate: startDate,
+                endDate: endDate,
+                totalWeeks: 16,
+                timeSlots: timeSlots,
+                oddWeekCourses: oddCourses,
+                evenWeekCourses: {}
+            };
+
+            window.scheduleTemplates.push(template);
+            saveScheduleTemplates();
+            renderScheduleEditorList();
+            showToast('已生成草稿模板，请检查后再启用', 'success');
+        }
+
         function renderScheduleEditorList() {
             const body = document.getElementById('scheduleEditorBody');
             if (!body) return;
-            
+
+            // 收集 Agent 已写入的课程 + 模板覆盖集合
+            const agentEntries = collectAgentCourseEntries();
+            const coverage = collectTemplateCoverageSet();
+
             if (window.scheduleTemplates.length === 0) {
                 body.innerHTML = `
                     <div class="schedule-section">
                         <div class="schedule-section-title">课表列表</div>
                         <div class="empty-state">
-                            <p class="empty-state-text">暂无课表，点击下方按钮创建</p>
+                            <p class="empty-state-text">暂无课表模板，点击下方按钮创建</p>
                         </div>
                     </div>
+                    ${renderAgentCourseSection(agentEntries, { title: 'Agent 课表汇总', showConvertButton: true, emptyText: 'Agent 还没有写入任何课程' })}
                     <button class="schedule-toolbar-btn primary" onclick="createNewTemplate()">+ 创建新课表</button>
                 `;
                 return;
             }
-            
+
             let html = `
                 <div class="schedule-section">
                     <div class="schedule-section-title">课表列表</div>
                     <div class="schedule-list">
             `;
-            
+
             window.scheduleTemplates.forEach((template, index) => {
                 const startDate = template.startDate || '未设置';
-                const weeks = template.totalWeeks || 0;
+                const endDate = getTemplateEndDate(template) || '未设置';
+                const weeks = getTemplateWeekCount(template) || 0;
                 const timeSlotsCount = template.timeSlots ? template.timeSlots.length : 0;
-                
+
                 html += `
                     <div class="schedule-list-item">
                         <div class="schedule-list-info">
                             <div class="schedule-list-name">${escapeHtml(template.name || '未命名课表')}</div>
                             <div class="schedule-list-meta">
-                                起始: ${escapeHtml(startDate)} · 共 ${weeks} 周 · 每天 ${timeSlotsCount} 节课
+                                起止: ${escapeHtml(startDate)} ~ ${escapeHtml(endDate)} · 共 ${weeks} 周 · 每天 ${timeSlotsCount} 节课
                             </div>
                         </div>
                         <div class="schedule-list-actions">
@@ -10729,13 +12299,28 @@
                     </div>
                 `;
             });
-            
+
             html += `
                     </div>
                 </div>
-                <button class="schedule-toolbar-btn primary" onclick="createNewTemplate()">+ 创建新课表</button>
             `;
-            
+
+            // 模板外的课程：agent 课程中，模板未覆盖的 (weekday, timeRange)
+            const outsideEntries = agentEntries.filter(function(item) {
+                if (!item.time) return true;
+                const key = item.weekday + '|' + item.time;
+                return !coverage[key];
+            });
+            if (outsideEntries.length > 0) {
+                html += renderAgentCourseSection(outsideEntries, {
+                    title: '模板外的课程',
+                    showConvertButton: false,
+                    emptyText: 'Agent 写入的课程已全部被模板覆盖'
+                });
+            }
+
+            html += `<button class="schedule-toolbar-btn primary" onclick="createNewTemplate()">+ 创建新课表</button>`;
+
             body.innerHTML = html;
         }
         
@@ -10744,6 +12329,7 @@
                 id: Date.now(),
                 name: '',
                 startDate: '',
+                endDate: '',
                 totalWeeks: 16,
                 timeSlots: [
                     { label: '第1节', startTime: '08:00', endTime: '08:45' },
@@ -10755,7 +12341,10 @@
                     { label: '第7节', startTime: '15:25', endTime: '16:10' },
                     { label: '第8节', startTime: '16:20', endTime: '17:05' },
                     { label: '第9节', startTime: '18:30', endTime: '19:15' },
-                    { label: '第10节', startTime: '19:25', endTime: '20:10' }
+                    { label: '第10节', startTime: '19:25', endTime: '20:10' },
+                    { label: '第11节', startTime: '20:20', endTime: '21:05' },
+                    { label: '第12节', startTime: '21:15', endTime: '22:00' },
+                    { label: '第13节', startTime: '22:10', endTime: '22:55' }
                 ],
                 oddWeekCourses: {},
                 evenWeekCourses: {}
@@ -10769,7 +12358,9 @@
         function editTemplate(index) {
             window.currentEditingTemplate = JSON.parse(JSON.stringify(window.scheduleTemplates[index]));
             window.currentEditingTemplate._index = index;
-            window.currentWeekType = 'odd';
+            // 保留上次编辑的周类型（避免强制回到单周）
+            const previousWeekType = window.currentWeekType;
+            window.currentWeekType = (previousWeekType === 'even') ? 'even' : 'odd';
             renderTemplateEditor();
         }
         
@@ -10793,6 +12384,8 @@
         function renderTemplateEditor() {
             const template = window.currentEditingTemplate;
             const body = document.getElementById('scheduleEditorBody');
+            const resolvedEndDate = getTemplateEndDate(template);
+            const resolvedTotalWeeks = getTemplateWeekCount(template);
             
             let html = `
                 <div class="schedule-section">
@@ -10801,7 +12394,7 @@
                         <div class="schedule-meta-group">
                             <label class="schedule-meta-label">课表名称</label>
                             <input type="text" class="schedule-meta-input" id="templateName" 
-                                value="${template.name || ''}" placeholder="例如: 2025春季学期课表">
+                                value="${escapeHtml(template.name || '')}" placeholder="例如: 2025春季学期课表">
                         </div>
                         <div class="schedule-meta-group">
                             <label class="schedule-meta-label">第一周周一日期</label>
@@ -10809,11 +12402,12 @@
                                 value="${escapeHtml(template.startDate || '')}">
                         </div>
                         <div class="schedule-meta-group">
-                            <label class="schedule-meta-label">总周数</label>
-                            <input type="number" class="schedule-meta-input" id="templateTotalWeeks" 
-                                value="${template.totalWeeks || 16}" min="1" max="30">
+                            <label class="schedule-meta-label">应用结束日期</label>
+                            <input type="date" class="schedule-meta-input" id="templateEndDate" 
+                                value="${escapeHtml(resolvedEndDate || '')}">
                         </div>
                     </div>
+                    <div class="schedule-meta-hint">按开始日期到结束日期应用课表；单双周会基于第一周周一起按周次自动注入。当前范围约 ${resolvedTotalWeeks || 0} 周。</div>
                 </div>
                 
                 <div class="schedule-section">
@@ -10824,17 +12418,17 @@
             (template.timeSlots || []).forEach((slot, index) => {
                 html += `
                     <div class="time-slot-config-item" data-index="${index}">
-                        <span class="slot-label">${slot.label || '第' + (index + 1) + '节'}</span>
-                        <input type="text" class="time-hour-input" value="${slot.startTime ? slot.startTime.split(':')[0] : '08'}" 
+                        <span class="slot-label">${escapeHtml(slot.label || '第' + (index + 1) + '节')}</span>
+                        <input type="text" class="time-hour-input" value="${escapeHtml(slot.startTime ? slot.startTime.split(':')[0] : '08')}" 
                             maxlength="2" placeholder="时" onchange="updateTimeSlot(${index})">
                         <span class="time-sep">:</span>
-                        <input type="text" class="time-minute-input" value="${slot.startTime ? slot.startTime.split(':')[1] : '00'}" 
+                        <input type="text" class="time-minute-input" value="${escapeHtml(slot.startTime ? slot.startTime.split(':')[1] : '00')}" 
                             maxlength="2" placeholder="分" onchange="updateTimeSlot(${index})">
                         <span class="time-sep">-</span>
-                        <input type="text" class="time-hour-input-end" value="${slot.endTime ? slot.endTime.split(':')[0] : '08'}" 
+                        <input type="text" class="time-hour-input-end" value="${escapeHtml(slot.endTime ? slot.endTime.split(':')[0] : '08')}" 
                             maxlength="2" placeholder="时" onchange="updateTimeSlot(${index})">
                         <span class="time-sep">:</span>
-                        <input type="text" class="time-minute-input-end" value="${slot.endTime ? slot.endTime.split(':')[1] : '45'}" 
+                        <input type="text" class="time-minute-input-end" value="${escapeHtml(slot.endTime ? slot.endTime.split(':')[1] : '45')}" 
                             maxlength="2" placeholder="分" onchange="updateTimeSlot(${index})">
                         <button class="slot-delete-btn" onclick="removeTimeSlotConfig(${index})" style="margin-left:4px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;">×</button>
                     </div>
@@ -10903,11 +12497,60 @@
             renderScheduleTable();
             updateToolbarState();
         }
+
+        function getWeekTypeText(type) {
+            return type === 'even' ? '双周' : '单周';
+        }
+
+        function getTemplateEndDate(template) {
+            if (!template) return '';
+            if (template.endDate) return template.endDate;
+            if (!template.startDate || !template.totalWeeks) return '';
+            const start = parseLocalDate(template.startDate);
+            if (!start) return '';
+            const weeks = Math.max(1, parseInt(template.totalWeeks, 10) || 1);
+            const end = new Date(start.getTime());
+            end.setDate(end.getDate() + weeks * 7 - 1);
+            return formatLocalDate(end);
+        }
+
+        function getTemplateWeekCount(template) {
+            if (!template || !template.startDate) {
+                return Math.max(1, parseInt(template?.totalWeeks, 10) || 0);
+            }
+            const endDateStr = getTemplateEndDate(template);
+            if (!endDateStr) {
+                return Math.max(1, parseInt(template.totalWeeks, 10) || 0);
+            }
+            const start = parseLocalDate(template.startDate);
+            const end = parseLocalDate(endDateStr);
+            if (!start || !end || end < start) {
+                return Math.max(1, parseInt(template.totalWeeks, 10) || 0);
+            }
+            const diffDays = Math.floor((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+            return Math.max(1, Math.ceil(diffDays / 7));
+        }
+
+        function getWeekdayText(day) {
+            const labels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            return labels[day] || '';
+        }
+
+        function renderCourseCellContent(cellData) {
+            if (!cellData || !cellData.course) return '';
+            const meta = [cellData.teacher, cellData.location, cellData.note].filter(Boolean);
+            let html = `<span class="course-name">${escapeHtml(cellData.course)}</span>`;
+            if (meta.length > 0) {
+                html += `<span class="course-meta">${escapeHtml(meta.join(' · '))}</span>`;
+            }
+            return html;
+        }
         
         function renderScheduleTable() {
             const template = window.currentEditingTemplate;
+            if (!template) return;
             const timeSlots = template.timeSlots || [];
-            const courses = window.currentWeekType === 'odd' ? 
+            const courses = window.currentWeekType === 'odd' ?
                 (template.oddWeekCourses || {}) : (template.evenWeekCourses || {});
             
             const tbody = document.getElementById('scheduleTableBody');
@@ -10922,11 +12565,11 @@
                     const cellKey = `${r}-${day}`;
                     const cellData = courses[cellKey];
                     if (cellData && cellData.mergeSpan && cellData.mergeSpan > 1) {
-                        mergeInfo[cellKey] = cellData.mergeSpan;
-                        for (let span = 1; span < cellData.mergeSpan; span++) {
-                            if (r + span < timeSlots.length) {
-                                hiddenCells.add(`${r + span}-${day}`);
-                            }
+                        // 越界保护：把 mergeSpan 截断到剩余节次，避免 rowspan 越界
+                        const span = Math.max(1, Math.min(cellData.mergeSpan, timeSlots.length - r));
+                        mergeInfo[cellKey] = span;
+                        for (let s = 1; s < span; s++) {
+                            hiddenCells.add(`${r + s}-${day}`);
                         }
                     }
                 }
@@ -10934,7 +12577,7 @@
             
             timeSlots.forEach((slot, rowIndex) => {
                 html += `<tr data-row="${rowIndex}">`;
-                html += `<td class="time-label-cell"><div>${slot.label || '第' + (rowIndex + 1) + '节'}</div><div style="font-size:10px;color:var(--text-muted);">${slot.startTime}-${slot.endTime}</div></td>`;
+                html += `<td class="time-label-cell"><div>${escapeHtml(slot.label || '第' + (rowIndex + 1) + '节')}</div><div style="font-size:10px;color:var(--text-muted);">${escapeHtml((slot.startTime || '') + '-' + (slot.endTime || ''))}</div></td>`;
                 
                 for (let day = 0; day < 7; day++) {
                     const cellKey = `${rowIndex}-${day}`;
@@ -10951,7 +12594,7 @@
                     html += `<div class="schedule-cell ${hasCourse}">`;
                     
                     if (cellData.course) {
-                        html += `<span class="course-name">${escapeHtml(cellData.course)}</span>`;
+                        html += renderCourseCellContent(cellData);
                     }
                     
                     html += '</div></td>';
@@ -11076,58 +12719,54 @@
                 (template.oddWeekCourses || {}) : (template.evenWeekCourses || {});
             const cellKey = `${row}-${day}`;
             const cellData = courses[cellKey] || {};
-            
-            const existingInput = cellElement.querySelector('.inline-edit-input');
-            if (existingInput) return;
-            
-            const currentText = cellData.course || '';
-            
-            cellElement.innerHTML = '';
-            
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'inline-edit-input';
-            input.value = currentText;
-            input.placeholder = '输入课程名称';
-            
-            input.addEventListener('blur', () => {
-                finishInlineEdit(row, day, input.value, cellElement);
-            });
-            
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    input.blur();
-                } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    input.value = currentText;
-                    input.blur();
-                }
-            });
-            
-            cellElement.appendChild(input);
-            input.focus();
-            input.select();
+            const modal = document.getElementById('courseInputModal');
+            const title = document.getElementById('courseInputTitle');
+            const subtitle = document.getElementById('courseInputSubtitle');
+            const courseNameInput = document.getElementById('courseNameInput');
+            const teacherInput = document.getElementById('courseTeacherInput');
+            const locationInput = document.getElementById('courseLocationInput');
+            const noteInput = document.getElementById('courseNoteInput');
+            if (!modal || !courseNameInput) return;
+
+            const mergeSpan = Math.max(1, parseInt(cellData.mergeSpan || 1, 10));
+            if (title) title.textContent = cellData.course ? '编辑课程格子' : '新增课程格子';
+            if (subtitle) {
+                subtitle.textContent = `${getWeekdayText(day)} · 第${row + 1}-${row + mergeSpan}节 · ${getWeekTypeText(window.currentWeekType)}`;
+            }
+            courseNameInput.value = cellData.course || '';
+            if (teacherInput) teacherInput.value = cellData.teacher || '';
+            if (locationInput) locationInput.value = cellData.location || '';
+            if (noteInput) noteInput.value = cellData.note || '';
+            window._pendingCourseCallback = function(payload) {
+                finishInlineEdit(row, day, payload, cellElement);
+            };
+            modal.classList.add('active');
+            window._modalStack.push('courseInput');
+            setTimeout(() => {
+                courseNameInput.focus();
+                courseNameInput.select();
+            }, 0);
         }
         
-        function finishInlineEdit(row, day, courseName, cellElement) {
+        function finishInlineEdit(row, day, payload, cellElement) {
             const template = window.currentEditingTemplate;
             const courses = window.currentWeekType === 'odd' ? 
                 (template.oddWeekCourses || {}) : (template.evenWeekCourses || {});
             const cellKey = `${row}-${day}`;
             const cellData = courses[cellKey] || {};
-            
-            if (courseName.trim() === '') {
+            const nextData = typeof payload === 'string' ? { course: payload } : (payload || {});
+            const courseName = (nextData.course || '').trim();
+
+            if (courseName === '') {
                 delete courses[cellKey];
-                cellElement.innerHTML = '';
-                cellElement.classList.remove('has-course');
             } else {
                 courses[cellKey] = { 
-                    course: courseName.trim(),
-                    mergeSpan: cellData.mergeSpan
+                    course: courseName,
+                    mergeSpan: cellData.mergeSpan,
+                    teacher: (nextData.teacher || '').trim(),
+                    location: (nextData.location || '').trim(),
+                    note: (nextData.note || '').trim()
                 };
-                cellElement.innerHTML = `<span class="course-name">${escapeHtml(courseName.trim())}</span>`;
-                cellElement.classList.add('has-course');
             }
             
             if (window.currentWeekType === 'odd') {
@@ -11135,6 +12774,9 @@
             } else {
                 template.evenWeekCourses = courses;
             }
+            renderScheduleTable();
+            updateCellSelection();
+            updateToolbarState();
         }
         
         function updateCellSelection() {
@@ -11179,84 +12821,89 @@
             }
         }
         
+        // 单一实现的 isSelectionMergeable：只允许同一列、连续多行
         function isSelectionMergeable() {
             if (window.selectedCells.length < 2) return false;
-            
+
             const rows = window.selectedCells.map(c => c.row);
             const days = window.selectedCells.map(c => c.day);
-            
+
             const minRow = Math.min(...rows);
             const maxRow = Math.max(...rows);
             const minDay = Math.min(...days);
             const maxDay = Math.max(...days);
-            
+
             const expectedCount = (maxRow - minRow + 1) * (maxDay - minDay + 1);
-            
+
             return window.selectedCells.length === expectedCount && minDay === maxDay;
         }
-        
-        function handleCellClick(e, row, day) {
-            e.stopPropagation();
-        }
-        
-        function isSelectionMergeable() {
-            if (window.selectedCells.length < 2) return false;
-            
-            const rows = window.selectedCells.map(c => c.row);
-            const days = window.selectedCells.map(c => c.day);
-            
-            const minRow = Math.min(...rows);
-            const maxRow = Math.max(...rows);
-            const minDay = Math.min(...days);
-            const maxDay = Math.max(...days);
-            
-            const expectedCount = (maxRow - minRow + 1) * (maxDay - minDay + 1);
-            
-            return window.selectedCells.length === expectedCount && minDay === maxDay;
-        }
-        
+
         function mergeSelectedCells() {
             if (!isSelectionMergeable()) {
                 showToast('只能合并同一列的连续单元格（纵向选择多行）', 'warning');
                 return;
             }
-            
+
             const template = window.currentEditingTemplate;
-            const courses = window.currentWeekType === 'odd' ? 
+            const courses = window.currentWeekType === 'odd' ?
                 (template.oddWeekCourses || {}) : (template.evenWeekCourses || {});
-            
+
             const rows = window.selectedCells.map(c => c.row).sort((a, b) => a - b);
             const day = window.selectedCells[0].day;
             const minRow = rows[0];
             const maxRow = rows[rows.length - 1];
             const mergeSpan = maxRow - minRow + 1;
-            
-            let existingCourse = '';
+
+            // 收集第一个非空格的完整字段
+            let pickedData = null;
             for (let r = minRow; r <= maxRow; r++) {
                 const cellKey = `${r}-${day}`;
                 const cellData = courses[cellKey];
-                if (cellData && cellData.course && !existingCourse) {
-                    existingCourse = cellData.course;
+                if (cellData && cellData.course) {
+                    pickedData = {
+                        course: cellData.course,
+                        teacher: cellData.teacher || '',
+                        location: cellData.location || '',
+                        note: cellData.note || ''
+                    };
+                    break;
+                }
+            }
+
+            // 清理掉原范围内所有格子（覆盖已有 mergeSpan / 普通格）
+            for (let r = minRow; r <= maxRow; r++) {
+                const cellKey = `${r}-${day}`;
+                const cellData = courses[cellKey];
+                if (cellData && cellData.mergeSpan && cellData.mergeSpan > 1) {
+                    // 把旧合并格延伸出来的格子也清掉
+                    const oldSpan = cellData.mergeSpan;
+                    for (let s = 0; s < oldSpan; s++) {
+                        const rr = r + s;
+                        if (rr < minRow || rr > maxRow) {
+                            delete courses[`${rr}-${day}`];
+                        }
+                    }
                 }
                 delete courses[cellKey];
             }
-            
-            courses[`${minRow}-${day}`] = {
-                course: existingCourse,
-                mergeSpan: mergeSpan
-            };
-            
+
+            if (pickedData) {
+                courses[`${minRow}-${day}`] = Object.assign({ mergeSpan: mergeSpan }, pickedData);
+            } else {
+                courses[`${minRow}-${day}`] = { course: '', mergeSpan: mergeSpan };
+            }
+
             if (window.currentWeekType === 'odd') {
                 template.oddWeekCourses = courses;
             } else {
                 template.evenWeekCourses = courses;
             }
-            
+
             window.selectedCells = [{ row: minRow, day: day }];
             renderScheduleTable();
             updateCellSelection();
             updateToolbarState();
-            
+
             const td = document.querySelector(`.schedule-table td[data-row="${minRow}"][data-day="${day}"]`);
             if (td) {
                 const cell = td.querySelector('.schedule-cell');
@@ -11268,51 +12915,93 @@
         
         function unmergeCell() {
             if (window.selectedCells.length !== 1) return;
-            
+
             const { row, day } = window.selectedCells[0];
             const template = window.currentEditingTemplate;
-            const courses = window.currentWeekType === 'odd' ? 
+            if (!template) return;
+            const courses = window.currentWeekType === 'odd' ?
                 (template.oddWeekCourses || {}) : (template.evenWeekCourses || {});
             const cellKey = `${row}-${day}`;
             const cellData = courses[cellKey];
-            
+
             if (!cellData || !cellData.mergeSpan) return;
-            
-            const courseName = cellData.course;
+
+            // 拆分后每个子格继承完整的元数据
+            const childData = {
+                course: cellData.course || '',
+                teacher: cellData.teacher || '',
+                location: cellData.location || '',
+                note: cellData.note || ''
+            };
             const mergeSpan = cellData.mergeSpan;
-            
+
             delete courses[cellKey];
-            
+
             for (let r = row; r < row + mergeSpan; r++) {
-                courses[`${r}-${day}`] = { course: courseName };
+                courses[`${r}-${day}`] = Object.assign({}, childData);
             }
-            
+
             if (window.currentWeekType === 'odd') {
                 template.oddWeekCourses = courses;
             } else {
                 template.evenWeekCourses = courses;
             }
-            
+
             window.selectedCells = [];
             renderScheduleTable();
             updateToolbarState();
         }
         
+        // 找到覆盖 (row,day) 的合并跨度起点（顶部）
+        function findMergeTop(courses, row, day) {
+            for (let r = 0; r <= row; r++) {
+                const data = courses[`${r}-${day}`];
+                if (data && data.mergeSpan && data.mergeSpan > 1) {
+                    if (r + data.mergeSpan > row) {
+                        return { topRow: r, span: data.mergeSpan };
+                    }
+                }
+            }
+            return null;
+        }
+
         function clearSelectedCells() {
             const template = window.currentEditingTemplate;
-            const courses = window.currentWeekType === 'odd' ? 
+            if (!template) return;
+            const courses = window.currentWeekType === 'odd' ?
                 (template.oddWeekCourses || {}) : (template.evenWeekCourses || {});
-            
+
+            // 先收集所有要清理的位置，包括选中的合并隐藏格对应的合并顶部
+            const toDelete = new Set();
             window.selectedCells.forEach(({ row, day }) => {
-                delete courses[`${row}-${day}`];
+                const cellKey = `${row}-${day}`;
+                const cellData = courses[cellKey];
+                if (cellData && cellData.mergeSpan && cellData.mergeSpan > 1) {
+                    // 顶部本身在选区中：删除整个合并区
+                    for (let s = 0; s < cellData.mergeSpan; s++) {
+                        toDelete.add(`${row + s}-${day}`);
+                    }
+                } else {
+                    // 普通格 / 隐藏格：找出覆盖它的合并顶部，整体删除
+                    const top = findMergeTop(courses, row, day);
+                    if (top) {
+                        for (let s = 0; s < top.span; s++) {
+                            toDelete.add(`${top.topRow + s}-${day}`);
+                        }
+                    } else {
+                        toDelete.add(cellKey);
+                    }
+                }
             });
-            
+
+            toDelete.forEach(key => { delete courses[key]; });
+
             if (window.currentWeekType === 'odd') {
                 template.oddWeekCourses = courses;
             } else {
                 template.evenWeekCourses = courses;
             }
-            
+
             window.selectedCells = [];
             renderScheduleTable();
             updateToolbarState();
@@ -11320,7 +13009,7 @@
         
         function switchWeekType(type) {
             if (window.currentWeekType === type) return;
-            
+
             var _continue = function() {
                 window.currentWeekType = type;
                 window.selectedCells = [];
@@ -11329,7 +13018,14 @@
 
             if (window.currentWeekType === 'odd' && type === 'even') {
                 const template = window.currentEditingTemplate;
+                if (!template) { _continue(); return; }
                 if (!template.evenWeekCourses || Object.keys(template.evenWeekCourses).length === 0) {
+                    const oddKeys = Object.keys(template.oddWeekCourses || {});
+                    if (oddKeys.length === 0) {
+                        // 单/双周都为空，直接切，不弹确认
+                        _continue();
+                        return;
+                    }
                     showConfirmToast('双周课表为空，是否将单周课表复制到双周？', function() {
                         copyOddToEven();
                         _continue();
@@ -11339,7 +13035,7 @@
                     return;
                 }
             }
-            
+
             window.currentWeekType = type;
             window.selectedCells = [];
             renderTemplateEditor();
@@ -11347,6 +13043,12 @@
         
         function copyOddToEven() {
             const template = window.currentEditingTemplate;
+            if (!template) return;
+            const oddKeys = Object.keys(template.oddWeekCourses || {});
+            if (oddKeys.length === 0) {
+                showToast('单周课表为空，无需复制', 'info');
+                return;
+            }
             template.evenWeekCourses = JSON.parse(JSON.stringify(template.oddWeekCourses || {}));
             showToast('已将单周课表复制到双周', 'success');
             if (window.currentWeekType === 'even') {
@@ -11354,18 +13056,64 @@
             }
         }
         
+        function normalizeTimeInput(value, fallback) {
+            const v = String(value || '').replace(/\D/g, '');
+            if (v === '') return fallback;
+            const n = Math.max(0, Math.min(59, parseInt(v, 10) || 0));
+            return String(n).padStart(2, '0');
+        }
+
+        function normalizeHourInput(value, fallback) {
+            const v = String(value || '').replace(/\D/g, '');
+            if (v === '') return fallback;
+            const n = Math.max(0, Math.min(23, parseInt(v, 10) || 0));
+            return String(n).padStart(2, '0');
+        }
+
         function updateTimeSlot(index) {
             const template = window.currentEditingTemplate;
+            if (!template || !template.timeSlots || !template.timeSlots[index]) return;
             const container = document.querySelector(`.time-slot-config-item[data-index="${index}"]`);
             if (!container) return;
-            
-            const startHour = container.querySelector('.time-hour-input').value.padStart(2, '0');
-            const startMinute = container.querySelector('.time-minute-input').value.padStart(2, '0');
-            const endHour = container.querySelector('.time-hour-input-end').value.padStart(2, '0');
-            const endMinute = container.querySelector('.time-minute-input-end').value.padStart(2, '0');
-            
-            template.timeSlots[index].startTime = `${startHour}:${startMinute}`;
-            template.timeSlots[index].endTime = `${endHour}:${endMinute}`;
+
+            const slot = template.timeSlots[index];
+            const prevStart = slot.startTime || '00:00';
+            const prevEnd = slot.endTime || '00:00';
+
+            const startHourInput = container.querySelector('.time-hour-input');
+            const startMinuteInput = container.querySelector('.time-minute-input');
+            const endHourInput = container.querySelector('.time-hour-input-end');
+            const endMinuteInput = container.querySelector('.time-minute-input-end');
+
+            const startHour = normalizeHourInput(startHourInput.value, prevStart.split(':')[0]);
+            const startMinute = normalizeTimeInput(startMinuteInput.value, prevStart.split(':')[1]);
+            const endHour = normalizeHourInput(endHourInput.value, prevEnd.split(':')[0]);
+            const endMinute = normalizeTimeInput(endMinuteInput.value, prevEnd.split(':')[1]);
+
+            // 回写规范值，避免下次渲染时 input 仍显示异常字符
+            if (startHourInput && startHourInput.value !== startHour) startHourInput.value = startHour;
+            if (startMinuteInput && startMinuteInput.value !== startMinute) startMinuteInput.value = startMinute;
+            if (endHourInput && endHourInput.value !== endHour) endHourInput.value = endHour;
+            if (endMinuteInput && endMinuteInput.value !== endMinute) endMinuteInput.value = endMinute;
+
+            const startTime = `${startHour}:${startMinute}`;
+            const endTime = `${endHour}:${endMinute}`;
+            // 结束早于开始时回退，避免脏数据
+            if (endTime <= startTime) {
+                showToast('结束时间需晚于开始时间', 'warning');
+                const restoredStart = prevStart;
+                const restoredEnd = prevEnd;
+                template.timeSlots[index].startTime = restoredStart;
+                template.timeSlots[index].endTime = restoredEnd;
+                if (startHourInput) startHourInput.value = restoredStart.split(':')[0];
+                if (startMinuteInput) startMinuteInput.value = restoredStart.split(':')[1];
+                if (endHourInput) endHourInput.value = restoredEnd.split(':')[0];
+                if (endMinuteInput) endMinuteInput.value = restoredEnd.split(':')[1];
+                return;
+            }
+
+            template.timeSlots[index].startTime = startTime;
+            template.timeSlots[index].endTime = endTime;
         }
         
         function addTimeSlotConfig() {
@@ -11380,9 +13128,48 @@
             renderTemplateEditor();
         }
         
+        // 调整课表时间节次后，对应课程格子需要随之下移（上移），并保留元数据
+        function shiftCoursesAfterRowRemoval(template, removedRow) {
+            if (!template || removedRow < 0) return;
+            ['oddWeekCourses', 'evenWeekCourses'].forEach(function(key) {
+                const courses = template[key] || {};
+                const rebuilt = {};
+                Object.keys(courses).forEach(function(cellKey) {
+                    const parts = cellKey.split('-');
+                    const r = parseInt(parts[0], 10);
+                    const d = parseInt(parts[1], 10);
+                    if (isNaN(r) || isNaN(d)) return;
+                    if (r < removedRow) {
+                        rebuilt[cellKey] = courses[cellKey];
+                    } else if (r > removedRow) {
+                        // 下移一格：把 r>removedRow 的格子 key 从 r-d 改成 (r-1)-d
+                        // 合并顶部整体下移后，mergeSpan 保持不变
+                        rebuilt[`${r - 1}-${d}`] = Object.assign({}, courses[cellKey]);
+                    } else {
+                        // r === removedRow：顶部被移除，需要把 mergeSpan 拆给下一行
+                        const data = Object.assign({}, courses[cellKey]);
+                        if (data.mergeSpan && data.mergeSpan > 1) {
+                            const span = data.mergeSpan;
+                            const top = Object.assign({}, data);
+                            top.mergeSpan = 1;
+                            rebuilt[`${r}-${d}`] = top;
+                            for (let s = 1; s < span; s++) {
+                                const nr = removedRow + s - 1;
+                                if (nr < 0) continue;
+                                rebuilt[`${nr}-${d}`] = Object.assign({}, data);
+                            }
+                        }
+                        // 否则（普通单格）整格被移除
+                    }
+                });
+                template[key] = rebuilt;
+            });
+        }
+
         function removeTimeSlotConfig(index) {
             const template = window.currentEditingTemplate;
-            if (template.timeSlots.length <= 1) {
+            if (!template) return;
+            if (!template.timeSlots || template.timeSlots.length <= 1) {
                 showToast('至少需要保留一节课', 'warning');
                 return;
             }
@@ -11390,13 +13177,20 @@
             template.timeSlots.forEach((slot, i) => {
                 slot.label = `第${i + 1}节`;
             });
+            // 同步下移所有引用更高行号的课程格子，避免键/节次错位
+            shiftCoursesAfterRowRemoval(template, index);
             renderTemplateEditor();
         }
         
         function addMinutes(timeStr, minutes) {
+            if (typeof timeStr !== 'string' || !/^\d{1,2}:\d{2}$/.test(timeStr)) return '00:00';
             const [h, m] = timeStr.split(':').map(Number);
-            let totalMinutes = h * 60 + m + minutes;
-            const newH = Math.floor(totalMinutes / 60) % 24;
+            if (isNaN(h) || isNaN(m)) return '00:00';
+            const safeMin = isNaN(minutes) ? 0 : minutes;
+            // 跨日 (>= 24:00) 截断为 23:59，避免课表出现 24:xx 这种无效时间
+            let totalMinutes = h * 60 + m + safeMin;
+            if (totalMinutes < 0) totalMinutes = 0;
+            const newH = Math.min(23, Math.floor(totalMinutes / 60));
             const newM = totalMinutes % 60;
             return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
         }
@@ -11411,13 +13205,27 @@
             
             template.name = document.getElementById('templateName').value.trim() || '未命名课表';
             template.startDate = document.getElementById('templateStartDate').value;
-            template.totalWeeks = parseInt(document.getElementById('templateTotalWeeks').value) || 16;
+            template.endDate = document.getElementById('templateEndDate').value;
             
             if (!template.startDate) {
                 showToast('请设置第一周周一的日期', 'warning');
                 if (btn) { btn.disabled = false; btn.textContent = originalText; }
                 return;
             }
+
+            if (!template.endDate) {
+                showToast('请设置课表应用结束日期', 'warning');
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
+                return;
+            }
+
+            if (new Date(template.endDate) < new Date(template.startDate)) {
+                showToast('结束日期不能早于开始日期', 'warning');
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
+                return;
+            }
+
+            template.totalWeeks = getTemplateWeekCount(template);
             
             if (template._index !== undefined) {
                 window.scheduleTemplates[template._index] = template;
@@ -11435,31 +13243,21 @@
         }
         
         async function saveScheduleTemplates() {
-            if (window._isSaving) return;
-            window._isSaving = true;
             try {
-            if (!window.scheduleData) {
-                window.scheduleData = {};
-            }
-            window.scheduleData.scheduleTemplates = window.scheduleTemplates;
-            
-            try {
-                const isElectron = typeof window.electronAPI !== 'undefined';
-                if (isElectron) {
-                    await window.electronAPI.saveScheduleData(window.scheduleData);
-                } else {
-                    await fetch('/api/save-schedule', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(window.scheduleData)
-                    });
+                if (!window.scheduleData) {
+                    window.scheduleData = JSON.parse(JSON.stringify(EMPTY_DATA));
                 }
+                window.scheduleData.scheduleTemplates = Array.isArray(window.scheduleTemplates) ? window.scheduleTemplates : [];
+                const result = await persistScheduleData();
+                if (!result.success) {
+                    console.error('保存课表模板失败:', result.error);
+                    showToast('保存课表模板失败，请重试', 'error');
+                }
+                return result;
             } catch (e) {
                 console.error('保存课表模板失败:', e);
-            }
-            saveAllDataDebounced();
-            } finally {
-                window._isSaving = false;
+                showToast('保存课表模板失败，请重试', 'error');
+                return { success: false, error: e.message || '保存课表模板失败' };
             }
         }
         
@@ -11480,13 +13278,27 @@
             
             template.name = document.getElementById('templateName').value.trim() || '未命名课表';
             template.startDate = document.getElementById('templateStartDate').value;
-            template.totalWeeks = parseInt(document.getElementById('templateTotalWeeks').value) || 16;
+            template.endDate = document.getElementById('templateEndDate').value;
             
             if (!template.startDate) {
                 showToast('请设置第一周周一的日期', 'warning');
                 if (btn) { btn.disabled = false; btn.textContent = originalText; }
                 return;
             }
+
+            if (!template.endDate) {
+                showToast('请设置课表应用结束日期', 'warning');
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
+                return;
+            }
+
+            if (new Date(template.endDate) < new Date(template.startDate)) {
+                showToast('结束日期不能早于开始日期', 'warning');
+                if (btn) { btn.disabled = false; btn.textContent = originalText; }
+                return;
+            }
+
+            template.totalWeeks = getTemplateWeekCount(template);
             
             if (!template.timeSlots || template.timeSlots.length === 0) {
                 showToast('请设置时间槽', 'warning');
@@ -11506,7 +13318,7 @@
             var _t = template;
             var _oc = oddCourses;
             var _ec = evenCourses;
-            showConfirmToast('确定要启用课表吗？\n\n这将根据课表设置自动创建 ' + _t.totalWeeks + ' 周的课程安排。\n起始日期：' + _t.startDate + '\n总周数：' + _t.totalWeeks, function() {
+            showConfirmToast('确定要启用课表吗？\n\n这将根据课表设置自动创建课程安排。\n起始日期：' + _t.startDate + '\n结束日期：' + _t.endDate + '\n覆盖周数：' + _t.totalWeeks, function() {
                 (async function() {
                     await activateScheduleConfirmed(_t, _oc, _ec);
                 })();
@@ -11516,19 +13328,62 @@
             return;
         }
 
+        // 把 YYYY-MM-DD 解析为本地午夜（避免 toISOString 的时区漂移）
+        function parseLocalDate(str) {
+            if (typeof str !== 'string') return null;
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str);
+            if (!m) {
+                const d = new Date(str);
+                if (isNaN(d.getTime())) return null;
+                return d;
+            }
+            return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+        }
+
+        // 本地日期 -> YYYY-MM-DD（不会因时区变成前一天/后一天）
+        function formatLocalDate(d) {
+            if (!(d instanceof Date) || isNaN(d.getTime())) return '';
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
         async function activateScheduleConfirmed(template, oddCourses, evenCourses) {
-            if (window._isSaving) return;
-            window._isSaving = true;
-            
-            const startDate = new Date(template.startDate);
-            const totalWeeks = template.totalWeeks;
-            
+            const startDate = parseLocalDate(template.startDate);
+            const endDate = parseLocalDate(template.endDate);
+            const totalWeeks = getTemplateWeekCount(template);
+            if (!startDate || !endDate || endDate < startDate) {
+                showToast('课表起止日期无效，请重新设置', 'error');
+                return;
+            }
+
             if (!window.scheduleData.schedules) {
                 window.scheduleData.schedules = {};
             }
-            
+
             let addedCount = 0;
-            
+            let replacedCount = 0;
+
+            // 时间重叠检测辅助函数
+            function hasTimeOverlap(start1, end1, start2, end2) {
+                const timeToMinutes = (time) => {
+                    if (typeof time !== 'string') return NaN;
+                    const parts = time.split(':');
+                    if (parts.length < 2) return NaN;
+                    const h = parseInt(parts[0], 10);
+                    const m = parseInt(parts[1], 10);
+                    if (isNaN(h) || isNaN(m)) return NaN;
+                    return h * 60 + m;
+                };
+                const s1 = timeToMinutes(start1);
+                const e1 = timeToMinutes(end1);
+                const s2 = timeToMinutes(start2);
+                const e2 = timeToMinutes(end2);
+                if ([s1, e1, s2, e2].some(Number.isNaN)) return false;
+                return s1 < e2 && s2 < e1;
+            }
+
             for (let week = 1; week <= totalWeeks; week++) {
                 const isOddWeek = week % 2 === 1;
                 const courses = isOddWeek ? oddCourses : evenCourses;
@@ -11541,13 +13396,14 @@
 
                     if (!timeSlot) continue;
 
-                    const weekStartDate = new Date(startDate);
-                    weekStartDate.setDate(weekStartDate.getDate() + (week - 1) * 7);
+                    // 用本地 Date 累加，避免 toISOString 把日期推前一天
+                    const courseDate = new Date(startDate.getTime());
+                    courseDate.setDate(courseDate.getDate() + (week - 1) * 7 + dayIndex);
+                    if (courseDate < startDate || courseDate > endDate) {
+                        continue;
+                    }
 
-                    const courseDate = new Date(weekStartDate);
-                    courseDate.setDate(courseDate.getDate() + dayIndex);
-
-                    const dateStr = courseDate.toISOString().split('T')[0];
+                    const dateStr = formatLocalDate(courseDate);
 
                     if (!window.scheduleData.schedules[dateStr]) {
                         window.scheduleData.schedules[dateStr] = {
@@ -11578,52 +13434,45 @@
 
                     const timeRange = `${startTime}-${endTime}`;
 
-                    // 删除与新课程时间冲突的原有安排
+                    // 仅清理同为 course 且时间冲突的旧条目，保留用户非课程类日程
+                    const originalCount = schedule.timeSlots.length;
                     schedule.timeSlots = schedule.timeSlots.filter(slot => {
-                        if (!slot.time) return true;
+                        if (!slot || !slot.time) return true;
+                        if (slot.type !== 'course') return true;
                         const [existingStart, existingEnd] = slot.time.split('-');
-                        // 检查时间重叠
                         return !hasTimeOverlap(startTime, endTime, existingStart, existingEnd);
                     });
+                    const removed = originalCount - schedule.timeSlots.length;
+                    replacedCount += removed;
 
                     // 添加新课程
+                    const detailParts = [];
+                    if (cellData.location) detailParts.push(`地点：${cellData.location}`);
+                    if (cellData.teacher) detailParts.push(`教师：${cellData.teacher}`);
+                    if (cellData.note) detailParts.push(`备注：${cellData.note}`);
                     schedule.timeSlots.push({
                         time: timeRange,
                         activity: cellData.course,
-                        detail: '',
-                        icon: '📚'
+                        detail: detailParts.join(' * '),
+                        icon: '📚',
+                        location: cellData.location || '',
+                        teacher: cellData.teacher || '',
+                        note: cellData.note || '',
+                        type: 'course'
                     });
+                    schedule.timeSlots.sort((a, b) => String(a.time || '').localeCompare(String(b.time || '')));
                     addedCount++;
                 }
             }
 
-            // 时间重叠检测辅助函数
-            function hasTimeOverlap(start1, end1, start2, end2) {
-                const timeToMinutes = (time) => {
-                    const [h, m] = time.split(':').map(Number);
-                    return h * 60 + m;
-                };
-                const s1 = timeToMinutes(start1);
-                const e1 = timeToMinutes(end1);
-                const s2 = timeToMinutes(start2);
-                const e2 = timeToMinutes(end2);
-                return s1 < e2 && s2 < e1;
-            }
-            
             try {
-                const isElectron = typeof window.electronAPI !== 'undefined';
-                if (isElectron) {
-                    await window.electronAPI.saveScheduleData(window.scheduleData);
-                } else {
-                    await fetch('/api/save-schedule', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(window.scheduleData)
-                    });
+                const result = await persistScheduleData();
+                if (!result.success) {
+                    throw new Error(result.error || '启用课表失败');
                 }
-                saveAllDataDebounced();
-
-                showToast('课表已启用！\n\n共添加了 ' + addedCount + ' 条课程安排。', 'success');
+                const msg = `课表已启用！\n\n共添加 ${addedCount} 条课程安排` +
+                    (replacedCount > 0 ? `，覆盖 ${replacedCount} 条同类型冲突。` : '。');
+                showToast(msg, 'success');
 
                 if (typeof renderCalendar === 'function') {
                     renderCalendar();
@@ -11634,8 +13483,6 @@
             } catch (e) {
                 console.error('启用课表失败:', e);
                 showToast('启用课表失败，请重试', 'error');
-            } finally {
-                window._isSaving = false;
             }
 
             var abtn = document.querySelector('.schedule-toolbar-btn[onclick*="activateSchedule"]');
@@ -11657,12 +13504,25 @@
             const panelMap = {
                 'task': 'taskPanelRight',
                 'schedule': 'sidebarCollapsible',
-                'plan': 'planPanelRight',
                 'aux': 'auxPanelRight'
             };
 
             const panelEl = document.getElementById(panelMap[panelId]);
             if (!panelEl) return;
+
+            // 侧边栏滚动位置保留：折叠前保存，展开后恢复
+            if (panelId === 'schedule') {
+                const scrollContent = document.getElementById('timeSidebarContent');
+                const willCollapse = panelEl.classList.contains('expanded');
+                if (willCollapse) {
+                    if (scrollContent) window._sidebarScrollTop = scrollContent.scrollTop;
+                } else {
+                    if (scrollContent) {
+                        const savedTop = window._sidebarScrollTop || 0;
+                        setTimeout(() => { scrollContent.scrollTop = savedTop; }, 350);
+                    }
+                }
+            }
 
             const isCurrentlyActive = panelEl.classList.contains('expanded');
 
@@ -11718,31 +13578,13 @@
 
         if (typeof window.electronAPI !== 'undefined' && window.electronAPI.onPythonStatus) {
             window.electronAPI.onPythonStatus(function(data) {
-                var banner = document.getElementById('pythonStatusBanner');
-                if (!banner) return;
-                if (data.status === 'error') {
-                    banner.className = 'python-status-banner error';
-                    banner.textContent = data.message || 'AI 服务未启动，部分功能不可用';
-                    banner.style.display = 'block';
-                } else if (data.status === 'restarting') {
-                    banner.className = 'python-status-banner restarting';
-                    banner.textContent = 'AI 服务正在重启...';
-                    banner.style.display = 'block';
-                } else if (data.status === 'ready') {
-                    banner.style.display = 'none';
-                    banner.className = 'python-status-banner';
-                    banner.textContent = '';
-                }
+                // 顶部 AI 服务状态条已移除，不再渲染
             });
         }
 
         if (typeof window.electronAPI !== 'undefined' && window.electronAPI.onPythonBackendError) {
             window.electronAPI.onPythonBackendError(function(data) {
-                var banner = document.getElementById('pythonStatusBanner');
-                if (!banner) return;
-                banner.className = 'python-status-banner error';
-                banner.textContent = 'AI 服务多次启动失败，请检查 Python 环境';
-                banner.style.display = 'block';
+                // 顶部 AI 服务状态条已移除，不再渲染
             });
         }
 
@@ -11753,6 +13595,17 @@
                 }
             });
         }
+
+        // 二次确认：清空对话历史不可恢复，添加原生 confirm 作为二次确认
+        (function wrapClearConversations() {
+            if (typeof window.clearConversations !== 'function' || window._clearConvWrapped) return;
+            var originalClear = window.clearConversations;
+            window._clearConvWrapped = true;
+            window.clearConversations = async function () {
+                if (!confirm('确认清空所有对话历史？此操作不可恢复')) return;
+                return await originalClear.apply(this, arguments);
+            };
+        })();
     </script>
 
     <div class="modal-overlay" id="reactLogModal">

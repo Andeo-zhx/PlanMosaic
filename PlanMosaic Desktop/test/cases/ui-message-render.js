@@ -2,7 +2,7 @@ const { testExec, log } = require('../harness');
 
 module.exports = {
     run: async function (runOne) {
-        runOne('用户消息气泡有背景色', async () => {
+        await runOne('用户消息气泡有背景色', async () => {
             const script = `(function() {
                 const el = document.querySelector(".agent-message.user .message-content");
                 if (!el) return null;
@@ -32,7 +32,7 @@ module.exports = {
             log('info', `User message bubble background: ${data.background}`);
         });
 
-        runOne('思考链不重复', async () => {
+        await runOne('思考链不重复', async () => {
             const script = `(function() {
                 return document.querySelectorAll(".thinking-process").length;
             })()`;
@@ -51,7 +51,7 @@ module.exports = {
             log('info', `.thinking-process elements found: ${count}`);
         });
 
-        runOne('侧边栏按钮文字横向排列', async () => {
+        await runOne('侧边栏按钮文字横向排列', async () => {
             const script = `(function() {
                 const el = document.querySelector(".right-panel-btn-label");
                 if (!el) return null;

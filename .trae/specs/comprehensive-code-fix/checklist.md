@@ -188,3 +188,61 @@
 - [x] 所有画像生成路径统一使用 `_profileGenFailCount`
 - [x] 成功时重置计数，失败时递增
 - [x] 连续失败 3 次后不再触发生成
+
+## Task 3: 6 个弹窗接入点遮罩关闭（index.html）
+- [x] DOMContentLoaded 块中 courseInputModal 绑定遮罩关闭（close=window.cancelCourseInput，函数不存在时安全跳过）
+- [x] DOMContentLoaded 块中 deepPlanningModal 绑定遮罩关闭（close=window.closeDeepPlanningModal）
+- [x] DOMContentLoaded 块中 reactLogModal 绑定遮罩关闭（close=window.closeReActLog）
+- [x] 已存在遮罩关闭未受影响（settingsOverlay/bigTaskModal/actualTimeModal/scheduleEditorModal）
+- [x] `extraOverlayModals` 数组遍历，仅当 `typeof window[close] === 'function'` 时绑定
+- [ ] GUI 验证：打开对应弹窗后点击外层遮罩可关闭
+
+## Task 4: B03 saveApiKey 防抖 + loading（index.html）
+- [x] `async function saveApiKey(provider)` 顶部加 `window._isSavingKey` 守卫
+- [x] 通过 `document.querySelector` 查找触发按钮并缓存 originalText
+- [x] 按钮 disabled + 文案改 "保存中..."
+- [x] finally 块中恢复按钮 disabled=false 和原文本
+- [x] 原始保存逻辑（safeStorage 加密、长度校验、electronAPI.setApiKey 调用）未变更
+- [x] 内嵌 try/catch 与外层 try/finally 嵌套正确，早返回也走 finally
+- [ ] GUI 验证：快速多次点击保存按钮仅触发 1 次 setApiKey
+
+## Task 6: openBigTaskModal 重复打开防护（index.html）
+- [x] 函数顶部加 `var _btModal = document.getElementById('bigTaskModal')`
+- [x] `if (_btModal && _btModal.classList.contains('active')) return;` 提前返回
+- [x] 后续 `const modal = _btModal || ...` 复用同一引用
+- [ ] GUI 验证：已打开大任务弹窗时再次触发 openBigTaskModal 不会重置表单
+
+## Task 7: 侧边栏滚动位置保留（index.html）
+- [x] `toggleRightPanel` 中针对 `'schedule'` 面板加滚动位置保存/恢复逻辑
+- [x] 折叠前保存 `timeSidebarContent.scrollTop` 到 `window._sidebarScrollTop`
+- [x] 展开后用 `setTimeout(..., 350)` 恢复（配合 CSS 0.3s 动画）
+- [ ] GUI 验证：折叠日程侧栏后再次展开，滚动位置保持不变
+
+## Task 8（CSS 部分）: 发送按钮 spinner CSS（index.html）
+- [x] 新增 `.spin` 工具类 `animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle;`
+- [x] 新增 `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`
+- [x] 位于 `@keyframes rotate` 之后，CSS 顶部位置
+- [ ] GUI 验证：任何元素加 `class="spin"` 即呈现 0.8s 线性旋转
+
+## Task 12（HTML 部分）: 输入框 maxlength（index.html）
+- [x] `<textarea id="agentMainInput">` 加 `maxlength="8000"` 属性
+- [ ] GUI 验证：DevTools 检查该 textarea 元素的 maxLength 属性为 8000
+
+## Task 13: clear-conversations 二次确认（index.html）
+- [x] IIFE 包装器 `(function wrapClearConversations() {...})()` 注入 confirm 二次确认
+- [x] 通过 `window._clearConvWrapped` 标记防止重复包装
+- [x] 仅在 `window.clearConversations` 是函数时包装
+- [ ] GUI 验证：调用 `clearConversations()` 时先弹出原生 confirm 对话框
+
+## Task 14: M-H ReAct 弹窗 Escape 关闭（index.html）
+- [x] Escape 处理器顶部加 `reactLogModal.style.display` 独立检查（ReAct 弹窗不在 _modalStack）
+- [x] 匹配时调用 `closeReActLog()` 并 return
+- [x] switch 中加 `case 'reactLog'` / `case 'reactLogModal'` 兼容未来栈登记
+- [ ] GUI 验证：打开 ReAct 日志弹窗后按 Escape 关闭
+
+## Task 15: 全局 focus-visible 焦点态（index.html）
+- [x] CSS 顶部新增 `*:focus-visible { outline: 2px solid var(--accent-primary, #5B9EFF); outline-offset: 2px; border-radius: 2px; }`
+- [x] button/input/textarea/select/a 单独 `outline-offset: 1px`
+- [x] `var(--accent-primary, #5B9EFF)` 使用 fallback 颜色
+- [x] 未添加 `*:focus { outline: none; }` 覆盖已有 input/textarea focus 样式
+- [ ] GUI 验证：Tab 键聚焦元素时显示 2px 蓝色描边；鼠标点击不显示

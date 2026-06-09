@@ -26,8 +26,7 @@ module.exports = {
             const testKey = ensureKey();
             if (!testKey) return;
 
-            await testExec('set-api-key', { provider: 'deepseek', key: testKey });
-            await testExec('set-deepseek-model', { model: 'flash' });
+            await testExec('set-api-key', { key: testKey });
             await sleep(500);
 
             try {
@@ -78,7 +77,7 @@ module.exports = {
             const testKey = ensureKey();
             if (!testKey) return;
 
-            await testExec('set-api-key', { provider: 'deepseek', key: testKey });
+            await testExec('set-api-key', { key: testKey });
             await sleep(500);
 
             try {
@@ -124,9 +123,6 @@ module.exports = {
         });
 
         await runOne('响应的 model 字段正确', async () => {
-            await testExec('set-deepseek-model', { model: 'flash' });
-            await sleep(300);
-
             const configRes = await testQuery('config');
 
             if (!configRes || !configRes.success) {

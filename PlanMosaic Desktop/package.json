@@ -77,7 +77,7 @@
         "to": "favicon.ico"
       },
       {
-        "from": "../backend",
+        "from": "backend",
         "to": "backend",
         "filter": ["**/*"]
       }

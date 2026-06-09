@@ -1,0 +1,36 @@
+{
+  "estimator_mode": "baseline_calibrated_ratio_v1",
+  "baseline_version": 1,
+  "preset_samples": 994,
+  "user_samples": 0,
+  "total_samples": 994,
+  "filtered_samples": 6,
+  "low_confidence_samples": {
+    "preset": 26,
+    "user": 0
+  },
+  "filter_reasons": {
+    "preset": {
+      "excluded_low_confidence_sample": 6
+    },
+    "user": {}
+  },
+  "metrics": {
+    "r2_score": 0.4704,
+    "mae": 28.1,
+    "ratio_mae": 0.464,
+    "sample_count": 199
+  },
+  "train_metrics": {
+    "r2_score": 0.4106,
+    "mae": 28.3,
+    "ratio_mae": 0.398,
+    "sample_count": 795
+  },
+  "validation_metrics": {
+    "r2_score": 0.4704,
+    "mae": 28.1,
+    "ratio_mae": 0.464,
+    "sample_count": 199
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "trained_at": "2026-06-06T13:57:00.893752",
+  "estimator_mode": "baseline_calibrated_ratio_v1",
+  "baseline_version": 1,
+  "dataset": {
+    "preset_samples": 994,
+    "user_samples": 0,
+    "total_samples": 994,
+    "train_samples": 795,
+    "validation_samples": 199,
+    "validation_ratio": 0.2,
+    "filtered_samples": 6,
+    "low_confidence_samples": {
+      "preset": 26,
+      "user": 0
+    },
+    "filter_reasons": {
+      "preset": {
+        "excluded_low_confidence_sample": 6
+      },
+      "user": {}
+    }
+  },
+  "candidate_model": {
+    "train_metrics": {
+      "r2_score": 0.4106,
+      "mae": 28.3,
+      "ratio_mae": 0.398,
+      "sample_count": 795
+    },
+    "validation_metrics": {
+      "r2_score": 0.4704,
+      "mae": 28.1,
+      "ratio_mae": 0.464,
+      "sample_count": 199
+    }
+  },
+  "serving_model_before_training": {
+    "metrics": {
+      "r2_score": 0.4704,
+      "mae": 28.1,
+      "ratio_mae": 0.464,
+      "sample_count": 199
+    },
+    "validation_metrics": {
+      "r2_score": 0.542,
+      "mae": 25.3,
+      "ratio_mae": 0.393,
+      "sample_count": 199
+    },
+    "total_samples": 994,
+    "preset_samples": 994,
+    "user_samples": 0
+  },
+  "decision": {
+    "action": "keep_existing",
+    "should_replace": false,
+    "reason": "candidate_validation_mae_not_improved",
+    "mae_improvement": -2.8
+  }
+}

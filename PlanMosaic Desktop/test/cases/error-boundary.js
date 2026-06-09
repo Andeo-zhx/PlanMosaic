@@ -2,7 +2,7 @@ const { backendApi, testQuery, log } = require('../harness');
 
 module.exports = {
     run: async function (runOne) {
-        runOne('空消息不崩溃', async () => {
+        await runOne('空消息不崩溃', async () => {
             try {
                 const result = await backendApi('POST', '/api/agent-chat', {
                     message: '',
@@ -28,7 +28,7 @@ module.exports = {
             }
         });
 
-        runOne('超长消息不崩溃', async () => {
+        await runOne('超长消息不崩溃', async () => {
             const longMessage = 'x'.repeat(5000);
 
             try {
@@ -56,7 +56,7 @@ module.exports = {
             }
         });
 
-        runOne('config结构完整性', async () => {
+        await runOne('config结构完整性', async () => {
             const result = await testQuery('config');
             if (!result.success) {
                 throw new Error(`testQuery config failed: ${result.error}`);

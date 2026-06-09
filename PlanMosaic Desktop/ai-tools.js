@@ -447,13 +447,13 @@ const AI_TOOLS = [
         type: 'function',
         function: {
             name: 'web_search_evaluate',
-            description: '搜索网络资源，评估和汇总任务解决方案。用于查找最佳实践、学习路径、方法论等信息。',
+            description: '搜索网络资源，评估和汇总任务解决方案。用于查找最佳实践、学习路径、方法论等信息。调用前会对 query 做规范化处理（去尾标点、合并空白），返回结果中请优先使用 summary_text 字段（已拼接好的纯文本摘要）作为综合来源，同时使用 citations 数组中的结构化引用。失败时 fallback=true 且 error_code 标识原因（timeout/network_error/rate_limited/api_error/missing_query），可基于已有知识回答。purpose 字段是建议性，不影响搜索行为。',
             parameters: {
                 type: 'object',
                 properties: {
-                    query: { type: 'string', description: '搜索关键词' },
-                    purpose: { type: 'string', description: '搜索目的，如"学习路径"、"最佳实践"、"时间评估"' },
-                    max_results: { type: 'number', description: '最大结果数，默认5' }
+                    query: { type: 'string', description: '搜索关键词（必填）' },
+                    purpose: { type: 'string', description: '搜索目的，如"学习路径"、"最佳实践"、"时间评估"，仅作记录用' },
+                    max_results: { type: 'number', description: '最大结果数，默认5，最大10' }
                 },
                 required: ['query']
             }
@@ -465,15 +465,63 @@ const AI_TOOLS = [
         type: 'function',
         function: {
             name: 'estimate_task_time',
-            description: '根据任务描述估算合理完成时间。支持基于历史数据的机器学习模型估算（需Python服务运行）和LLM基础估算两种模式。完成任务后记录实际用时可训练模型提升准确度，用户可以说"重新训练时间估算模型"来更新模型。',
+            description: '根据任务描述估算合理完成时间。优先基于现有描述直接估算，仅在明显缺少关键信息时补充少量高影响特征。支持基于历史数据的机器学习模型估算（需Python服务运行）和规则降级估算两种模式。完成任务后记录实际用时可训练模型提升准确度，用户可以说"重新训练时间估算模型"来更新模型。',
             parameters: {
                 type: 'object',
                 properties: {
-                    task_name: { type: 'string', description: '任务名称或描述' },
-                    category: { type: 'string', enum: ['学习', '工作', '生活', '运动'], description: '任务类别' },
-                    context: { type: 'string', description: '补充背景信息，如"有一定基础"、"初学者"等' }
+                    task_name: { type: 'string', description: '任务名称或描述，尽量保留用户原话中的核心动作与产出物' },
+                    category: { type: 'string', enum: ['学习', '工作', '生活', '运动'], description: '任务类别，优先选择最接近的一类' },
+                    context: { type: 'string', description: '补充背景信息，优先写是否熟悉、是否有截止时间、任务是否要产出文档/代码/PPT、步骤是否较多等高影响信息' },
+                    difficulty: { type: 'number', description: '任务难度，1-5，缺少时可不填' },
+                    familiarity: { type: 'number', description: '对该任务的熟悉度，1-5，1表示很不熟，5表示非常熟' },
+                    steps_count: { type: 'number', description: '大致步骤数，能明显拆成几步就填几步' },
+                    deadline_pressure: { type: 'number', description: '截止压力，1-5，5表示非常赶' },
+                    output_type: { type: 'string', enum: ['deliverable', 'communication', 'learning', 'execution', 'planning', 'other'], description: '产出类型：deliverable 交付物，communication 沟通，learning 学习，execution 执行，planning 规划' }
                 },
                 required: ['task_name', 'category']
+            }
+        }
+    },
+
+    // ========== 17. 自检工具（写后必调） ==========
+    {
+        type: 'function',
+        function: {
+            name: 'verify_changes',
+            description: '自检工具。在完成任何写操作工具（add_schedule / modify_schedule / manage_tasks / manage_big_tasks / manage_courses / manage_templates）后必须调用一次本工具，从数据源回读实际数据并与期望值对比，确保工具返回 success=true 时数据真的已落盘。支持单条断言（date+slotKey+expect）和批量断言（assertions 数组）。失败时不得对用户宣称完成，必须如实报告。',
+            parameters: {
+                type: 'object',
+                properties: {
+                    date: { type: 'string', description: '目标日期，YYYY-MM-DD（单条断言时必填）' },
+                    slotKey: { type: 'string', description: '时间段标识，格式HH:MM-HH:MM（单条断言时使用）' },
+                    expect: {
+                        type: 'object',
+                        description: '单条断言的期望值。支持的键：slotExists (boolean)、activity (string)、detail (string)、time (string)、title (string)、highlights (string)。slotExists=false 用于验证删除。',
+                        properties: {
+                            slotExists: { type: 'boolean', description: '期望该时间段是否存在' },
+                            activity: { type: 'string', description: '期望的活动名称' },
+                            detail: { type: 'string', description: '期望的详情' },
+                            time: { type: 'string', description: '期望的时间段' },
+                            title: { type: 'string', description: '期望的日程标题' },
+                            highlights: { type: 'string', description: '期望的日程重点' }
+                        }
+                    },
+                    assertions: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                date: { type: 'string', description: '日期' },
+                                slotKey: { type: 'string', description: '时间段' },
+                                expect: { type: 'object', description: '期望值对象' }
+                            },
+                            required: ['date', 'expect']
+                        },
+                        description: '批量断言数组。一次性校验多个日期/时间段的写入。'
+                    },
+                    scope: { type: 'string', enum: ['memory', 'disk'], description: '数据源：memory 从内存 schedules dict 读取（默认），disk 从 data.json 重新加载' }
+                },
+                required: []
             }
         }
     }

@@ -2,10 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const h = require('./helpers.js');
 const { notifyUI } = require('./bridge.js');
+const paths = require('../paths.js');
 
-function showAccountInfo(username) {    
-    const paths = require('../paths.js');
-
+function showAccountInfo(username) {
     console.log('');
     console.log(h.bold('账号信息'));
     console.log(h.dim(h.separator('─', 50)));
@@ -29,7 +28,6 @@ function showAccountInfo(username) {
 }
 
 function getAccountPartitions() {
-    const paths = require('../paths.js');
     const rootDir = paths.getAppDataRootDir();
     if (!fs.existsSync(rootDir)) return [];
 

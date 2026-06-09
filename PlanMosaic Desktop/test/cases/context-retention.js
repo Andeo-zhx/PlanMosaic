@@ -26,8 +26,7 @@ module.exports = {
             const testKey = ensureKey();
             if (!testKey) return;
 
-            await testExec('set-api-key', { provider: 'deepseek', key: testKey });
-            await testExec('set-deepseek-model', { model: 'flash' });
+            await testExec('set-api-key', { key: testKey });
             await sleep(500);
 
             try {
@@ -98,7 +97,7 @@ module.exports = {
             const testKey = ensureKey();
             if (!testKey) return;
 
-            await testExec('set-api-key', { provider: 'deepseek', key: testKey });
+            await testExec('set-api-key', { key: testKey });
             await sleep(500);
 
             try {

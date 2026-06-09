@@ -3,6 +3,7 @@
 // 桌面应用未运行时静默跳过，不影响 CLI 功能
 
 const http = require('http');
+const pmPaths = require('../paths.js');
 
 const CONTROL_HOST = '127.0.0.1';
 const CONTROL_PORT = 5199;
@@ -20,6 +21,7 @@ function notifyUI(action, params) {
     if (!action) return;
 
     const bodyStr = JSON.stringify({ action, params: params || {} });
+    const controlToken = process.env.PLANMOSAIC_CONTROL_TOKEN || pmPaths.readControlToken();
 
     const options = {
         hostname: CONTROL_HOST,
@@ -32,6 +34,9 @@ function notifyUI(action, params) {
             'Content-Length': Buffer.byteLength(bodyStr)
         }
     };
+    if (controlToken) {
+        options.headers['X-Control-Token'] = controlToken;
+    }
 
     const req = http.request(options, () => {
         // 丢弃响应 — 即发即忘

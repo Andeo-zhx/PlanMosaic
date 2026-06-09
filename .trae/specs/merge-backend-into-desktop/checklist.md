@@ -1,0 +1,21 @@
+# Checklist
+
+- [x] 项目根目录 (`d:\Trae CN\Projects\PlanMosaic\`) 不再存在 `backend/` 文件夹
+- [x] `PlanMosaic Desktop/backend/` 存在且包含全部 9 个有效文件：`__init__.py`、`cli.py`、`config.py`、`paths.py`、`requirements.txt`、`server.py`、`tool_executor.py`、`tools.py`（共 8 个 .py + 1 个 requirements.txt）
+- [x] `main.js` 中 `startPythonBackend()` 的 `cwd` 已改为 `app.isPackaged ? path.join(__dirname, '..') : __dirname`（开发模式下用 `__dirname`，打包模式下用 `path.join(__dirname, '..')`）
+- [x] `cli/server.js` 中 `startPythonBackend()` 的 `cwd` 已改为 `path.join(__dirname, '..')`（不再使用 `path.join(__dirname, '..', '..')`）
+- [x] `package.json` 中 `extraResources.from` 已改为 `"backend"`（不再使用 `"../backend"`）
+- [x] `server.py` 中 `SCRIPT_DIR` 已改为 `os.path.dirname(os.path.dirname(os.path.abspath(__file__)))`（不再拼接 `"PlanMosaic Desktop"`），且 fallback 行已删除
+- [x] `server.py` 中 `uvicorn.run("backend.server:app", ...)` 保持不变（模块名字符串，与物理位置无关）
+- [x] 全局检索无遗漏的 `../backend` 路径引用
+- [x] `python -m backend.server` 在 `PlanMosaic Desktop/` 目录下能正常启动
+- [x] `/health` 端点返回 `{"status": "ok"}` 且 HTTP 200
+- [x] `python -m backend.cli -h` 在 `PlanMosaic Desktop/` 目录下能正常输出帮助信息
+- [x] 所有 Python 相对 import（`from . import paths`、`from .config import ...` 等）正常工作
+- [x] 所有 Python 绝对 import（`from backend.paths import ...`）正常工作
+- [x] 静态文件服务（`GET /` 返回 `index.html`）正常工作（HTTP 200, 426KB）
+- [x] 所有 API 端点（`/api/schedule-data` 等）正常响应（HTTP 200）
+- [x] `preload.js` 中 `onPythonBackendError` 事件监听无需修改（已确认不受影响）
+- [x] `test/harness.js` 中 `backendApi()` 通过 HTTP 调用 `localhost:8080`，无需修改（已确认不受影响）
+- [x] `ai-agent.js` 中 `fetch()` 调用通过相对路径或 `localhost:8080`，无需修改（已确认不受影响）
+- [x] `PlanMosaic AndroidStudio/` 和 `PlanMosaic Uni-app/` 不受影响（已确认无需修改）

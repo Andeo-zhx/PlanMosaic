@@ -1,0 +1,114 @@
+{
+  "timestamp": "2026-06-07T15:42:47.494Z",
+  "results": [
+    {
+      "name": "设置有效 API Key 后后端不再返回未配置",
+      "status": "pass",
+      "elapsed": 918
+    },
+    {
+      "name": "设置占位 Key 后返回未配置提示",
+      "status": "pass",
+      "elapsed": 514
+    },
+    {
+      "name": "config.json 写入格式为嵌套结构",
+      "status": "pass",
+      "elapsed": 320
+    },
+    {
+      "name": "终止后端后检测到退出",
+      "status": "pass",
+      "elapsed": 511
+    },
+    {
+      "name": "后端自动重启",
+      "status": "pass",
+      "elapsed": 2544
+    },
+    {
+      "name": "发送消息收到流式响应",
+      "status": "pass",
+      "elapsed": 1
+    },
+    {
+      "name": "doneSent 标志防止重复 done事件",
+      "status": "pass",
+      "elapsed": 0
+    },
+    {
+      "name": "响应的 model 字段正确",
+      "status": "pass",
+      "elapsed": 2
+    },
+    {
+      "name": "运行时更新API Key后立即生效",
+      "status": "pass",
+      "elapsed": 9
+    },
+    {
+      "name": "对话上下文被保留",
+      "status": "pass",
+      "elapsed": 0
+    },
+    {
+      "name": "多条消息后 history 正确",
+      "status": "pass",
+      "elapsed": 0
+    },
+    {
+      "name": "空消息不崩溃",
+      "status": "pass",
+      "elapsed": 1
+    },
+    {
+      "name": "超长消息不崩溃",
+      "status": "pass",
+      "elapsed": 4
+    },
+    {
+      "name": "config结构完整性",
+      "status": "pass",
+      "elapsed": 2
+    },
+    {
+      "name": "未授权写请求被后端拒绝",
+      "status": "pass",
+      "elapsed": 7
+    },
+    {
+      "name": "超大请求体被后端拒绝",
+      "status": "pass",
+      "elapsed": 160
+    },
+    {
+      "name": "伪造 proposal 被拒绝",
+      "status": "pass",
+      "elapsed": 14
+    },
+    {
+      "name": "日程创建触发工具调用",
+      "status": "pass",
+      "elapsed": 1
+    },
+    {
+      "name": "用户消息气泡有背景色",
+      "status": "pass",
+      "elapsed": 5
+    },
+    {
+      "name": "思考链不重复",
+      "status": "pass",
+      "elapsed": 2
+    },
+    {
+      "name": "侧边栏按钮文字横向排列",
+      "status": "pass",
+      "elapsed": 2
+    }
+  ],
+  "passed": 21,
+  "failed": 0,
+  "total": 21,
+  "totalTime": 5023
+}

@@ -6,6 +6,385 @@ const { exec } = require('child_process');
 const { AI_TOOLS } = require('./ai-tools.js');
 const pmPaths = require('./paths.js');
 
+// ============ web_search_evaluate 工具常量（与 Python 端对齐） ============
+const WEB_SEARCH_CACHE = new Map(); // key: normalized query (lowercase), value: { ts, payload }
+const WEB_SEARCH_CACHE_TTL_MS = 5 * 60 * 1000;
+// 单源请求超时（兜底值，实际请求会用 min(此值, 剩余预算)）
+const WEB_SEARCH_TIMEOUT_MS = 2500;
+// 整个 web_search_evaluate 调用的总预算（含主源 + 回退），超此值不再尝试后续源
+const WEB_SEARCH_TOTAL_BUDGET_MS = 8000;
+// 剩余预算低于该值时直接放弃，避免无意义的尾段请求
+const WEB_SEARCH_MIN_REMAINING_MS = 1000;
+const WEB_SEARCH_MAX_RESULTS = 5;
+const WEB_SEARCH_SUMMARY_MAX_CHARS = 2400;
+const WEB_SEARCH_SNIPPET_CAP = 200;
+const WEB_SEARCH_UA = 'PlanMosaic/1.0 (web_search_evaluate; +https://github.com/planmosaic)';
+const WEB_SEARCH_BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36';
+const PERSON_QUERY_SUFFIXES = ['老师', '教授', '博士', '医生', '导师', '教练', '院长', '主任'];
+const PERSON_CONTEXT_KEYWORDS = ['老师', '教授', '讲师', '导师', '学校', '学院', '大学', '个人主页', '授课', '课程', '教育'];
+const PERSON_AMBIGUOUS_KEYWORDS = ['百科', '豆瓣', '创始人', 'CEO', '董事长', '公司', '企业'];
+
+function normalizeWebSearchQuery(query) {
+    if (typeof query !== 'string') return '';
+    let q = query.replace(/\s+/g, ' ').trim();
+    q = q.replace(/[\?？！!！\.。]+$/, '').trim();
+    return q;
+}
+
+function protectSearchPhrase(query) {
+    if (typeof query !== 'string') return '';
+    const q = query.trim();
+    if (!q) return '';
+    if (q.includes('"') || q.includes('“') || q.includes('”')) return q;
+    if (/[\u4e00-\u9fff]/.test(q) && !q.includes(' ') && q.length <= 20) {
+        return `"${q}"`;
+    }
+    return q;
+}
+
+function isCjkQuery(query) {
+    return typeof query === 'string' && /[\u4e00-\u9fff]/.test(query);
+}
+
+function isPersonQuery(query) {
+    return typeof query === 'string' && PERSON_QUERY_SUFFIXES.some(suffix => query.includes(suffix));
+}
+
+function extractPersonQueryCore(query) {
+    if (typeof query !== 'string') return '';
+    let core = query;
+    for (const suffix of PERSON_QUERY_SUFFIXES) {
+        core = core.split(suffix).join(' ');
+    }
+    return core.replace(/\s+/g, '').trim();
+}
+
+function webSearchCacheGet(key) {
+    if (!key) return null;
+    const entry = WEB_SEARCH_CACHE.get(key);
+    if (!entry) return null;
+    if (Date.now() - entry.ts > WEB_SEARCH_CACHE_TTL_MS) {
+        WEB_SEARCH_CACHE.delete(key);
+        return null;
+    }
+    return entry.payload;
+}
+
+function webSearchCacheSet(key, payload) {
+    if (!key || !payload || typeof payload !== 'object') return;
+    if (!payload.success) return;
+    WEB_SEARCH_CACHE.set(key, { ts: Date.now(), payload });
+}
+
+function buildWebSearchSummaryText(results, maxChars = WEB_SEARCH_SUMMARY_MAX_CHARS, snippetCap = WEB_SEARCH_SNIPPET_CAP) {
+    if (!results || results.length === 0) return '未找到相关搜索结果，建议尝试其他关键词';
+    const lines = [];
+    for (let i = 0; i < results.length; i++) {
+        const r = results[i];
+        const title = (r.title || '').trim() || `结果${i + 1}`;
+        let snippet = (r.snippet || '').trim();
+        if (snippet.length > snippetCap) snippet = snippet.slice(0, snippetCap).replace(/\s+$/, '') + '…';
+        const source = (r.source || 'DuckDuckGo').trim();
+        const url = (r.url || '').trim();
+        lines.push(`[${i + 1}] ${title} — ${snippet} (来源: ${source}, URL: ${url})`);
+    }
+    let text = lines.join('\n');
+    if (text.length > maxChars) {
+        // 给尾部 "…" 预留 1 个字符
+        text = text.slice(0, maxChars - 1).replace(/\s+$/, '') + '…';
+    }
+    return text;
+}
+
+function rerankSearchResults(query, results) {
+    if (!Array.isArray(results) || results.length === 0) return results;
+    const compactQuery = sanitizeStr((query || '').replace(/\s+/g, ''));
+    const personQuery = isPersonQuery(query);
+    const coreName = extractPersonQueryCore(query);
+    return [...results]
+        .map((item, idx) => {
+            const title = sanitizeStr((item.title || '').trim());
+            const snippet = sanitizeStr((item.snippet || '').trim());
+            const compactTitle = title.replace(/\s+/g, '');
+            const compactSnippet = snippet.replace(/\s+/g, '');
+            let score = 0;
+            if (compactQuery && compactTitle.includes(compactQuery)) score += 20;
+            if (compactQuery && compactSnippet.includes(compactQuery)) score += 12;
+            if (personQuery) {
+                if (compactQuery && compactTitle.includes(compactQuery)) score += 18;
+                if (coreName && compactTitle.includes(coreName)) score += 8;
+                if (coreName && compactSnippet.includes(coreName)) score += 5;
+                if (PERSON_QUERY_SUFFIXES.some(suffix => title.includes(suffix))) score += 10;
+                if (PERSON_QUERY_SUFFIXES.some(suffix => snippet.includes(suffix))) score += 6;
+                if (PERSON_CONTEXT_KEYWORDS.some(keyword => title.includes(keyword))) score += 8;
+                if (PERSON_CONTEXT_KEYWORDS.some(keyword => snippet.includes(keyword))) score += 5;
+                if (PERSON_AMBIGUOUS_KEYWORDS.some(keyword => title.includes(keyword)) && !(compactQuery && compactTitle.includes(compactQuery))) score -= 8;
+                if (snippet === '(无摘要)') score -= 2;
+            }
+            score -= idx;
+            return { item, idx, score };
+        })
+        .sort((a, b) => b.score - a.score || a.idx - b.idx)
+        .map(entry => entry.item);
+}
+
+function prunePersonResults(query, results, maxKeep = 3) {
+    if (!Array.isArray(results) || results.length === 0) return results;
+    const compactQuery = sanitizeStr((query || '').replace(/\s+/g, ''));
+    const coreName = extractPersonQueryCore(query);
+    const exactMatches = [];
+    const contextualMatches = [];
+    const fallbackMatches = [];
+    for (const item of results) {
+        const title = sanitizeStr((item.title || '').trim());
+        const snippet = sanitizeStr((item.snippet || '').trim());
+        const compactTitle = title.replace(/\s+/g, '');
+        const compactSnippet = snippet.replace(/\s+/g, '');
+        if (compactQuery && (compactTitle.includes(compactQuery) || compactSnippet.includes(compactQuery))) {
+            exactMatches.push(item);
+        } else if (PERSON_CONTEXT_KEYWORDS.some(keyword => title.includes(keyword) || snippet.includes(keyword))) {
+            contextualMatches.push(item);
+        } else if (coreName && (compactTitle.includes(coreName) || compactSnippet.includes(coreName))) {
+            fallbackMatches.push(item);
+        }
+    }
+    if (exactMatches.length >= Math.min(2, maxKeep)) {
+        const dedupedExact = [];
+        const seenExactTitles = new Set();
+        for (const item of exactMatches) {
+            const title = sanitizeStr((item.title || '').trim());
+            if (seenExactTitles.has(title)) continue;
+            seenExactTitles.add(title);
+            dedupedExact.push(item);
+            if (dedupedExact.length >= maxKeep) break;
+        }
+        return dedupedExact;
+    }
+    const pruned = [];
+    const seenTitles = new Set();
+    for (const group of [exactMatches, contextualMatches, fallbackMatches]) {
+        for (const item of group) {
+            const title = sanitizeStr((item.title || '').trim());
+            if (seenTitles.has(title)) continue;
+            seenTitles.add(title);
+            pruned.push(item);
+            if (pruned.length >= maxKeep) return pruned;
+        }
+    }
+    return results.slice(0, maxKeep);
+}
+
+function buildPersonQuerySummary(query, results) {
+    const detailText = buildWebSearchSummaryText(results);
+    const meaningfulSnippet = results.slice(0, 3).some(item => {
+        const snippet = sanitizeStr((item.snippet || '').trim());
+        return snippet && snippet !== '(无摘要)';
+    });
+    const caution = meaningfulSnippet
+        ? '提示：人物身份、性别与任职信息需至少用两条独立来源交叉核实，以下仅为候选搜索结果。'
+        : '提示：当前仅拿到标题级候选或弱摘要，请勿据此确认人物身份、性别与任职信息。';
+    return `${caution}\n${detailText}`;
+}
+
+function parseDuckDuckGoInstantAnswer(data, maxResults = WEB_SEARCH_MAX_RESULTS) {
+    const results = [];
+    if (!data || typeof data !== 'object') return results;
+    const abstract = (data.AbstractText || '').trim();
+    if (abstract) {
+        results.push({
+            title: ((data.Heading || '摘要').trim() || '摘要'),
+            snippet: abstract,
+            source: (data.AbstractSource || 'DuckDuckGo').trim(),
+            url: (data.AbstractURL || '').trim(),
+        });
+    }
+    const topics = Array.isArray(data.RelatedTopics) ? data.RelatedTopics : [];
+    for (const topic of topics) {
+        if (results.length >= maxResults) break;
+        if (!topic || typeof topic !== 'object') continue;
+        if (Array.isArray(topic.Topics)) {
+            for (const sub of topic.Topics) {
+                if (results.length >= maxResults) break;
+                if (sub && sub.Text && sub.FirstURL) {
+                    const text = String(sub.Text).trim();
+                    const title = text.includes(' - ') ? text.split(' - ')[0] : text;
+                    results.push({
+                        title: (title.slice(0, 120) || '相关结果'),
+                        snippet: text,
+                        source: 'DuckDuckGo',
+                        url: String(sub.FirstURL).trim(),
+                    });
+                }
+            }
+            continue;
+        }
+        const text = (topic.Text || '').trim();
+        const url = (topic.FirstURL || '').trim();
+        if (text && url) {
+            const title = text.includes(' - ') ? text.split(' - ')[0] : text;
+            results.push({
+                title: (title.slice(0, 120) || '相关结果'),
+                snippet: text,
+                source: 'DuckDuckGo',
+                url,
+            });
+        }
+    }
+    return results.slice(0, maxResults);
+}
+
+function parseDuckDuckGoHtmlFallback(html, maxResults = WEB_SEARCH_MAX_RESULTS) {
+    const results = [];
+    if (!html) return results;
+    const blockRe = /<div[^>]*class="[^"]*\bresult\b[^"]*"[^>]*>([\s\S]*?)(?=<div[^>]*class="[^"]*\bresult\b|<\/body>|$)/gi;
+    const linkRe = /<a[^>]*class="[^"]*\bresult__a\b[^"]*"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i;
+    const snippetRe = /<a[^>]*class="[^"]*\bresult__snippet\b[^"]*"[^>]*>([\s\S]*?)<\/a>/i;
+    const tagRe = /<[^>]+>/g;
+    let blockMatch;
+    while ((blockMatch = blockRe.exec(html)) !== null) {
+        const block = blockMatch[1];
+        const linkMatch = block.match(linkRe);
+        if (!linkMatch) continue;
+        const url = linkMatch[1].trim();
+        const rawTitle = (linkMatch[2] || '').replace(tagRe, ' ').replace(/\s+/g, ' ').trim();
+        if (!rawTitle) continue;
+        let snippet = '';
+        const snippetMatch = block.match(snippetRe);
+        if (snippetMatch) {
+            snippet = (snippetMatch[1] || '').replace(tagRe, ' ').replace(/\s+/g, ' ').trim();
+        }
+        results.push({
+            title: rawTitle.slice(0, 120),
+            snippet: snippet || '(无摘要)',
+            source: 'DuckDuckGo',
+            url,
+        });
+        if (results.length >= maxResults) break;
+    }
+    return results;
+}
+
+function parseBingHtmlFallback(html, maxResults = WEB_SEARCH_MAX_RESULTS) {
+    const results = [];
+    if (!html) return results;
+    const blockRe = /<li[^>]*class="[^"]*\bb_algo\b[^"]*"[^>]*>([\s\S]*?)(?=<li[^>]*class="[^"]*\bb_algo\b|<\/ol>|<\/body>|$)/gi;
+    const linkRe = /<h2[^>]*>\s*<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i;
+    const snippetRe = /<p[^>]*>([\s\S]*?)<\/p>/i;
+    const tagRe = /<[^>]+>/g;
+    let blockMatch;
+    while ((blockMatch = blockRe.exec(html)) !== null) {
+        const block = blockMatch[1];
+        const linkMatch = block.match(linkRe);
+        if (!linkMatch) continue;
+        const url = (linkMatch[1] || '').trim();
+        const rawTitle = (linkMatch[2] || '').replace(tagRe, ' ').replace(/\s+/g, ' ').trim();
+        if (!rawTitle) continue;
+        let snippet = '';
+        const snippetMatch = block.match(snippetRe);
+        if (snippetMatch) {
+            snippet = (snippetMatch[1] || '').replace(tagRe, ' ').replace(/\s+/g, ' ').trim();
+        }
+        results.push({
+            title: rawTitle.slice(0, 120),
+            snippet: snippet || '(无摘要)',
+            source: 'Bing',
+            url,
+        });
+        if (results.length >= maxResults) break;
+    }
+    return results;
+}
+
+function parseBaiduHtmlFallback(html, maxResults = WEB_SEARCH_MAX_RESULTS) {
+    const results = [];
+    if (!html) return results;
+    const blockStartRe = /<div[^>]*class="[^"]*\bresult\b[^"]*\bc-container\b[^"]*"[^>]*>/gi;
+    const titlePatterns = [
+        /<h3[^>]*class="[^"]*\bt\b[^"]*"[^>]*>\s*<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>\s*<\/h3>/i,
+        /<a[^>]*data-module="title"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i,
+    ];
+    const snippetPatterns = [
+        /<span[^>]*class="[^"]*\bsummary-text_[^"]*"[^>]*>([\s\S]*?)<\/span>/i,
+        /<div[^>]*data-module="abstract"[^>]*>([\s\S]*?)<\/div>/i,
+        /<div[^>]*class="[^"]*\bc-abstract\b[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /<span[^>]*class="[^"]*\bcontent-right_8Zs40\b[^"]*"[^>]*>([\s\S]*?)<\/span>/i,
+    ];
+    const tagRe = /<[^>]+>/g;
+    const seen = new Set();
+    const blockStarts = [];
+    let blockMatch;
+    while ((blockMatch = blockStartRe.exec(html)) !== null) {
+        blockStarts.push(blockMatch.index);
+    }
+    if (blockStarts.length === 0) return results;
+    blockStarts.push(html.length);
+    for (let i = 0; i < blockStarts.length - 1; i++) {
+        const block = html.slice(blockStarts[i], blockStarts[i + 1]);
+        let titleMatch = null;
+        for (const pattern of titlePatterns) {
+            titleMatch = block.match(pattern);
+            if (titleMatch) break;
+        }
+        if (!titleMatch) continue;
+        const url = (titleMatch[1] || '').trim();
+        const rawTitle = (titleMatch[2] || '').replace(tagRe, ' ').replace(/\s+/g, ' ').trim();
+        if (!rawTitle || seen.has(rawTitle)) continue;
+        seen.add(rawTitle);
+        let snippet = '';
+        for (const snippetPattern of snippetPatterns) {
+            const snippetMatch = block.match(snippetPattern);
+            if (snippetMatch) {
+                snippet = (snippetMatch[1] || '').replace(tagRe, ' ').replace(/\s+/g, ' ').trim();
+                if (snippet) break;
+            }
+        }
+        results.push({
+            title: rawTitle.slice(0, 120),
+            snippet: snippet || '(无摘要)',
+            source: 'Baidu',
+            url,
+        });
+        if (results.length >= maxResults) return results;
+    }
+    return results;
+}
+
+function httpsGetWithTimeout(urlStr, acceptHeader, timeoutMs) {
+    return new Promise((resolve, reject) => {
+        let url;
+        try { url = new URL(urlStr); } catch (e) { reject(new Error('invalid_url')); return; }
+        const opts = {
+            method: 'GET',
+            hostname: url.hostname,
+            path: url.pathname + url.search,
+            port: url.port || 443,
+            headers: {
+                'User-Agent': acceptHeader === 'application/json' ? WEB_SEARCH_UA : WEB_SEARCH_BROWSER_UA,
+                'Accept': acceptHeader,
+                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            },
+        };
+        const req = https.request(opts, (res) => {
+            let data = '';
+            res.setEncoding('utf8');
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => {
+                if (res.statusCode !== 200) {
+                    reject(Object.assign(new Error(`HTTP ${res.statusCode}`), { statusCode: res.statusCode, body: data }));
+                    return;
+                }
+                resolve(data);
+            });
+        });
+        req.on('error', reject);
+        const timer = setTimeout(() => {
+            req.destroy(Object.assign(new Error('Request timeout'), { code: 'ETIMEDOUT' }));
+        }, timeoutMs);
+        req.on('close', () => clearTimeout(timer));
+        req.end();
+    });
+}
+
 // 清理字符串中的 lone surrogates，防止 .includes() 等操作抛出 RangeError
 function sanitizeStr(s) { return (s || '').replace(/[\uD800-\uDFFF]/g, ''); }
 
@@ -43,22 +422,433 @@ function safeJsonStringify(obj, indent) {
         return value;
     }, indent);
 }
+
+function pickStructuredTimeFields(source) {
+    const result = {};
+    if (!source || typeof source !== 'object') return result;
+    const raw = (source.structured_features && typeof source.structured_features === 'object')
+        ? source.structured_features
+        : source;
+    ['difficulty', 'familiarity', 'steps_count', 'deadline_pressure', 'output_type'].forEach((key) => {
+        const value = raw[key];
+        if (value !== undefined && value !== null && value !== '') {
+            result[key] = value;
+        }
+    });
+    return result;
+}
+
+const TIME_ESTIMATE_CATEGORIES = ['学习', '工作', '生活', '运动'];
+const MAX_STRUCTURED_STEPS_COUNT = 12;
+const TIME_OUTPUT_TYPE_BASELINE_DELTAS = {
+    deliverable: 25,
+    communication: -5,
+    learning: 15,
+    execution: 5,
+    planning: 0,
+    other: 0
+};
+const TIME_OUTPUT_TYPE_LABELS = {
+    deliverable: '有明确交付物',
+    communication: '以沟通协作为主',
+    learning: '需要理解和吸收内容',
+    execution: '偏执行或操作类任务',
+    planning: '偏整理和规划',
+    other: '信息较少的通用任务'
+};
+const TIME_DEADLINE_PRESSURE_DELTAS = {
+    1: -5,
+    2: 0,
+    3: 5,
+    4: 15,
+    5: 25
+};
+const TIME_CATEGORY_KEYWORDS = {
+    学习: ['学习', '复习', '预习', '刷题', '背', '作业', '课程', '考试', '论文', '实验报告', '阅读', '笔记', '听课', '训练题'],
+    工作: ['工作', '开发', '代码', '编程', '调试', '测试', '文档', '方案', '汇报', '邮件', '会议', '需求', '产品', '设计稿', '接口', '排查'],
+    生活: ['做饭', '买菜', '洗衣', '打扫', '收拾', '整理房间', '采购', '缴费', '搬家', '出门', '办理', '家务', '收纳', '清洁'],
+    运动: ['跑步', '健身', '游泳', '打球', '瑜伽', '拉伸', '骑行', '散步', '训练', '跳绳', '力量', '热身']
+};
+
+function containsAny(text, keywords) {
+    return keywords.some((keyword) => text.includes(keyword));
+}
+
+function clamp(value, minimum, maximum) {
+    return Math.max(minimum, Math.min(maximum, value));
+}
+
+function safeInt(value, defaultValue = 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.round(parsed) : defaultValue;
+}
+
+function roundMinutes(value) {
+    const rounded = Math.round(Number(value) / 5) * 5;
+    return Math.max(5, rounded);
+}
+
+function buildTimeFactor(name, impactMinutes, reason, stage = 'baseline') {
+    const roundedImpact = Math.round(Number(impactMinutes) || 0);
+    let direction = 'neutral';
+    if (roundedImpact > 0) direction = 'increase';
+    if (roundedImpact < 0) direction = 'decrease';
+    return {
+        name,
+        impact_minutes: roundedImpact,
+        direction,
+        reason,
+        stage
+    };
+}
+
+function formatMinutes(value) {
+    const minutes = Math.max(5, roundMinutes(value));
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours <= 0) return `${mins}分钟`;
+    return mins > 0 ? `${hours}小时${mins}分钟` : `${hours}小时`;
+}
+
+function normalizeEstimateCategory(category, taskName = '', context = '') {
+    const rawCategory = typeof category === 'string' ? category.trim() : '';
+    if (TIME_ESTIMATE_CATEGORIES.includes(rawCategory)) {
+        return { category: rawCategory, inferred: false, reason: '' };
+    }
+    const text = `${taskName} ${context}`.toLowerCase();
+    for (const [candidate, keywords] of Object.entries(TIME_CATEGORY_KEYWORDS)) {
+        if (containsAny(text, keywords)) {
+            return { category: candidate, inferred: true, reason: `任务描述命中${candidate}类关键词` };
+        }
+    }
+    return { category: rawCategory || '其他', inferred: !rawCategory || rawCategory === '其他', reason: '未命中明显类别关键词' };
+}
+
+function normalizeOutputType(value) {
+    if (typeof value !== 'string') return '';
+    const normalized = value.trim().toLowerCase();
+    const aliases = {
+        '文档': 'deliverable',
+        '报告': 'deliverable',
+        '作业': 'deliverable',
+        '代码': 'deliverable',
+        '交付物': 'deliverable',
+        'deliverable': 'deliverable',
+        '沟通': 'communication',
+        '会议': 'communication',
+        '回复': 'communication',
+        'communication': 'communication',
+        '学习': 'learning',
+        '练习': 'learning',
+        '复习': 'learning',
+        'learning': 'learning',
+        '执行': 'execution',
+        '跑腿': 'execution',
+        '运动': 'execution',
+        'execution': 'execution',
+        '规划': 'planning',
+        '计划': 'planning',
+        'planning': 'planning',
+        '其他': 'other',
+        'other': 'other'
+    };
+    return aliases[normalized] || '';
+}
+
+function inferOutputType(taskName, category, context) {
+    const text = `${taskName} ${category} ${context}`.toLowerCase();
+    if (containsAny(text, ['学习', '复习', '刷题', '背诵', '笔记', '课程', '考试', '练习', '阅读'])) return 'learning';
+    if (containsAny(text, ['会议', '沟通', '讨论', '联系', '回复', '汇报', '邮件', '消息', '答辩', '电话'])) return 'communication';
+    if (containsAny(text, ['计划', '规划', '安排', '整理', '拆解', '清单'])) return 'planning';
+    if (containsAny(text, ['文档', '报告', 'ppt', '方案', '代码', '设计稿', '文章', '作业', '实验报告', '接口', '简历'])) return 'deliverable';
+    if (containsAny(text, ['执行', '测试', '调试', '安装', '清洁', '采购', '提交', '跑步', '健身', '办理'])) return 'execution';
+    return 'other';
+}
+
+function normalizeScore(value, defaultValue) {
+    const aliases = {
+        '1': 1,
+        '2': 2,
+        '3': 3,
+        '4': 4,
+        '5': 5,
+        '低': 2,
+        '较低': 2,
+        '中': 3,
+        '中等': 3,
+        '高': 4,
+        '较高': 4,
+        '很高': 5,
+        '简单': 2,
+        '普通': 3,
+        '困难': 4,
+        '很难': 5,
+        '陌生': 2,
+        '一般': 3,
+        '熟悉': 4,
+        '非常熟悉': 5,
+        '轻': 2,
+        '紧': 4
+    };
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (Object.prototype.hasOwnProperty.call(aliases, normalized)) {
+            return aliases[normalized];
+        }
+    }
+    return clamp(safeInt(value, defaultValue), 1, 5);
+}
+
+function inferDifficulty(taskName, category, context, outputType) {
+    const text = `${taskName} ${category} ${context}`.toLowerCase();
+    let score = 3;
+    if (outputType === 'deliverable' || outputType === 'learning') score += 1;
+    if (containsAny(text, ['论文', '架构', '系统', '开发', '调试', '分析', '实验', '研究', '压测', '复杂', '困难'])) score += 1;
+    if (containsAny(text, ['热身', '整理', '回复', '简单', '例行', '日常'])) score -= 1;
+    return clamp(score, 1, 5);
+}
+
+function inferFamiliarity(taskName, category, context) {
+    const text = `${taskName} ${category} ${context}`.toLowerCase();
+    if (containsAny(text, ['第一次', '新手', '陌生', '没做过', '不熟', '初次'])) return 2;
+    if (containsAny(text, ['熟悉', '日常', '重复', '例行', '平时', '常规'])) return 4;
+    return 3;
+}
+
+function inferStepsCount(taskName, context, outputType) {
+    const text = `${taskName} ${context}`;
+    let score = 1 + (text.split('并').length - 1) + (text.split('、').length - 1) + (text.split('和').length - 1);
+    if (containsAny(text, ['整理', '分析', '设计', '撰写', '调试', '测试', '复盘', '汇总'])) score += 1;
+    if (outputType === 'deliverable' || outputType === 'planning') score += 1;
+    if (containsAny(text, ['论文', '项目', '实验报告', '方案'])) score += 2;
+    return clamp(score, 1, MAX_STRUCTURED_STEPS_COUNT);
+}
+
+function inferDeadlinePressure(taskName, context) {
+    const text = `${taskName} ${context}`.toLowerCase();
+    if (containsAny(text, ['马上', '立刻', '尽快', 'ddl', 'deadline', '今晚', '今天截止', '明天截止'])) return 5;
+    if (containsAny(text, ['今天', '明天', '本周', '截止', '到期', '赶'])) return 4;
+    if (containsAny(text, ['这周', '近期', '本月'])) return 3;
+    return 2;
+}
+
+function normalizeStructuredTimeFields(source, taskName = '', category = '', context = '') {
+    const raw = pickStructuredTimeFields(source);
+    const outputType = normalizeOutputType(raw.output_type) || inferOutputType(taskName, category, context);
+    return {
+        difficulty: normalizeScore(raw.difficulty, inferDifficulty(taskName, category, context, outputType)),
+        familiarity: normalizeScore(raw.familiarity, inferFamiliarity(taskName, category, context)),
+        steps_count: clamp(safeInt(raw.steps_count, inferStepsCount(taskName, context, outputType)), 1, MAX_STRUCTURED_STEPS_COUNT),
+        deadline_pressure: normalizeScore(raw.deadline_pressure, inferDeadlinePressure(taskName, context)),
+        output_type: outputType
+    };
+}
+
+function getKeywordFactors(taskName, category, context) {
+    const text = `${taskName} ${category} ${context}`.toLowerCase();
+    const factors = [];
+    if (containsAny(text, ['论文', '报告', 'ppt', '原型', '方案', '代码', '开发', '调试', '实验报告', '答辩'])) {
+        factors.push(buildTimeFactor('任务内容', 20, '任务描述显示需要产出较完整成果，通常更耗时'));
+    }
+    if (containsAny(text, ['整理', '核对', '回复', '热身', '签到', '打卡', '例行'])) {
+        factors.push(buildTimeFactor('任务内容', -10, '任务描述更像短流程或例行事项，基础耗时会更短'));
+    }
+    if (containsAny(text, ['第一次', '新手', '陌生', '没做过', '从零开始'])) {
+        factors.push(buildTimeFactor('经验情况', 10, '任务文本提示是首次或不熟悉场景，需要预留摸索时间'));
+    }
+    if (containsAny(text, ['复盘', '总结', '汇总', '分析', '设计'])) {
+        factors.push(buildTimeFactor('处理深度', 10, '任务包含分析或总结环节，往往不止是机械执行'));
+    }
+    return factors;
+}
+
+function calculateRuleBaseline(taskName, category, context = '', structuredFeatures = {}) {
+    const normalizedFeatures = normalizeStructuredTimeFields(structuredFeatures, taskName, category, context);
+    const factors = [];
+    let totalMinutes = 30;
+    const outputDelta = TIME_OUTPUT_TYPE_BASELINE_DELTAS[normalizedFeatures.output_type] || 0;
+    totalMinutes += outputDelta;
+    factors.push(buildTimeFactor(
+        '产出类型',
+        outputDelta,
+        TIME_OUTPUT_TYPE_LABELS[normalizedFeatures.output_type] || '根据任务产出类型调整基础耗时'
+    ));
+
+    const difficultyDelta = (normalizedFeatures.difficulty - 3) * 15;
+    if (difficultyDelta) {
+        factors.push(buildTimeFactor(
+            '任务难度',
+            difficultyDelta,
+            `当前难度评分为 ${normalizedFeatures.difficulty}，难度越高越需要额外时间`
+        ));
+    }
+    totalMinutes += difficultyDelta;
+
+    const familiarityDelta = (3 - normalizedFeatures.familiarity) * 12;
+    if (familiarityDelta) {
+        factors.push(buildTimeFactor(
+            '熟悉度',
+            familiarityDelta,
+            familiarityDelta > 0
+                ? `当前熟悉度为 ${normalizedFeatures.familiarity}，越不熟悉越需要摸索`
+                : `当前熟悉度为 ${normalizedFeatures.familiarity}，熟悉任务通常会更快`
+        ));
+    }
+    totalMinutes += familiarityDelta;
+
+    const stepsDelta = (normalizedFeatures.steps_count - 1) * 8;
+    if (stepsDelta) {
+        factors.push(buildTimeFactor(
+            '步骤数',
+            stepsDelta,
+            `步骤数为 ${normalizedFeatures.steps_count}，拆分环节越多通常越耗时`
+        ));
+    }
+    totalMinutes += stepsDelta;
+
+    const deadlineDelta = TIME_DEADLINE_PRESSURE_DELTAS[normalizedFeatures.deadline_pressure] || 0;
+    if (deadlineDelta) {
+        factors.push(buildTimeFactor(
+            '截止压力',
+            deadlineDelta,
+            deadlineDelta > 0
+                ? `截止压力为 ${normalizedFeatures.deadline_pressure}，通常需要预留沟通或返工缓冲`
+                : '截止压力较低，可按更平稳节奏安排'
+        ));
+    }
+    totalMinutes += deadlineDelta;
+
+    const keywordFactors = getKeywordFactors(taskName, category, context);
+    keywordFactors.forEach((factor) => {
+        totalMinutes += factor.impact_minutes;
+        factors.push(factor);
+    });
+
+    const baselineMinutes = clamp(roundMinutes(totalMinutes), 5, 24 * 60);
+    const topFactors = factors
+        .filter((factor) => factor.impact_minutes !== 0)
+        .sort((a, b) => Math.abs(b.impact_minutes) - Math.abs(a.impact_minutes))
+        .slice(0, 3);
+
+    return {
+        baseline_minutes: baselineMinutes,
+        structured_features: normalizedFeatures,
+        factor_details: factors,
+        top_factors: topFactors,
+        major_factors: topFactors.map((factor) => factor.reason),
+        baseline_comparison: '当前直接使用规则基线估算',
+        summary: topFactors.slice(0, 2).map((factor) => factor.reason).join(' + ') || '根据结构化字段生成基础时间'
+    };
+}
+
+function buildEstimateContext(taskName, category, context, structuredFeatures, categoryMeta) {
+    const parts = [];
+    const trimmedContext = typeof context === 'string' ? context.trim() : '';
+    if (trimmedContext) parts.push(trimmedContext);
+    parts.push(`类别:${category}`);
+    parts.push(`难度:${structuredFeatures.difficulty}/5`);
+    parts.push(`熟悉度:${structuredFeatures.familiarity}/5`);
+    parts.push(`步骤数:${structuredFeatures.steps_count}`);
+    parts.push(`截止压力:${structuredFeatures.deadline_pressure}/5`);
+    parts.push(`产出类型:${TIME_OUTPUT_TYPE_LABELS[structuredFeatures.output_type] || structuredFeatures.output_type}`);
+    if (categoryMeta && categoryMeta.inferred && categoryMeta.category !== '其他') {
+        parts.push(`类别依据:${categoryMeta.reason}`);
+    }
+    return parts.join('；');
+}
+
+function calculateBufferMinutes(baselineMinutes, structuredFeatures) {
+    let ratio = 0.2;
+    if (structuredFeatures.difficulty >= 4) ratio += 0.05;
+    if (structuredFeatures.familiarity <= 2) ratio += 0.05;
+    if (structuredFeatures.deadline_pressure >= 4) ratio += 0.05;
+    if (structuredFeatures.steps_count >= 4) ratio += 0.03;
+    return clamp(roundMinutes(baselineMinutes * Math.min(ratio, 0.4)), 5, 120);
+}
 const url = require('url');
 
 // 从配置文件加载API密钥（不在代码中硬编码）
 let DEEPSEEK_API_KEY = '';
 let DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
 let MODEL_NAME = 'deepseek-v4-flash';
-let REASONER_MODEL_NAME = 'deepseek-v4-pro';
 
 let PORT = 8080;
-let HOST = '127.0.0.1';
+const MAX_REQUEST_BODY_SIZE = 1024 * 1024; // 1MB
+let HOST = pmPaths.normalizeLoopbackHost(process.env.PLANMOSAIC_SERVER_HOST || '127.0.0.1');
 
 let appSettings = {
     enableTimeout: false,
     timeoutMs: 30000,
     rejectUnauthorized: true  // 默认启用SSL验证
 };
+
+function resolveLocalHost(hostCandidate, fallback = '127.0.0.1') {
+    if (!hostCandidate) {
+        return pmPaths.normalizeLoopbackHost(fallback);
+    }
+    if (!pmPaths.isLoopbackHost(hostCandidate)) {
+        const safeFallback = pmPaths.normalizeLoopbackHost(fallback);
+        console.warn(`[Security] Blocked non-loopback listen host "${hostCandidate}", fallback to ${safeFallback}`);
+        return safeFallback;
+    }
+    return pmPaths.normalizeLoopbackHost(hostCandidate, fallback);
+}
+
+function applyLocalCors(req, res) {
+    const reqOrigin = req.headers.origin || '';
+    if (pmPaths.isAllowedLocalOrigin(reqOrigin)) {
+        res.setHeader('Access-Control-Allow-Origin', reqOrigin);
+        res.setHeader('Vary', 'Origin');
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
+function readRequestBody(req, res) {
+    return new Promise((resolve, reject) => {
+        let body = '';
+        let bodySize = 0;
+        let completed = false;
+
+        req.on('data', chunk => {
+            if (completed) return;
+            bodySize += chunk.length;
+            if (bodySize > MAX_REQUEST_BODY_SIZE) {
+                completed = true;
+                res.writeHead(413, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: '请求体过大' }));
+                req.resume();
+                resolve(null);
+                return;
+            }
+            body += chunk;
+        });
+
+        req.on('end', () => {
+            if (completed) return;
+            completed = true;
+            resolve(body);
+        });
+
+        req.on('error', err => {
+            if (completed) return;
+            completed = true;
+            reject(err);
+        });
+    });
+}
+
+async function parseJsonBody(req, res) {
+    const body = await readRequestBody(req, res);
+    if (body === null) return null;
+    try {
+        return JSON.parse(body);
+    } catch (_) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: '无效的JSON' }));
+        return null;
+    }
+}
 
 function loadSettings() {
     try {
@@ -76,9 +866,6 @@ function loadSettings() {
             if (config.api?.deepseek?.model) {
                 MODEL_NAME = config.api.deepseek.model;
             }
-            if (config.api?.deepseek?.reasonerModel) {
-                REASONER_MODEL_NAME = config.api.deepseek.reasonerModel;
-            }
             if (config.security?.rejectUnauthorized !== undefined) {
                 appSettings.rejectUnauthorized = config.security.rejectUnauthorized;
             }
@@ -89,7 +876,7 @@ function loadSettings() {
                 PORT = config.server.port;
             }
             if (config.server?.host) {
-                HOST = config.server.host;
+                HOST = resolveLocalHost(config.server.host, HOST);
             }
             console.log('[Config] Loaded from config.json');
         }
@@ -108,10 +895,8 @@ function loadSettings() {
             DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
             console.log('[Config] Loaded API key from environment');
         }
-        if (!MODEL_NAME || MODEL_NAME === 'deepseek-v4-pro') {
-            if (process.env.MODEL_NAME) {
-                MODEL_NAME = process.env.MODEL_NAME;
-            }
+        if (process.env.MODEL_NAME) {
+            MODEL_NAME = process.env.MODEL_NAME;
         }
 
         // 检查API密钥是否已配置
@@ -172,33 +957,6 @@ function getMimeType(ext) {
 
 // ============ AI Agent Functions ============
 
-// 判断用户消息是否需要推理模型
-function needsReasoning(message) {
-    if (!message) return false;
-    const msg = message.toLowerCase();
-    const keywords = [
-        '规划', '计划', '安排', '排', '调整', '优化', '整理', '重新',
-        '帮我安排', '帮我规划', '帮我排', '怎么安排', '怎么规划',
-        '推荐', '建议', '应该', '好不好', '合理', '更好',
-        '冲突', '撞了', '重叠', '空闲', '有空',
-        '本周', '下周', '本月', '这个月',
-        '周计划', '日计划', '月计划', '学习计划', '复习计划',
-        '课表', '选课', '加课', '退课', '换课',
-        '添加', '新增', '增加', '删除', '移除', '修改', '改', '换',
-        '取消', '推迟', '提前', '延期', '挪', '移',
-        '添加日程', '加个', '建一个', '创建', '新建',
-        '设置', '设为', '标记', '完成', '未完成',
-        '批量', '全部删除', '全部改',
-        '分析', '统计', '总结', '回顾', '对比', '比较',
-        '多久', '频率', '规律', '习惯', '模式',
-        '进度', 'ddl', 'deadline', '截止'
-    ];
-    for (const kw of keywords) {
-        if (msg.includes(kw)) return true;
-    }
-    return false;
-}
-
 // 处理AI对话
 async function handleAgentChat(data) {
     const { message, images, history, profile, scheduleData, userProfileText } = data;
@@ -238,6 +996,13 @@ ${profileSection}
 5. 回复控制在2句话以内，直接给出结果或确认已完成。
 
 6. 所有"删除"和"移除"操作需用户确认，所有"批量"操作需用户确认。
+
+【时间估算规则】
+- 用户问"要多久/多长时间/多久能做完/估算用时"时，优先提取 task_name、category，以及 difficulty、familiarity、steps_count、deadline_pressure、output_type 这5个高影响特征。
+- 如果现有信息已经足够，直接调用 estimate_task_time，不要为了估时继续追问。
+- 如果确实缺少关键信息，最多只补问1到2个问题，优先问：是否第一次做、步骤是否很多、是否有明确交付物、是否今天/明天截止。
+- 不要追问低价值细节，不要一次性列出很多问题。
+- category 优先在 学习 / 工作 / 生活 / 运动 中选择最接近的一类，只有明显无法判断时才保留为"其他"。
 
 【意图识别】
 - "明天有什么" → view_schedule(date=明天日期)
@@ -389,8 +1154,8 @@ async function handleDeepPlanningChat(data) {
     console.log('[Deep Planning] Filtered tools count:', filteredTools.length, '/', AI_TOOLS.length);
     console.log('[Deep Planning] Available tools:', filteredTools.map(t => t.function.name).join(', '));
 
-    // 使用reasoner模型进行深度推理
-    const selectedModel = REASONER_MODEL_NAME;
+    // 使用主模型进行深度推理
+    const selectedModel = MODEL_NAME;
     console.log('[Deep Planning] Using model:', selectedModel);
 
     try {
@@ -449,18 +1214,15 @@ async function callDeepseekAIWithCustomTools(messages, customTools, overrideMode
 
     try {
         const apiUrl = new URL(DEEPSEEK_API_URL);
-        const isReasoner = modelName.includes('reasoner') || modelName.includes('v4-pro');
         const reqBody = {
             model: modelName,
             messages: messages,
             tools: customTools,
             tool_choice: 'auto',
-            max_tokens: isReasoner ? 16000 : 4000  // 深度规划允许更长的响应
+            max_tokens: 16000  // 深度规划允许更长的响应
         };
 
-        if (!isReasoner) {
-            reqBody.temperature = 0.7;  // 稍低的温度，更有逻辑性
-        }
+        reqBody.temperature = 0.7;  // 稍低的温度，更有逻辑性
 
         const requestBody = safeJsonStringify(reqBody);
 
@@ -564,10 +1326,6 @@ async function callDeepseekAIWithCustomTools(messages, customTools, overrideMode
                 tool_calls: result.choices[0].message.tool_calls
             };
 
-            if (result.choices[0].message.reasoning_content && (modelName.includes('reasoner') || modelName.includes('v4-pro'))) {
-                assistantMsg.reasoning_content = result.choices[0].message.reasoning_content;
-            }
-
             const newMessages = [
                 ...messages,
                 assistantMsg
@@ -643,9 +1401,9 @@ async function callDeepseekAIWithCustomTools(messages, customTools, overrideMode
         messages.push({ role: 'user', content: message });
     }
 
-    // 调用Deepseek AI API，根据意图选择模型
-    const selectedModel = needsReasoning(message) ? REASONER_MODEL_NAME : MODEL_NAME;
-    console.log(`[AI] Intent detection: reasoning=${needsReasoning(message)}, model=${selectedModel}`);
+    // 调用Deepseek AI API
+    const selectedModel = MODEL_NAME;
+    console.log(`[AI] Using model: ${selectedModel}`);
 
     try {
         const response = await callDeepseekAI(messages, scheduleData, 0, 0, selectedModel);
@@ -703,18 +1461,14 @@ async function callDeepseekAI(messages, scheduleData, retryCount = 0, depth = 0,
     try {
         // 使用 https 模块发起请求（支持 SSL 配置）
         const apiUrl = new URL(DEEPSEEK_API_URL);
-        const isReasoner = modelName.includes('reasoner') || modelName.includes('v4-pro');
         const reqBody = {
             model: modelName,
             messages: messages,
             tools: tools,
             tool_choice: 'auto',
-            max_tokens: isReasoner ? 16000 : 2000
+            max_tokens: 4000
         };
-        // deepseek-v4-pro 不支持 temperature
-        if (!isReasoner) {
-            reqBody.temperature = 0.8;
-        }
+        reqBody.temperature = 0.8;
         const requestBody = safeJsonStringify(reqBody);
 
         const result = await new Promise((resolve, reject) => {
@@ -836,10 +1590,6 @@ async function callDeepseekAI(messages, scheduleData, retryCount = 0, depth = 0,
                 content: result.choices[0].message.content || '',
                 tool_calls: result.choices[0].message.tool_calls
             };
-            // deepseek-v4-pro 要求回传 reasoning_content，否则返回 400
-            if (result.choices[0].message.reasoning_content && (modelName.includes('reasoner') || modelName.includes('v4-pro'))) {
-                assistantMsg.reasoning_content = result.choices[0].message.reasoning_content;
-            }
             const newMessages = [
                 ...messages,
                 assistantMsg
@@ -1130,22 +1880,25 @@ async function executeSingleToolCall(toolCall, scheduleData) {
     if (routedName === 'manage_templates' && name === 'apply_schedule_template') { routedArgs.action = 'apply'; }
 
     // ========== 工具执行 ==========
+    const validDateKeys = (obj) => Object.keys(obj || {}).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
     switch (routedName) {
         case 'view_schedule': {
             if (routedArgs.list_all) {
-                return JSON.stringify({ dates: Object.keys(schedules).sort(), count: Object.keys(schedules).length });
+                const dates = validDateKeys(schedules);
+                return JSON.stringify({ dates, count: dates.length });
             }
             if (routedArgs.keyword) {
                 const kw = sanitizeStr(routedArgs.keyword).toLowerCase();
                 const results = [];
                 for (const [date, sch] of Object.entries(schedules)) {
+                    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
                     const txt = `${sanitizeStr(sch.title)} ${sanitizeStr(sch.highlights)} ${(sch.timeSlots||[]).map(s=>sanitizeStr(s.activity)).join(' ')}`.toLowerCase();
                     if (txt.includes(kw)) results.push({ date, title: sanitizeStr(sch.title) });
                 }
                 return safeJsonStringify({ keyword: kw, results, count: results.length });
             }
             const d = routedArgs.date, sch = schedules[d];
-            if (!sch) return JSON.stringify({ exists: false, date: d, message: `${d} 没有安排`, availableDates: Object.keys(schedules).sort() });
+            if (!sch) return JSON.stringify({ exists: false, date: d, message: `${d} 没有安排`, availableDates: validDateKeys(schedules) });
             return JSON.stringify({ exists: true, date: d, title: sch.title, highlights: sch.highlights, timeSlots: sch.timeSlots || [] });
         }
 
@@ -1258,6 +2011,7 @@ async function executeSingleToolCall(toolCall, scheduleData) {
                     try {
                         const controller = new AbortController();
                         const timeout = setTimeout(() => controller.abort(), 3000);
+                        const structuredFeatures = pickStructuredTimeFields(t.time_estimation_features || routedArgs);
                         fetch('http://127.0.0.1:5100/api/collect-training-data', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -1266,7 +2020,8 @@ async function executeSingleToolCall(toolCall, scheduleData) {
                                 category: '其他',
                                 context: `日期:${d}`,
                                 estimated_minutes: parseInt(t.estimated) || 0,
-                                actual_minutes: routedArgs.actual_minutes
+                                actual_minutes: routedArgs.actual_minutes,
+                                structured_features: structuredFeatures
                             }),
                             signal: controller.signal
                         }).catch(() => {}).finally(() => clearTimeout(timeout));
@@ -1657,50 +2412,253 @@ async function executeSingleToolCall(toolCall, scheduleData) {
         }
 
         case 'web_search_evaluate': {
-            const query = encodeURIComponent(routedArgs.query || '');
+            const started = Date.now();
+            const rawQuery = routedArgs.query || '';
+            const query = normalizeWebSearchQuery(rawQuery);
             const purpose = routedArgs.purpose || 'general';
-            const maxResults = routedArgs.max_results || 5;
-            try {
-                // Use DuckDuckGo Instant Answer API (free, no key required)
-                const ddgUrl = `https://api.duckduckgo.com/?q=${query}&format=json&no_html=1&skip_disambig=1`;
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 8000);
-                const resp = await fetch(ddgUrl, { signal: controller.signal });
-                clearTimeout(timeout);
-                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                const ddgData = await resp.json();
-                const results = [];
-                if (ddgData.AbstractText) {
-                    results.push({ title: ddgData.Heading || '摘要', snippet: ddgData.AbstractText, source: ddgData.AbstractSource || 'DuckDuckGo', url: ddgData.AbstractURL || '' });
+            let maxResults = routedArgs.max_results || WEB_SEARCH_MAX_RESULTS;
+            maxResults = Math.max(1, Math.min(parseInt(maxResults, 10) || WEB_SEARCH_MAX_RESULTS, 10));
+
+            const remainingBudgetMs = () => WEB_SEARCH_TOTAL_BUDGET_MS - (Date.now() - started);
+            const effectiveTimeoutMs = (defaultMs = WEB_SEARCH_TIMEOUT_MS) => {
+                const rem = remainingBudgetMs();
+                if (rem < WEB_SEARCH_MIN_REMAINING_MS) return 0;
+                return Math.max(100, Math.min(defaultMs, rem));
+            };
+
+            // 1. 参数缺失
+            if (!query) {
+                console.log('[WebSearch] missing query, args=', routedArgs);
+                return JSON.stringify({
+                    success: false,
+                    query: rawQuery,
+                    error_code: 'missing_query',
+                    error_message: '缺少 query 参数',
+                    user_message: '请提供搜索关键词后再重试。',
+                    fallback: true,
+                });
+            }
+
+            const cacheKey = query.toLowerCase();
+
+            // 2. 缓存命中
+            const cached = webSearchCacheGet(cacheKey);
+            if (cached) {
+                const payload = { ...cached, cached: true };
+                const elapsed = Date.now() - started;
+                console.log(`[WebSearch] query="${query}" source=${payload.source || 'unknown'} cache=hit elapsed=${elapsed}ms`);
+                return safeJsonStringify(payload);
+            }
+
+            // 3. 主源：DuckDuckGo Instant Answer API
+            let results = [];
+            let sourceUsed = null;
+            let primaryErrorCode = null;
+            const primaryTimeoutMs = effectiveTimeoutMs();
+            if (primaryTimeoutMs <= 0) {
+                primaryErrorCode = 'timeout';
+                console.warn(`[WebSearch] primary skipped (budget exhausted) for query="${query}"`);
+            } else {
+                try {
+                    const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+                    const data = await httpsGetWithTimeout(ddgUrl, 'application/json', primaryTimeoutMs);
+                    try {
+                        const parsed = JSON.parse(data);
+                        results = parseDuckDuckGoInstantAnswer(parsed, maxResults);
+                        if (results.length > 0) sourceUsed = 'duckduckgo_instant_answer';
+                    } catch (e) {
+                        primaryErrorCode = 'api_error';
+                        console.warn(`[WebSearch] primary JSON parse error: ${e.message}`);
+                    }
+                } catch (e) {
+                    if (e.statusCode === 429) {
+                        primaryErrorCode = 'rate_limited';
+                        console.warn(`[WebSearch] primary rate limited (HTTP 429) for query="${query}"`);
+                    } else if (e.code === 'ETIMEDOUT' || /timeout/i.test(e.message)) {
+                        primaryErrorCode = 'timeout';
+                        console.warn(`[WebSearch] primary timeout (${primaryTimeoutMs}ms) for query="${query}"`);
+                    } else if (/ECONN|ENOTFOUND|ECONNRESET|network/i.test(e.message)) {
+                        primaryErrorCode = 'network_error';
+                        console.warn(`[WebSearch] primary network error: ${e.message}`);
+                    } else {
+                        primaryErrorCode = 'api_error';
+                        console.warn(`[WebSearch] primary error: ${e.message}`);
+                    }
                 }
-                if (ddgData.RelatedTopics) {
-                    for (const topic of ddgData.RelatedTopics.slice(0, maxResults - results.length)) {
-                        if (topic.Text && topic.FirstURL) {
-                            results.push({ title: topic.Text.split(' - ')[0] || '相关结果', snippet: topic.Text, url: topic.FirstURL });
+            }
+
+            // 4. 主源无结果 → HTML 回退
+            if (results.length === 0) {
+                const fallbackTimeoutMs = effectiveTimeoutMs();
+                if (fallbackTimeoutMs <= 0) {
+                    primaryErrorCode = primaryErrorCode || 'timeout';
+                    console.warn(`[WebSearch] html fallback skipped (budget exhausted) for query="${query}"`);
+                } else {
+                    try {
+                        const htmlUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+                        const html = await httpsGetWithTimeout(htmlUrl, 'text/html', fallbackTimeoutMs);
+                        const fbResults = parseDuckDuckGoHtmlFallback(html, maxResults);
+                        if (fbResults.length > 0) {
+                            results = fbResults;
+                            sourceUsed = 'duckduckgo_html_fallback';
+                        } else {
+                            console.log(`[WebSearch] html fallback returned 0 results for query="${query}"`);
+                        }
+                    } catch (e) {
+                        if (e.statusCode === 429) {
+                            primaryErrorCode = primaryErrorCode || 'rate_limited';
+                            console.warn(`[WebSearch] html fallback rate limited (HTTP 429) for query="${query}"`);
+                        } else if (e.code === 'ETIMEDOUT' || /timeout/i.test(e.message)) {
+                            primaryErrorCode = primaryErrorCode || 'timeout';
+                            console.warn(`[WebSearch] html fallback timeout (${fallbackTimeoutMs}ms) for query="${query}"`);
+                        } else if (/ECONN|ENOTFOUND|ECONNRESET|network/i.test(e.message)) {
+                            primaryErrorCode = primaryErrorCode || 'network_error';
+                            console.warn(`[WebSearch] html fallback network error: ${e.message}`);
+                        } else {
+                            console.log(`[WebSearch] html fallback error: ${e.message}`);
                         }
                     }
                 }
-                if (results.length === 0) {
-                    return JSON.stringify({ success: true, query: routedArgs.query, results: [], message: '未找到相关搜索结果，建议尝试其他关键词' });
-                }
-                return JSON.stringify({ success: true, query: routedArgs.query, purpose, results: results.slice(0, maxResults), total_found: results.length });
-            } catch (e) {
-                console.error('[Web Search] Error:', e.message);
-                return JSON.stringify({ success: false, query: routedArgs.query, error: '网络搜索暂时不可用（请检查网络连接或API配置），Mosa将基于已有知识回答。', fallback: true });
             }
+
+            // 5. 中文查询优先回退到 Baidu HTML，其他查询回退到 Bing HTML
+            if (results.length === 0) {
+                const providerTimeoutMs = effectiveTimeoutMs();
+                const providerName = isCjkQuery(query) ? 'baidu' : 'bing';
+                if (providerTimeoutMs <= 0) {
+                    primaryErrorCode = primaryErrorCode || 'timeout';
+                    console.warn(`[WebSearch] ${providerName} fallback skipped (budget exhausted) for query="${query}"`);
+                } else {
+                    try {
+                        const providerQuery = providerName === 'baidu' ? query : protectSearchPhrase(query);
+                        const providerUrl = providerName === 'baidu'
+                            ? `http://www.baidu.com/s?wd=${encodeURIComponent(providerQuery)}`
+                            : `https://www.bing.com/search?q=${encodeURIComponent(providerQuery)}`;
+                        const providerHtml = await httpsGetWithTimeout(providerUrl, 'text/html', providerTimeoutMs);
+                        const providerResults = providerName === 'baidu'
+                            ? parseBaiduHtmlFallback(providerHtml, maxResults)
+                            : parseBingHtmlFallback(providerHtml, maxResults);
+                        if (providerResults.length > 0) {
+                            results = providerResults;
+                            sourceUsed = `${providerName}_html_fallback`;
+                        } else {
+                            console.log(`[WebSearch] ${providerName} fallback returned 0 results for query="${query}"`);
+                        }
+                    } catch (e) {
+                        if (e.statusCode === 429) {
+                            primaryErrorCode = primaryErrorCode || 'rate_limited';
+                            console.warn(`[WebSearch] ${providerName} fallback rate limited (HTTP 429) for query="${query}"`);
+                        } else if (e.code === 'ETIMEDOUT' || /timeout/i.test(e.message)) {
+                            primaryErrorCode = primaryErrorCode || 'timeout';
+                            console.warn(`[WebSearch] ${providerName} fallback timeout (${providerTimeoutMs}ms) for query="${query}"`);
+                        } else if (/ECONN|ENOTFOUND|ECONNRESET|network/i.test(e.message)) {
+                            primaryErrorCode = primaryErrorCode || 'network_error';
+                            console.warn(`[WebSearch] ${providerName} fallback network error: ${e.message}`);
+                        } else {
+                            console.log(`[WebSearch] ${providerName} fallback error: ${e.message}`);
+                        }
+                    }
+                }
+            }
+
+            const elapsedMs = Date.now() - started;
+
+            results = rerankSearchResults(query, results);
+            if (isPersonQuery(query)) {
+                results = prunePersonResults(query, results, Math.min(maxResults, 3));
+            }
+
+            // 6. 没有任何结果
+            if (results.length === 0) {
+                let payload;
+                if (primaryErrorCode) {
+                    const userMessageMap = {
+                        timeout: `搜索超时（>=${Math.round(WEB_SEARCH_TOTAL_BUDGET_MS / 1000)}秒未返回），建议简化查询关键词后重试。Mosa将基于已有知识回答。`,
+                        network_error: '网络连接失败，请检查网络后重试。Mosa将基于已有知识回答。',
+                        rate_limited: '搜索服务暂时限流，请稍后重试。Mosa将基于已有知识回答。',
+                        api_error: '搜索服务暂时不可用，Mosa将基于已有知识回答。',
+                    };
+                    const errorMessageMap = {
+                        timeout: '搜索超时',
+                        network_error: '网络连接失败',
+                        rate_limited: '搜索服务限流',
+                        api_error: '搜索服务异常',
+                    };
+                    payload = {
+                        success: false,
+                        query,
+                        purpose,
+                        results: [],
+                        summary_text: '搜索失败，Mosa将基于已有知识回答。',
+                        citations: [],
+                        total_found: 0,
+                        error_code: primaryErrorCode,
+                        error_message: errorMessageMap[primaryErrorCode] || '搜索失败',
+                        user_message: userMessageMap[primaryErrorCode] || '搜索失败，Mosa将基于已有知识回答。',
+                        fallback: true,
+                    };
+                } else {
+                    payload = {
+                        success: true,
+                        query,
+                        purpose,
+                        results: [],
+                        summary_text: '未找到相关搜索结果，建议尝试其他关键词',
+                        citations: [],
+                        total_found: 0,
+                        source: 'duckduckgo',
+                        message: '未找到相关搜索结果，建议尝试其他关键词',
+                    };
+                }
+                console.log(`[WebSearch] query="${query}" source=${sourceUsed || 'duckduckgo'} cache=miss elapsed=${elapsedMs}ms total_found=0 error=${primaryErrorCode || 'none'}`);
+                return safeJsonStringify(payload);
+            }
+
+            // 7. 有结果：构造 summary / citations 并缓存
+            let summaryText = buildWebSearchSummaryText(results);
+            if (isPersonQuery(query)) {
+                summaryText = buildPersonQuerySummary(query, results);
+            }
+            const citations = results.map((r) => ({
+                title: r.title || '',
+                snippet: r.snippet || '',
+                source: r.source || 'DuckDuckGo',
+                url: r.url || '',
+            }));
+            const payload = {
+                success: true,
+                query,
+                purpose,
+                results,
+                summary_text: summaryText,
+                citations,
+                total_found: results.length,
+                source: sourceUsed || 'duckduckgo_instant_answer',
+            };
+            webSearchCacheSet(cacheKey, payload);
+            console.log(`[WebSearch] query="${query}" source=${sourceUsed} cache=miss elapsed=${elapsedMs}ms total_found=${results.length}`);
+            return safeJsonStringify(payload);
         }
 
         case 'estimate_task_time': {
             const taskName = routedArgs.task_name || '';
-            const category = routedArgs.category || '其他';
-            const context = routedArgs.context || '';
+            const rawContext = routedArgs.context || '';
+            const categoryMeta = normalizeEstimateCategory(routedArgs.category, taskName, rawContext);
+            const category = categoryMeta.category;
+            const structuredFeatures = normalizeStructuredTimeFields(routedArgs, taskName, category, rawContext);
+            const context = buildEstimateContext(taskName, category, rawContext, structuredFeatures, categoryMeta);
             try {
                 const controller = new AbortController();
                 const timeout = setTimeout(() => controller.abort(), 5000);
                 const pyResp = await fetch('http://127.0.0.1:5100/api/estimate-task-time', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ task_name: taskName, category, context }),
+                    body: JSON.stringify({
+                        task_name: taskName,
+                        category,
+                        context,
+                        structured_features: structuredFeatures
+                    }),
                     signal: controller.signal
                 });
                 clearTimeout(timeout);
@@ -1710,22 +2668,48 @@ async function executeSingleToolCall(toolCall, scheduleData) {
                         const hours = Math.floor(pyData.estimated_minutes / 60);
                         const mins = pyData.estimated_minutes % 60;
                         const timeStr = hours > 0 ? `${hours}小时${mins > 0 ? mins + '分钟' : ''}` : `${mins}分钟`;
+                        const lowConfidence = !!pyData.low_confidence;
+                        const confidenceLevel = pyData.confidence_level || '中';
+                        const confidenceReasons = Array.isArray(pyData.confidence_reasons) ? pyData.confidence_reasons : [];
+                        const baseSuggestion = lowConfidence
+                            ? '当前估算可信度较低，建议预留额外缓冲时间，或先拆成更具体的子任务后再估算。'
+                            : `基于 ${pyData.model_version} 模型估算，实际用时可能因个人情况有所不同。完成此任务后请记录实际用时，帮助Mosa更准确地估算。`;
                         return JSON.stringify({
                             success: true,
                             task_name: taskName,
                             category,
                             estimated_minutes: pyData.estimated_minutes,
                             estimated_time_display: timeStr,
+                            baseline_minutes: pyData.baseline_minutes,
+                            calibrated_minutes: pyData.calibrated_minutes,
+                            calibration_ratio: pyData.calibration_ratio,
+                            calibration_delta_minutes: pyData.calibration_delta_minutes,
+                            baseline_comparison: pyData.baseline_comparison,
                             confidence_interval: pyData.confidence_interval,
+                            confidence_level: confidenceLevel,
+                            low_confidence: lowConfidence,
+                            confidence_reasons: confidenceReasons,
+                            relative_interval_width: pyData.relative_interval_width,
+                            major_factors: Array.isArray(pyData.major_factors) ? pyData.major_factors : [],
+                            factor_details: Array.isArray(pyData.factor_details) ? pyData.factor_details : [],
+                            structured_features: pyData.structured_features || structuredFeatures,
+                            training_summary: pyData.training_summary || null,
                             model_version: pyData.model_version,
+                            estimator_mode: pyData.estimator_mode,
+                            used_model: pyData.used_model,
+                            fallback: !!pyData.fallback,
                             source: 'ml_model',
-                            suggestion: `基于 ${pyData.model_version} 模型估算，实际用时可能因个人情况有所不同。完成此任务后请记录实际用时，帮助Mosa更准确地估算。`
+                            message: pyData.message,
+                            suggestion: baseSuggestion
                         });
                     }
                 }
             } catch (e) {
-                console.log('[Estimate Task Time] Python service unavailable, using LLM fallback');
+                console.log('[Estimate Task Time] Python service unavailable, using rule baseline fallback');
             }
+            const fallbackEstimate = calculateRuleBaseline(taskName, category, rawContext, structuredFeatures);
+            const bufferMinutes = calculateBufferMinutes(fallbackEstimate.baseline_minutes, fallbackEstimate.structured_features);
+            const suggestedTotalMinutes = fallbackEstimate.baseline_minutes + bufferMinutes;
             const categoryHints = {
                 '学习': '学习类任务通常建议单次不超过90分钟（番茄工作法），复杂学习任务建议拆分为多个25-50分钟的时段',
                 '工作': '工作类任务建议单次专注45-90分钟，代码类任务建议预留30%调试时间',
@@ -1736,10 +2720,29 @@ async function executeSingleToolCall(toolCall, scheduleData) {
                 success: true,
                 task_name: taskName,
                 category,
-                source: 'llm_estimate',
+                source: 'rule_baseline',
+                fallback_strategy: 'rule_baseline',
+                estimated_minutes: fallbackEstimate.baseline_minutes,
+                estimated_time_display: formatMinutes(fallbackEstimate.baseline_minutes),
+                baseline_minutes: fallbackEstimate.baseline_minutes,
+                calibrated_minutes: fallbackEstimate.baseline_minutes,
+                calibration_ratio: 1,
+                calibration_delta_minutes: 0,
+                baseline_comparison: fallbackEstimate.baseline_comparison,
+                buffer_minutes: bufferMinutes,
+                buffer_time_display: formatMinutes(bufferMinutes),
+                suggested_total_minutes: suggestedTotalMinutes,
+                suggested_total_time_display: formatMinutes(suggestedTotalMinutes),
+                structured_features: fallbackEstimate.structured_features,
+                major_factors: fallbackEstimate.major_factors,
+                factor_details: fallbackEstimate.factor_details,
+                top_factors: fallbackEstimate.top_factors,
+                estimator_mode: 'baseline_only',
+                used_model: false,
                 hint: categoryHints[category] || '请根据任务复杂度估算合理时间',
                 fallback: true,
-                message: 'Python时间估算服务未运行，请基于以下提示估算此任务所需时间。启动Python ML服务可获得基于历史数据的精准估算。'
+                message: `Python时间估算服务暂不可用，已按任务类别和关键特征给出基础建议：预计专注 ${formatMinutes(fallbackEstimate.baseline_minutes)}，再预留 ${formatMinutes(bufferMinutes)} 缓冲。`,
+                suggestion: `${fallbackEstimate.summary}。如果时间特别紧，建议按 ${formatMinutes(suggestedTotalMinutes)} 安排；若任务可拆分，优先拆成更小步骤再执行。`
             });
         }
 
@@ -2719,15 +3722,13 @@ function serveFile(req, res) {
     });
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
     console.log(`${new Date().toLocaleTimeString()} ${req.method} ${req.url}`);
 
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    applyLocalCors(req, res);
 
     if (req.method === 'OPTIONS') {
-        res.writeHead(200);
+        res.writeHead(204);
         res.end();
         return;
     }
@@ -2738,77 +3739,61 @@ const server = http.createServer((req, res) => {
     if (req.method === 'GET') {
         serveFile(req, res);
     } else if (req.method === 'POST' && pathname === '/api/schedule') {
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', () => {
-            try {
-                const data = JSON.parse(body);
-                const date = data.date;
-                if (!date) {
-                    res.writeHead(400, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ error: '缺少日期' }));
+        const data = await parseJsonBody(req, res);
+        if (data === null) return;
+        const date = data.date;
+        if (!date) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: '缺少日期' }));
+            return;
+        }
+        const scheduleFile = pmPaths.getDataFilePath();
+        fs.readFile(scheduleFile, 'utf8', (err, fileContent) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: '读取文件失败' }));
+                return;
+            }
+            const json = JSON.parse(fileContent);
+            json.schedules[date] = data.schedule;
+            // 写入前先创建备份
+            createBackup('data.json');
+            fs.writeFile(scheduleFile, JSON.stringify(json, null, 2), 'utf8', (err) => {
+                if (err) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: '写入文件失败' }));
                     return;
                 }
-                const scheduleFile = pmPaths.getDataFilePath();
-                fs.readFile(scheduleFile, 'utf8', (err, fileContent) => {
-                    if (err) {
-                        res.writeHead(500, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ error: '读取文件失败' }));
-                        return;
-                    }
-                    const json = JSON.parse(fileContent);
-                    json.schedules[date] = data.schedule;
-                    // 写入前先创建备份
-                    createBackup('data.json');
-                    fs.writeFile(scheduleFile, JSON.stringify(json, null, 2), 'utf8', (err) => {
-                        if (err) {
-                            res.writeHead(500, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify({ error: '写入文件失败' }));
-                            return;
-                        }
-                        res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ success: true }));
-                    });
-                });
-            } catch (e) {
-                res.writeHead(400, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: '无效的JSON' }));
-            }
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
+            });
         });
     } else if (req.method === 'PUT' && pathname.startsWith('/api/schedule/')) {
         const date = pathname.split('/').pop();
         console.log('收到PUT请求，日期:', date);
         console.log('完整路径:', pathname);
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', () => {
-            try {
-                const data = JSON.parse(body);
-                const scheduleFile = pmPaths.getDataFilePath();
-                fs.readFile(scheduleFile, 'utf8', (err, fileContent) => {
-                    if (err) {
-                        res.writeHead(500, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ error: '读取文件失败' }));
-                        return;
-                    }
-                    const json = JSON.parse(fileContent);
-                    json.schedules[date] = data;
-                    // 写入前先创建备份
-                    createBackup('data.json');
-                    fs.writeFile(scheduleFile, JSON.stringify(json, null, 2), 'utf8', (err) => {
-                        if (err) {
-                            res.writeHead(500, { 'Content-Type': 'application/json' });
-                            res.end(JSON.stringify({ error: '写入文件失败' }));
-                            return;
-                        }
-                        res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ success: true }));
-                    });
-                });
-            } catch (e) {
-                res.writeHead(400, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: '无效的JSON' }));
+        const data = await parseJsonBody(req, res);
+        if (data === null) return;
+        const scheduleFile = pmPaths.getDataFilePath();
+        fs.readFile(scheduleFile, 'utf8', (err, fileContent) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: '读取文件失败' }));
+                return;
             }
+            const json = JSON.parse(fileContent);
+            json.schedules[date] = data;
+            // 写入前先创建备份
+            createBackup('data.json');
+            fs.writeFile(scheduleFile, JSON.stringify(json, null, 2), 'utf8', (err) => {
+                if (err) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: '写入文件失败' }));
+                    return;
+                }
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
+            });
         });
     } else if (req.method === 'DELETE' && pathname.startsWith('/api/schedule/')) {
         const date = pathname.split('/').pop();
@@ -2833,6 +3818,31 @@ const server = http.createServer((req, res) => {
                 res.end(JSON.stringify({ success: true }));
             });
         });
+    } else if (req.method === 'GET' && pathname === '/api/time-estimation-training-explanation') {
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 5000);
+            const pyResp = await fetch('http://127.0.0.1:5100/api/time-estimation-training-explanation', {
+                method: 'GET',
+                signal: controller.signal
+            });
+            clearTimeout(timeout);
+            if (!pyResp.ok) {
+                throw new Error(`Python service responded with HTTP ${pyResp.status}`);
+            }
+            const pyData = await pyResp.json();
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=UTF-8' });
+            res.end(JSON.stringify(pyData));
+        } catch (e) {
+            console.error('[Time Estimation Training Explanation] Error:', e.message);
+            res.writeHead(503, { 'Content-Type': 'application/json; charset=UTF-8' });
+            res.end(JSON.stringify({
+                success: false,
+                fallback: false,
+                error: '时间评估训练说明暂时不可用',
+                message: '请先启动本地 Python 服务，再通过该接口查看和当前实现一致的训练说明。'
+            }));
+        }
     } else if (req.method === 'GET' && pathname === '/api/agent-history') {
         // Get agent conversation history
         const agentLogFile = pmPaths.getAgentLogPath();
@@ -2847,272 +3857,232 @@ const server = http.createServer((req, res) => {
         });
     } else if (req.method === 'POST' && pathname === '/api/agent-save') {
         // Save agent conversation history
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', () => {
-            try {
-                const data = JSON.parse(body);
-                const agentLogFile = pmPaths.getAgentLogPath();
-                const saveData = {
-                    userProfile: data.profile || {},
-                    conversations: data.conversations || [],
-                    lastUpdate: new Date().toISOString()
-                };
-                fs.writeFile(agentLogFile, JSON.stringify(saveData, null, 2), 'utf8', (err) => {
-                    if (err) {
-                        res.writeHead(500, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ error: '保存失败' }));
-                        return;
-                    }
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ success: true }));
-                });
-            } catch (e) {
-                res.writeHead(400, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: '无效的JSON' }));
+        const data = await parseJsonBody(req, res);
+        if (data === null) return;
+        const agentLogFile = pmPaths.getAgentLogPath();
+        const saveData = {
+            userProfile: data.profile || {},
+            conversations: data.conversations || [],
+            lastUpdate: new Date().toISOString()
+        };
+        fs.writeFile(agentLogFile, JSON.stringify(saveData, null, 2), 'utf8', (err) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: '保存失败' }));
+                return;
             }
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true }));
         });
     } else if (req.method === 'POST' && pathname === '/api/agent-chat') {
         // Handle agent chat - 支持流式输出
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                const stream = data.stream;
+        try {
+            const data = await parseJsonBody(req, res);
+            if (data === null) return;
+            const stream = data.stream;
 
-                if (stream) {
-                    // 流式输出 (SSE)
-                    res.writeHead(200, {
-                        'Content-Type': 'text/event-stream',
-                        'Cache-Control': 'no-cache',
-                        'Connection': 'keep-alive'
-                    });
+            if (stream) {
+                // 流式输出 (SSE)
+                res.writeHead(200, {
+                    'Content-Type': 'text/event-stream',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive'
+                });
 
-                    // 调用handleAgentChat并处理流式响应
-                    const result = await handleAgentChat(data);
+                // 调用handleAgentChat并处理流式响应
+                const result = await handleAgentChat(data);
+
+                // 发送完整响应
+                res.write(`data: ${JSON.stringify(result)}\n\n`);
+                res.end();
+            } else {
+                // 普通模式
+                const response = await handleAgentChat(data);
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(response));
+            }
+        } catch (e) {
+            console.error('Agent chat error:', e);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: e.message }));
+        }
+    } else if (req.method === 'POST' && pathname === '/api/deep-planning-chat') {
+        // Handle deep planning chat - 深度规划模式
+        console.log('[Deep Planning] API endpoint called');
+        try {
+            const data = await parseJsonBody(req, res);
+            if (data === null) return;
+            console.log('[Deep Planning] Request parsed, checking stream mode...');
+
+            const stream = data.stream;
+
+            if (stream) {
+                console.log('[Deep Planning] Using SSE streaming mode');
+                // 流式输出 (SSE)
+                res.writeHead(200, {
+                    'Content-Type': 'text/event-stream',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive'
+                });
+
+                try {
+                    // 调用handleDeepPlanningChat并处理流式响应
+                    const result = await handleDeepPlanningChat(data);
+                    console.log('[Deep Planning] Streaming response ready');
 
                     // 发送完整响应
                     res.write(`data: ${JSON.stringify(result)}\n\n`);
                     res.end();
-                } else {
-                    // 普通模式
-                    const response = await handleAgentChat(data);
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify(response));
+                } catch (error) {
+                    console.error('[Deep Planning] Streaming error:', error);
+                    const errorResponse = {
+                        response: {
+                            content: '深度规划处理出错，请稍后重试。',
+                            proposal: null
+                        },
+                        shouldRefresh: false
+                    };
+                    res.write(`data: ${JSON.stringify(errorResponse)}\n\n`);
+                    res.end();
                 }
-            } catch (e) {
-                console.error('Agent chat error:', e);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: e.message }));
+            } else {
+                console.log('[Deep Planning] Using normal mode');
+                // 普通模式
+                const response = await handleDeepPlanningChat(data);
+                console.log('[Deep Planning] Response sent successfully');
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(response));
             }
-        });
-    } else if (req.method === 'POST' && pathname === '/api/deep-planning-chat') {
-        // Handle deep planning chat - 深度规划模式
-        console.log('[Deep Planning] API endpoint called');
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                console.log('[Deep Planning] Request parsed, checking stream mode...');
-
-                const stream = data.stream;
-
-                if (stream) {
-                    console.log('[Deep Planning] Using SSE streaming mode');
-                    // 流式输出 (SSE)
-                    res.writeHead(200, {
-                        'Content-Type': 'text/event-stream',
-                        'Cache-Control': 'no-cache',
-                        'Connection': 'keep-alive'
-                    });
-
-                    try {
-                        // 调用handleDeepPlanningChat并处理流式响应
-                        const result = await handleDeepPlanningChat(data);
-                        console.log('[Deep Planning] Streaming response ready');
-
-                        // 发送完整响应
-                        res.write(`data: ${JSON.stringify(result)}\n\n`);
-                        res.end();
-                    } catch (error) {
-                        console.error('[Deep Planning] Streaming error:', error);
-                        const errorResponse = {
-                            response: {
-                                content: '深度规划处理出错，请稍后重试。',
-                                proposal: null
-                            },
-                            shouldRefresh: false
-                        };
-                        res.write(`data: ${JSON.stringify(errorResponse)}\n\n`);
-                        res.end();
-                    }
-                } else {
-                    console.log('[Deep Planning] Using normal mode');
-                    // 普通模式
-                    const response = await handleDeepPlanningChat(data);
-                    console.log('[Deep Planning] Response sent successfully');
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify(response));
-                }
-            } catch (e) {
-                console.error('[Deep Planning] API endpoint error:', e);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({
-                    error: e.message,
-                    response: {
-                        content: '服务器内部错误，请稍后重试。',
-                        proposal: null
-                    },
-                    shouldRefresh: false
-                }));
-            }
-        });
+        } catch (e) {
+            console.error('[Deep Planning] API endpoint error:', e);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                error: e.message,
+                response: {
+                    content: '服务器内部错误，请稍后重试。',
+                    proposal: null
+                },
+                shouldRefresh: false
+            }));
+        }
     } else if (req.method === 'POST' && pathname === '/api/deep-planning-profile') {
         console.log('[Deep Planning Profile] API endpoint called');
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                const conversation = data.conversation || '';
+        try {
+            const data = await parseJsonBody(req, res);
+            if (data === null) return;
+            const conversation = data.conversation || '';
 
-                const profileExtract = { longTermGoals: [], values: [], strengths: [], constraints: [] };
+            const profileExtract = { longTermGoals: [], values: [], strengths: [], constraints: [] };
 
-                const goalPatterns = [
-                    /(?:想|希望|计划|立志|目标|愿景)[\s\S]{0,50}?成为?([\u4e00-\u9fa5，。、！？；：""''（）【】\w]{2,30})/g,
-                    /(?:未来[\d\-到至年]+|[\d]+年内?|长期|长远)(?:[\s\S]{0,20}?(?:想|希望|要|打算|计划))([\u4e00-\u9fa5，。、！？；：""''（）【】\w]{2,30})/g
-                ];
-                const valuePatterns = [
-                    /(?:重视|看重|在乎|坚持|认为.*重要|珍视|注重|相信)([\u4e00-\u9fa5，。、！？；：""''（）【】\w]{2,25})/g
-                ];
-                const strengthPatterns = [
-                    /(?:擅长|强项|优势|能力|经验丰富|熟练|精通|拿手)([\u4e00-\u9fa5，。、！？；：""''（）【】\w]{2,25})/g
-                ];
-                const constraintPatterns = [
-                    /(?:限制|困难|缺乏|没有|不足|担心|顾虑|问题|挑战|障碍|缺|不够|无法)([\u4e00-\u9fa5，。、！？；：""''（）【】\w]{2,25})/g
-                ];
+            const goalPatterns = [
+                /(?:想|希望|计划|立志|目标|愿景)[\s\S]{0,50}?成为?([\u4e00-\u9fa5，。、！？；：""''（）【】\w]{2,30})/g,
+                /(?:未来[\d\-到至年]+|[\d]+年内?|长期|长远)(?:[\s\S]{0,20}?(?:想|希望|要|打算|计划))([\u4e00-\u9fa5，。、！？；：""''（）【】\w]{2,30})/g
+            ];
+            const valuePatterns = [
+                /(?:重视|看重|在乎|坚持|认为.*重要|珍视|注重|相信)([\u4e00-\u9fa5，。、！？；：""''（）【】\w]{2,25})/g
+            ];
+            const strengthPatterns = [
+                /(?:擅长|强项|优势|能力|经验丰富|熟练|精通|拿手)([\u4e00-\u9fa5，。、！？；：""''（）【】\w]{2,25})/g
+            ];
+            const constraintPatterns = [
+                /(?:限制|困难|缺乏|没有|不足|担心|顾虑|问题|挑战|障碍|缺|不够|无法)([\u4e00-\u9fa5，。、！？；：""''（）【】\w]{2,25})/g
+            ];
 
-                const seenGoals = new Set(), seenValues = new Set(), seenStrengths = new Set(), seenConstraints = new Set();
+            const seenGoals = new Set(), seenValues = new Set(), seenStrengths = new Set(), seenConstraints = new Set();
 
-                for (const pat of goalPatterns) { let m; while ((m = pat.exec(conversation)) !== null) { const g = m[1]?.trim(); if (g && g.length > 3 && !seenGoals.has(g)) { seenGoals.add(g); profileExtract.longTermGoals.push({ content: g, confidence: 0.85, source: 'deep_planning' }); } } }
-                for (const pat of valuePatterns) { let m; while ((m = pat.exec(conversation)) !== null) { const v = m[1]?.trim(); if (v && v.length > 1 && !seenValues.has(v)) { seenValues.add(v); profileExtract.values.push({ content: v, confidence: 0.75, source: 'deep_planning' }); } } }
-                for (const pat of strengthPatterns) { let m; while ((m = pat.exec(conversation)) !== null) { const s = m[1]?.trim(); if (s && s.length > 1 && !seenStrengths.has(s)) { seenStrengths.add(s); profileExtract.strengths.push({ content: s, confidence: 0.8, source: 'deep_planning' }); } } }
-                for (const pat of constraintPatterns) { let m; while ((m = pat.exec(conversation)) !== null) { const c = m[1]?.trim(); if (c && c.length > 1 && !seenConstraints.has(c)) { seenConstraints.add(c); profileExtract.constraints.push({ content: c, confidence: 0.78, source: 'deep_planning' }); } } }
+            for (const pat of goalPatterns) { let m; while ((m = pat.exec(conversation)) !== null) { const g = m[1]?.trim(); if (g && g.length > 3 && !seenGoals.has(g)) { seenGoals.add(g); profileExtract.longTermGoals.push({ content: g, confidence: 0.85, source: 'deep_planning' }); } } }
+            for (const pat of valuePatterns) { let m; while ((m = pat.exec(conversation)) !== null) { const v = m[1]?.trim(); if (v && v.length > 1 && !seenValues.has(v)) { seenValues.add(v); profileExtract.values.push({ content: v, confidence: 0.75, source: 'deep_planning' }); } } }
+            for (const pat of strengthPatterns) { let m; while ((m = pat.exec(conversation)) !== null) { const s = m[1]?.trim(); if (s && s.length > 1 && !seenStrengths.has(s)) { seenStrengths.add(s); profileExtract.strengths.push({ content: s, confidence: 0.8, source: 'deep_planning' }); } } }
+            for (const pat of constraintPatterns) { let m; while ((m = pat.exec(conversation)) !== null) { const c = m[1]?.trim(); if (c && c.length > 1 && !seenConstraints.has(c)) { seenConstraints.add(c); profileExtract.constraints.push({ content: c, confidence: 0.78, source: 'deep_planning' }); } } }
 
-                console.log(`[Deep Planning Profile] Extracted - Goals:${profileExtract.longTermGoals.length}, Values:${profileExtract.values.length}, Strengths:${profileExtract.strengths.length}, Constraints:${profileExtract.constraints.length}`);
+            console.log(`[Deep Planning Profile] Extracted - Goals:${profileExtract.longTermGoals.length}, Values:${profileExtract.values.length}, Strengths:${profileExtract.strengths.length}, Constraints:${profileExtract.constraints.length}`);
 
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true, profileExtract }));
-            } catch (e) {
-                console.error('[Deep Planning Profile] Error:', e);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true, profileExtract: { longTermGoals: [], values: [], strengths: [], constraints: [] } }));
-            }
-        });
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, profileExtract }));
+        } catch (e) {
+            console.error('[Deep Planning Profile] Error:', e);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, profileExtract: { longTermGoals: [], values: [], strengths: [], constraints: [] } }));
+        }
     } else if (req.method === 'POST' && pathname === '/api/agent-approve') {
         // Approve schedule proposal
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                const result = await approveScheduleProposal(data.proposal);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify(result));
-            } catch (e) {
-                console.error('Approve proposal error:', e);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: e.message }));
-            }
-        });
+        try {
+            const data = await parseJsonBody(req, res);
+            if (data === null) return;
+            const result = await approveScheduleProposal(data.proposal);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(result));
+        } catch (e) {
+            console.error('Approve proposal error:', e);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: e.message }));
+        }
     } else if (req.method === 'POST' && pathname === '/api/generate-react-log') {
         const queryParams = new URLSearchParams(parsedUrl.query || '');
         const isFull = queryParams.get('full') === 'true';
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', () => {
-            try {
-                const data = JSON.parse(body);
-                const messages = data.messages || [];
-                const reactLog = generateReActLog(messages, isFull);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true, react_log: reactLog }));
-            } catch (e) {
-                res.writeHead(400, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: '无效请求' }));
-            }
-        });
+        const data = await parseJsonBody(req, res);
+        if (data === null) return;
+        const messages = data.messages || [];
+        const reactLog = generateReActLog(messages, isFull);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, react_log: reactLog }));
     } else if (req.method === 'POST' && pathname === '/api/add-timeslot') {
         // 添加单个时间段
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                const result = await addTimeSlot(data);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify(result));
-            } catch (e) {
-                console.error('Add time slot error:', e);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: e.message }));
-            }
-        });
+        try {
+            const data = await parseJsonBody(req, res);
+            if (data === null) return;
+            const result = await addTimeSlot(data);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(result));
+        } catch (e) {
+            console.error('Add time slot error:', e);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: e.message }));
+        }
     } else if (req.method === 'POST' && pathname === '/api/add-recurring') {
         // 周期性添加时间段
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                const result = await addRecurringTimeSlot(data);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify(result));
-            } catch (e) {
-                console.error('Add recurring time slot error:', e);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: e.message }));
-            }
-        });
+        try {
+            const data = await parseJsonBody(req, res);
+            if (data === null) return;
+            const result = await addRecurringTimeSlot(data);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(result));
+        } catch (e) {
+            console.error('Add recurring time slot error:', e);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: e.message }));
+        }
     } else if (req.method === 'POST' && pathname === '/api/add-multiple') {
         // 批量添加多个时间段到指定日期
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                const result = await addMultipleTimeSlots(data);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify(result));
-            } catch (e) {
-                console.error('Add multiple time slots error:', e);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: e.message }));
-            }
-        });
+        try {
+            const data = await parseJsonBody(req, res);
+            if (data === null) return;
+            const result = await addMultipleTimeSlots(data);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(result));
+        } catch (e) {
+            console.error('Add multiple time slots error:', e);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: e.message }));
+        }
     } else if (req.method === 'POST' && pathname === '/api/save-schedule') {
         // Save entire schedule data (used by frontend for direct editing)
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                const scheduleFile = pmPaths.getDataFilePath();
+        try {
+            const data = await parseJsonBody(req, res);
+            if (data === null) return;
+            const scheduleFile = pmPaths.getDataFilePath();
 
-                // Create backup before writing
-                createBackup('data.json');
-                await fs.promises.writeFile(scheduleFile, JSON.stringify(data, null, 2), 'utf8');
+            // Create backup before writing
+            createBackup('data.json');
+            await fs.promises.writeFile(scheduleFile, JSON.stringify(data, null, 2), 'utf8');
 
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true }));
-            } catch (e) {
-                console.error('Save schedule error:', e);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: e.message }));
-            }
-        });
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true }));
+        } catch (e) {
+            console.error('Save schedule error:', e);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: e.message }));
+        }
     } else {
         res.writeHead(405, { 'Content-Type': 'text/plain; charset=UTF-8' });
         res.end('方法不允许');

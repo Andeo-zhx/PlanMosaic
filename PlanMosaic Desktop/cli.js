@@ -88,6 +88,12 @@ function printMainHelp() {
 function main() {
     // 支持 --no-ui 标志: 禁用 CLI 到 UI 的通知
     const rawArgs = process.argv.slice(2);
+    if (!process.env.PLANMOSAIC_CONTROL_TOKEN) {
+        const sharedToken = pmPaths.readControlToken();
+        if (sharedToken) {
+            process.env.PLANMOSAIC_CONTROL_TOKEN = sharedToken;
+        }
+    }
     if (rawArgs.includes('--no-ui')) {
         process.env.PLANMOSAIC_NO_UI = '1';
         rawArgs.splice(rawArgs.indexOf('--no-ui'), 1);

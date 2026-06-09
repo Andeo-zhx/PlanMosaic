@@ -1,0 +1,10 @@
+- [x] 所有会修改用户数据的工具都已被归类为“直接执行”或“proposal 确认后执行”
+- [x] `tools.py`、`tool_executor.py`、`_approve_schedule_proposal()` 三层之间的 proposal 类型映射一致
+- [x] `modify_schedule` 修改类 proposal 在用户确认后会真实落盘
+- [x] `manage_tasks` 的 update/delete/batch_delete proposal 在确认后会真实落盘
+- [x] `manage_big_tasks` 的 update/delete/batch_delete proposal 在确认后会真实落盘
+- [x] `manage_courses` 的所有确认型 proposal 在确认后会真实落盘或显式返回未支持错误
+- [x] `manage_templates apply` proposal 在确认后会真实写入目标日期
+- [x] 直接执行型工具返回 `success=true` 时，对应数据已经真实写入
+- [x] 未实现或非法 proposal 类型不会再表现为“成功但无修改”
+- [x] 相关验证或测试覆盖了每类可写工具的成功路径与失败路径
